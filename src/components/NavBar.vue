@@ -44,7 +44,7 @@
       <v-list class="menu-dropdown">
         <v-list-item @click="handleLogout">
           <v-list-item-icon>
-            <v-icon color="#FFFFFF">
+            <v-icon color="#000">
               mdi-logout
             </v-icon>
           </v-list-item-icon>

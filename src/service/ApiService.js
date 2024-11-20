@@ -26,8 +26,7 @@ async function get(endpoint) {
       window.location.href = '/';  // Rediriger vers la page de login
     }
 
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Erreur de récupération des données:', error);
     throw error;
@@ -54,8 +53,7 @@ async function post(endpoint, body) {
         window.location.href = '/';  // Rediriger vers la page de login
     }  
 
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Erreur d\'envoi des données:', error);
     throw error;
@@ -82,8 +80,7 @@ async function put(endpoint, body) {
         window.location.href = '/';  // Rediriger vers la page de login
     }  
   
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Erreur de mise à jour des données:', error);
     throw error;
@@ -109,8 +106,7 @@ async function del(endpoint) {
         window.location.href = '/';  // Rediriger vers la page de login
     }  
     
-    const data = await response.json();
-    return data;
+    return response;
   } catch (error) {
     console.error('Erreur de suppression des données:', error);
     throw error;

@@ -60,7 +60,7 @@
     
 <style scoped>
     .v-btn--active {
-        background-color: #2D3E6A;
+        background-color: #72dae8;
         color: white;
     }
 </style>
