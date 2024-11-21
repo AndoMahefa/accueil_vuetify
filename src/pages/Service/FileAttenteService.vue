@@ -3,17 +3,6 @@
     <!-- Filtre par service (sélection immédiate) -->
     <v-card>
         <v-card-title>File d'attente</v-card-title>
-        <v-row>
-        <v-col cols="12" md="4">
-            <v-select
-            v-model="filters.service"
-            :items="services"
-            label="Choisir un service"
-            item-title="nom"
-            item-value="id"
-            ></v-select>
-        </v-col>
-        </v-row>
 
         <!-- Tableau des tickets -->
         <v-data-table
@@ -43,11 +32,7 @@ import { get } from '@/service/ApiService';
 export default {
     data() {
         return {
-            filters: {
-                service: null,  // Service sélectionné
-            },
             tickets: [],  // Liste des tickets
-            services: [],  // Liste des services
             loading: false,
             headers: [
                 { title: 'Rang' },
@@ -58,21 +43,14 @@ export default {
             ],
         };
     },
-    mounted() {
-        this.fetchServices(); // Charger les services lors du montage
-    },
-    watch: {
-        // Surveiller les changements du service sélectionné
-        'filters.service'(newService) {
-            if (newService) {
-                this.fetchTickets(); // Recharger les tickets en fonction du service sélectionné
-            }
-        }
+    mounted() { 
+        this.fetchTickets()
     },
     methods: {
         // Fonction pour récupérer les tickets filtrés par service
         async fetchTickets() {
             this.loading = true;
+            const idService = localStorage.getItem("idService");
             const token = localStorage.getItem("token");
             try {
                 const response = await fetch(`http://localhost:8000/api/accueil/file-d'attente`, {
@@ -82,7 +60,7 @@ export default {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        'id_service': this.filters.service // Filtrer par id_service
+                        'id_service': idService // Filtrer par id_service
                     })
                 });
 
@@ -94,19 +72,6 @@ export default {
                 console.error('Erreur lors de la récupération des tickets:', error);
             } finally {
                 this.loading = false;
-            }
-        },
-
-        // Fonction pour récupérer la liste des services
-        async fetchServices() {
-            const idService = localStorage.getItem("idService");
-            try {
-                const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
-                if (response && response.ok) {
-                    this.services = await response.json(); // Adapter selon la structure de réponse
-                }
-            } catch (error) {
-                console.error("Erreur lors de la récupération des services :", error);
             }
         },
     }
