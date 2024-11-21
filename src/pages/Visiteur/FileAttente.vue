@@ -2,7 +2,7 @@
   <v-container>
     <!-- Filtre par service (sélection immédiate) -->
     <v-card>
-        <v-card-title>File d'attente</v-card-title>
+        <v-card-title>File d'attente du jour</v-card-title>
         <v-row>
         <v-col cols="12" md="4">
             <v-select

@@ -8,116 +8,51 @@ import ListeDemandeRecu from '@/pages/Service/ListeDemandeRecu.vue';
 import FileAttenteService from '@/pages/Service/FileAttenteService.vue';
 
 const routes = [
-    {
-        path: '/',
-        name: 'LoginForm',
-        component: LoginForm,
+  {
+      path: '/',
+      name: 'LoginForm',
+      component: LoginForm,
+  },
+  {
+    path: '/home',
+    name: 'HomePage',
+    component: AppLayout,
+    beforeEnter: (to, from, next) => {
+      if(!localStorage.getItem('token') && !localStorage.getItem('idService')) {
+          next("/");
+      } else {
+          next()
+      }
     },
-    {
-        path: '/home',
-        name: 'HomePage',
-        component: AppLayout,
-        children: [
-          {
-            path: 'enregistrer-visiteur',
-            name: 'EnregistrerVisiteur',
-            component: EnregistrerVisiteur
-          },
-          {
-            path: 'liste-visiteurs',
-            name: 'ListeVisiteur',
-            component: ListeVisiteur
-          },
-          {
-            path: 'file-attente',
-            name: 'FileAttente',
-            component: FileAttente
-          },
+    children: [
+      {
+        path: 'enregistrer-visiteur',
+        name: 'EnregistrerVisiteur',
+        component: EnregistrerVisiteur
+      },
+      {
+        path: 'liste-visiteurs',
+        name: 'ListeVisiteur',
+        component: ListeVisiteur
+      },
+      {
+        path: 'file-attente',
+        name: 'FileAttente',
+        component: FileAttente
+      },
 
-          {
-            path: 'demande-recu',
-            name: 'DemandeRecu',
-            component: ListeDemandeRecu
-          },
-          {
-            path: 'file-attente-service',
-            name: 'FileAttenteService',
-            component: FileAttenteService
-          }
-        ]
-    }
-    // {
-    //     path: '/dg/dashboard',
-    //     name: 'DgDashboard',
-    //     component: DgDashboard,
-    //     beforeEnter: (to, from, next) => {
-    //         if(!localStorage.getItem('token_Directeur General')) {
-    //             next("/");
-    //         } else {
-    //             next()
-    //         }
-    //     }
-    // },
-    // {
-    //     path: '/rh/dashboard',
-    //     name: 'RhDashboard',
-    //     component: RhDashboard,
-    //     beforeEnter: (to, from, next) => {
-    //         if(!localStorage.getItem("token_Ressources Humaine")) {
-    //             next("/")
-    //         } else {
-    //             next()
-    //         }
-    //     }
-    // },
-    // {
-    //     path: '/daf/dashboard', // Ajoutez cette route
-    //     name: 'DafDashboard',
-    //     component: DafDashboard,
-    //     beforeEnter: (to, from, next) => {
-    //         if (!localStorage.getItem('admin_Daf')) {
-    //             next('/');
-    //         } else {
-    //             next();
-    //         }
-    //     },
-    // },
-    // {
-    //     path: '/accueil/dashboard',
-    //     name: 'AccueilDashboard',
-    //     component: AccueilDashboard,
-    //     beforeEnter: (to, from, next) => {
-    //         if (!localStorage.getItem('token_accueil')) {
-    //             next('/');
-    //         } else {
-    //             next();
-    //         }
-    //     }
-    // },
-    // {
-    //     path: '/accueil/visiteurs',
-    //     name: 'VisiteurList',
-    //     component: VisiteurList,
-    //     beforeEnter: (to, from, next) => {
-    //         if (!localStorage.getItem('token_accueil')) {
-    //             next('/');
-    //         } else {
-    //             next();
-    //         }
-    //     }
-    // },
-    // {
-    //     path: '/dg/demandes',
-    //     name: 'DemandesRecu',
-    //     component: DemandeRecu,
-    //     beforeEnter: (to, from, next) => {
-    //         if (!localStorage.getItem('token_Directeur General') && !localStorage.getItem('idService')) {
-    //             next('/');
-    //         } else {
-    //             next();
-    //         }
-    //     }
-    // }
+      {
+        path: 'demande-recu',
+        name: 'DemandeRecu',
+        component: ListeDemandeRecu
+      },
+      {
+        path: 'file-attente-service',
+        name: 'FileAttenteService',
+        component: FileAttenteService
+      }
+    ]
+  }
 ];
 
 const router = createRouter({
