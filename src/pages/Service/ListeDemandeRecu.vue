@@ -25,7 +25,7 @@
                             <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
                                 <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
                             </v-btn>
-                            <v-btn icon @click="RefuseDemande(item)" color="red" rounded class="ml-10">
+                            <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
                                 <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
                             </v-btn>
                         </div>
@@ -100,12 +100,48 @@
             </v-card>
         </v-dialog>
 
+        <!-- Modal pour accepter un demande et generer un ticket -->
+        <v-dialog v-model="genererTicket" max-width="500px">
+    <v-card class="ticket-card">
+        <v-card-title class="card-title">Générer un ticket</v-card-title>
+        <v-card-text class="card-text">
+            <v-form @submit.prevent="generateTicket">
+                <v-text-field 
+                    label="Temps estimé" 
+                    type="time" 
+                    v-model="ticket.temps_estime" 
+                    required
+                    class="input-field"
+                >
+                </v-text-field>
+            </v-form>
+        </v-card-text>
+        <v-card-actions class="card-actions">
+            <v-btn color="secondary" @click="genererTicket=false" class="action-btn">Annuler</v-btn>
+            <v-btn color="primary" @click="generateTicket" class="action-btn">Générer</v-btn>
+        </v-card-actions>
+    </v-card>
+</v-dialog>
+
+<v-dialog v-model="refuserDemande" max-width="500px">
+    <v-card class="reject-card">
+        <v-card-title class="card-title">Traitement de la demande</v-card-title>
+        <v-card-text class="card-text">
+            <span class="warning-text">Voulez-vous vraiment refuser ?</span>
+        </v-card-text>
+        <v-card-actions class="card-actions">
+            <v-btn color="secondary" @click="refuserDemande=false" class="action-btn">Annuler</v-btn>
+            <v-btn color="error" @click="refus" class="action-btn">Refuser</v-btn>
+        </v-card-actions>
+    </v-card>
+</v-dialog>
+
     </v-container>
 </template>
 
 <script>
 import Pagination from '@/components/Pagination.vue';
-import { get } from '@/service/ApiService';
+import { get, post } from '@/service/ApiService';
 
 export default {
     components: {
@@ -129,7 +165,13 @@ export default {
                 telephone: '',
                 email: ''
             },
-            dialog: false
+            dialog: false,
+            genererTicket: false,
+            selectedRequest: null,
+            ticket: {
+                temps_estime: '',
+            },
+            refuserDemande: false
             // totalPages: 0, // Nombre total de pages
             // loading: false, // Indicateur de chargement
             // pagination: {
@@ -158,7 +200,54 @@ export default {
             this.visiteur = item;
             this.dialog = true;
         },
-        
+        acceptDemande(item) {
+            this.selectedRequest = item;
+            this.genererTicket = true;
+        },
+        async generateTicket() {
+            const idService = localStorage.getItem("idService");
+            const idVisiteur = this.selectedRequest.id;
+            console.log("idVisiteur: " + idVisiteur + " idService: " + idService + " temps estime: " + this.ticket.temps_estime);
+            try {
+                const response = await post(`service/generer-ticket`, {
+                    'temps_estime' : this.ticket.temps_estime,
+                    'id_service' : idService,
+                    'id_visiteur' : idVisiteur
+                });
+
+                if (response && response.ok) {
+                    alert('Ticket generer avec succes');
+                    this.selectedRequest = null
+                    this.genererTicket = false;
+                    this.ticket.temps_estime = '';
+                    this.fetchDemandes()
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        },
+        refuseDemande(item) {
+            this.selectedRequest = item;
+            this.refuserDemande = true;
+        },
+        async refus() {
+            const idService = localStorage.getItem("idService");
+            const idVisiteur = this.selectedRequest.id;
+            try {
+                const response = await post('service/refuser-demande', {
+                    'id_service' : idService,
+                    'id_visiteur' : idVisiteur
+                });
+
+                if (response && response.ok) {
+                    alert('Statut refuse avec succes');
+                    this.refuserDemande = false;
+                    this.fetchDemandes()
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
         // changePage(page) {
         //     if (page > 0 && page <= this.totalPages) {
         //     this.pagination.page = page;
@@ -201,5 +290,53 @@ export default {
     .text-grey {
         color: #757575;
     }
+
+    /* Styles généraux des cartes */
+    .ticket-card, .reject-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background-color: #f7f9fc;
+        padding: 20px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        padding-bottom: 10px;
+    }
+
+    .card-text {
+        font-size: 16px;
+        color: #666;
+    }
+
+    /* Champs de saisie */
+    .input-field {
+        margin-bottom: 20px;
+    }
+
+    /* Texte d'avertissement dans la carte de refus */
+    .warning-text {
+        color: #d32f2f;
+        font-weight: 500;
+        font-size: 16px;
+    }
+
+    /* Actions des boutons */
+    .card-actions {
+        justify-content: flex-end;
+    }
+
+    .action-btn {
+        margin-left: 10px;
+    }
+
+    /* Bouton refuser */
+    .v-btn.error {
+        background-color: #f44336;
+        color: white;
+    }
+
 
 </style>
