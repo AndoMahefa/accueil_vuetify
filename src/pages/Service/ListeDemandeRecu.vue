@@ -1,0 +1,205 @@
+<template>
+    <v-container>
+        <v-card>
+            <v-card-title>Liste des demandes reçues du jour</v-card-title>
+
+            <v-data-table 
+                :items="demandes" 
+                :headers="headers" 
+                item-value="id" 
+                class="elevation-1"
+                loading-text="Chargement des données..." 
+                :hide-default-footer="true"
+            >
+                <!-- Colonnes personnalisées -->
+                <template #item="{ item }">
+                    <tr>
+                        <td> {{ item.nom }} </td>
+                        <td> {{ item.prenom }} </td>
+                        <td>
+                        <!-- Boutons avec des espacements -->
+                        <div class="d-flex">
+                            <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
+                                <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
+                            </v-btn>
+                            <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
+                                <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
+                            </v-btn>
+                            <v-btn icon @click="RefuseDemande(item)" color="red" rounded class="ml-10">
+                                <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
+                            </v-btn>
+                        </div>
+                        </td>
+                    </tr>
+                </template>
+            </v-data-table>
+
+            <!-- Pagination -->
+            <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
+        </v-card>
+
+        <!-- Modal pour afficher les détails du visiteur -->
+       <v-dialog v-model="dialog" max-width="500px">
+            <v-card class="digital-id-card">
+                <v-card-title class="d-flex align-center justify-space-between">
+                    <div class="headline">Identité du Visiteur</div>
+                    <v-icon color="grey darken-2">mdi-account-circle</v-icon>
+                </v-card-title>
+
+                <v-card-text>
+                    <!-- En-tête de la carte -->
+                    <div class="d-flex align-center mb-3">
+                        <div class="universal-icon mr-4">
+                            <v-icon size="60" color="blue darken-2">mdi-account</v-icon>
+                        </div>
+
+                        <!-- Informations principales -->
+                        <div>
+                            <h3 class="mb-1">{{ visiteur.nom }} {{ visiteur.prenom }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- Détails du visiteur -->
+                    <v-row>
+                        <v-col cols="12" md="6">
+                            <div class="d-flex align-center">
+                                <v-icon color="blue" class="mr-2">mdi-email</v-icon>
+                                <span class="visitor-detail">{{ visiteur.email }}</span>
+                            </div>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <div class="d-flex align-center">
+                                <v-icon color="green" class="mr-2">mdi-card-account-details-outline</v-icon>
+                                <span class="visitor-detail">{{ visiteur.cin }}</span>
+                            </div>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <div class="d-flex align-center">
+                                <v-icon color="orange" class="mr-2">mdi-phone</v-icon>
+                                <span class="visitor-detail">{{ visiteur.telephone }}</span>
+                            </div>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <div class="d-flex align-center">
+                                <v-icon color="purple" class="mr-2">mdi-clock-time-four</v-icon>
+                                <span class="visitor-detail">{{ visiteur.pivot.date_heure_arrivee }}</span>
+                            </div>
+                        </v-col>
+                        <v-col cols="12" md="6">
+                            <div class="d-flex align-center">
+                                <v-icon color="pink" class="mr-2">mdi-comment-text</v-icon>
+                                <span class="visitor-detail">{{ visiteur.pivot.motif_visite }}</span>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
+
+                <v-card-actions>
+                    <v-btn color="blue" text @click="dialog = false">Fermer</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+    </v-container>
+</template>
+
+<script>
+import Pagination from '@/components/Pagination.vue';
+import { get } from '@/service/ApiService';
+
+export default {
+    components: {
+        Pagination
+    },  
+    data() {
+        return {
+            demandes: [],
+            headers: [
+                { title: 'Nom', value: 'nom' },
+                { title: 'Prenom', value: 'prenom' }
+            ],
+            visiteur: {
+                nom: '',
+                prenom: '',
+                pivot: {
+                    motif_visite: '',
+                    date_heure_arrivee: ''
+                },
+                cin: '',
+                telephone: '',
+                email: ''
+            },
+            dialog: false
+            // totalPages: 0, // Nombre total de pages
+            // loading: false, // Indicateur de chargement
+            // pagination: {
+            //     page: 1,
+            // },
+        }
+    },
+    mounted() {
+        this.fetchDemandes()
+    },
+    methods: {
+        async fetchDemandes() {
+            const idService = localStorage.getItem('idService')
+            try {
+                const response = await get(`services/${idService}/demandes`)
+                if (response && response.ok) {
+                    const data = await response.json() 
+                    console.log(data.visiteurs)
+                    this.demandes = data.visiteurs
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        showDetails(item) {
+            this.visiteur = item;
+            this.dialog = true;
+        },
+        
+        // changePage(page) {
+        //     if (page > 0 && page <= this.totalPages) {
+        //     this.pagination.page = page;
+        //     }
+        // },   
+    }
+}
+</script>
+
+<style>
+    .digital-id-card {
+    border-radius: 16px;
+    background: linear-gradient(to right, #e3f2fd, #bbdefb);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 16px;
+    }
+
+    .digital-id-card h3 {
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .universal-icon {
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e3f2fd;
+        border-radius: 50%;
+        border: 3px solid #42a5f5;
+    }
+
+    .visitor-detail {
+        font-size: 16px;
+        color: #333; /* Assurez-vous que la couleur du texte est bien contrastée */
+        font-weight: 500;
+    }
+
+    .text-grey {
+        color: #757575;
+    }
+
+</style>

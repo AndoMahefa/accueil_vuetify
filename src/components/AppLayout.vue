@@ -42,9 +42,8 @@ export default {
         { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"}
       ],
       autreService: [
-        { title: "Tableau de bord", icon: "mdi-home-outline", to: "#" },
-        { title: "Accueil", icon: "mdi-home-outline", to: "/home" },
-        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/serviceA/liste-visiteurs" }
+        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
+        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" }
       ]
     };
   },

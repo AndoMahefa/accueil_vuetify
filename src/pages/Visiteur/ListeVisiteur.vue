@@ -284,8 +284,9 @@
       async saveChanges() {
         if (this.$refs.editForm.validate()) { // Validation du formulaire
           try {
-            const response = put(`accueil/visiteurs/${this.editVisiteur.id}`, this.editVisiteur);
+            const response = await put(`accueil/visiteurs/${this.editVisiteur.id}`, this.editVisiteur);
             if (response && response.ok) {
+              console.log(this.editVisiteur)
               this.editDialog = false;
               this.fetchData()
             }

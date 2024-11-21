@@ -4,6 +4,7 @@ import LoginForm from '@/pages/Authentification/LoginForm.vue';
 import EnregistrerVisiteur from '@/pages/Visiteur/EnregistrerVisiteur.vue';
 import ListeVisiteur from '@/pages/Visiteur/ListeVisiteur.vue';
 import FileAttente from '@/pages/Visiteur/FileAttente.vue';
+import ListeDemandeRecu from '@/pages/Service/ListeDemandeRecu.vue';
 
 const routes = [
     {
@@ -30,6 +31,12 @@ const routes = [
             path: 'file-attente',
             name: 'FileAttente',
             component: FileAttente
+          },
+
+          {
+            path: 'demande-recu',
+            name: 'DemandeRecu',
+            component: ListeDemandeRecu
           }
         ]
     }
