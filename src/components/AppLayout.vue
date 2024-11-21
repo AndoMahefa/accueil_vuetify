@@ -38,7 +38,8 @@ export default {
       itemsAccueil: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
-        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" }
+        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" },
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"}
       ],
       autreService: [
         { title: "Tableau de bord", icon: "mdi-home-outline", to: "#" },

@@ -3,6 +3,7 @@ import AppLayout from '@/components/AppLayout.vue';
 import LoginForm from '@/pages/Authentification/LoginForm.vue';
 import EnregistrerVisiteur from '@/pages/Visiteur/EnregistrerVisiteur.vue';
 import ListeVisiteur from '@/pages/Visiteur/ListeVisiteur.vue';
+import FileAttente from '@/pages/Visiteur/FileAttente.vue';
 
 const routes = [
     {
@@ -24,7 +25,12 @@ const routes = [
             path: 'liste-visiteurs',
             name: 'ListeVisiteur',
             component: ListeVisiteur
-          }    
+          },
+          {
+            path: 'file-attente',
+            name: 'FileAttente',
+            component: FileAttente
+          }
         ]
     }
     // {

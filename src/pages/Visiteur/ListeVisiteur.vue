@@ -124,65 +124,65 @@
     </v-dialog>
 
     <v-dialog v-model="showDemandeDialog" max-width="500px" persistent>
-  <v-card elevation="3" class="rounded-lg" style="background-color: #F9FAFB;">
-    <!-- Titre de la modal -->
-    <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
-      <v-icon left color="#6EC1B4">mdi-account-question</v-icon>
-      Demander un service
-    </v-card-title>
+      <v-card elevation="3" class="rounded-lg" style="background-color: #F9FAFB;">
+        <!-- Titre de la modal -->
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4">mdi-account-question</v-icon>
+          Demander un service
+        </v-card-title>
 
-    <!-- Contenu de la modal -->
-    <v-card-text class="pa-4">
-      <v-form @submit.prevent="sendDemande">
-        <!-- Sélectionner un service -->
-        <v-select
-          v-model="selectedService"
-          :items="services"
-          item-value="id"
-          item-title="nom"
-          label="Sélectionner un service"
-          outlined
-          dense
-          style="color: #6EC1B4; border-color: #6EC1B4;"
-          required
-        ></v-select>
+        <!-- Contenu de la modal -->
+        <v-card-text class="pa-4">
+          <v-form @submit.prevent="sendDemande">
+            <!-- Sélectionner un service -->
+            <v-select
+              v-model="selectedService"
+              :items="services"
+              item-value="id"
+              item-title="nom"
+              label="Sélectionner un service"
+              outlined
+              dense
+              style="color: #6EC1B4; border-color: #6EC1B4;"
+              required
+            ></v-select>
 
-        <!-- Motif de la demande -->
-        <v-textarea
-          label="Motif de la demande"
-          v-model="demandeMotif"
-          outlined
-          dense
-          style="color: #6EC1B4; border-color: #6EC1B4; margin-top: 1.5rem;"
-          rows="4"
-          required
-        ></v-textarea>
-      </v-form>
-    </v-card-text>
+            <!-- Motif de la demande -->
+            <v-textarea
+              label="Motif de la demande"
+              v-model="demandeMotif"
+              outlined
+              dense
+              style="color: #6EC1B4; border-color: #6EC1B4; margin-top: 1.5rem;"
+              rows="4"
+              required
+            ></v-textarea>
+          </v-form>
+        </v-card-text>
 
-    <!-- Actions de la modal -->
-    <v-card-actions class="d-flex justify-end pa-3" style="background-color: #F4F4F4; border-top: 2px solid #E0E0E0;">
-      <v-btn
-        outlined
-        color="#6EC1B4"
-        class="mr-2 font-weight-bold"
-        style="border-color: #6EC1B4; color: #6EC1B4;"
-        @click="closeDemandeDialog"
-      >
-        <v-icon left>mdi-close</v-icon>
-        Annuler
-      </v-btn>
-      <v-btn
-        class="font-weight-bold"
-        style="background-color: #6EC1B4; color: white;"
-        @click="sendDemande"
-      >
-        <v-icon left>mdi-send</v-icon>
-        Envoyer
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
+        <!-- Actions de la modal -->
+        <v-card-actions class="d-flex justify-end pa-3" style="background-color: #F4F4F4; border-top: 2px solid #E0E0E0;">
+          <v-btn
+            outlined
+            color="#6EC1B4"
+            class="mr-2 font-weight-bold"
+            style="border-color: #6EC1B4; color: #6EC1B4;"
+            @click="closeDemandeDialog"
+          >
+            <v-icon left>mdi-close</v-icon>
+            Annuler
+          </v-btn>
+          <v-btn
+            class="font-weight-bold"
+            style="background-color: #6EC1B4; color: white;"
+            @click="sendDemande"
+          >
+            <v-icon left>mdi-send</v-icon>
+            Envoyer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
 
   </v-container>
