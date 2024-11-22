@@ -2,7 +2,7 @@
   <v-container>
     <!-- Filtre par service (sélection immédiate) -->
     <v-card>
-        <v-card-title>File d'attente du jour</v-card-title>
+        <v-card-title>File d'attente du {{dateDuJour}}</v-card-title>
         <v-row>
         <v-col cols="12" md="4">
             <v-select
@@ -39,6 +39,7 @@
 
 <script>
 import { get } from '@/service/ApiService';
+import FormatDate from '@/service/FormatDate';
 
 export default {
     data() {
@@ -56,6 +57,7 @@ export default {
                 { title: 'Temps Estimé', value: 'temps_estime' },
                 { title: 'Date', value: 'date' }
             ],
+            dateDuJour: 'jour'
         };
     },
     mounted() {
@@ -88,6 +90,7 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
+                    this.dateDuJour = FormatDate(data[0].date)
                     this.tickets = data; // Mettre à jour la liste des tickets
                 }
             } catch (error) {
