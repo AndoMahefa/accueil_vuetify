@@ -28,6 +28,8 @@
                     <td> {{ index + 1 }} </td>
                     <td> {{ item.visiteur.nom }} </td>
                     <td> {{ item.visiteur.prenom }} </td>
+                    <td> {{ item.heure_prevu }} </td>
+                    <td> {{ item.heure_validation }} </td>
                     <td> {{ item.temps_estime }} </td>
                     <td> {{ item.date }} </td>
                 </tr>
@@ -54,6 +56,8 @@ export default {
                 { title: 'Rang' },
                 { title: 'Nom', value: 'visiteur.nom' },
                 { title: 'Prenom', value: 'visiteur.prenom' },
+                { title: 'Heure Prevu', value: 'heure_prevu' },
+                { title: 'Heure Validation', value: 'heure_validation' },
                 { title: 'Temps Estimé', value: 'temps_estime' },
                 { title: 'Date', value: 'date' }
             ],
@@ -66,6 +70,7 @@ export default {
     watch: {
         // Surveiller les changements du service sélectionné
         'filters.service'(newService) {
+            console.log(newService)
             if (newService) {
                 this.fetchTickets(); // Recharger les tickets en fonction du service sélectionné
             }
@@ -90,8 +95,14 @@ export default {
 
                 if (response.ok) {
                     const data = await response.json();
-                    this.dateDuJour = FormatDate(data[0].date)
-                    this.tickets = data; // Mettre à jour la liste des tickets
+                    console.log(data.length)
+                    if(data.length == 0) {
+                        this.tickets = data;
+                        this.dateDuJour = "jour"
+                    } else {
+                        this.dateDuJour = FormatDate(data[0].date)
+                        this.tickets = data; // Mettre à jour la liste des tickets
+                    }
                 }
             } catch (error) {
                 console.error('Erreur lors de la récupération des tickets:', error);

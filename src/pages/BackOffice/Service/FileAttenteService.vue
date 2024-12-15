@@ -22,6 +22,7 @@
             <td> {{ item.visiteur.nom }} </td>
             <td> {{ item.visiteur.prenom }} </td>
             <td> {{ item.heure_prevu }} </td>
+            <td> {{ item.heure_validation }} </td>
             <td> {{ item.temps_estime }} </td>
             <td> {{ item.date }} </td>
           </tr>
@@ -44,6 +45,7 @@ export default {
         { title: 'Nom', value: 'visiteur.nom' },
         { title: 'Prénom', value: 'visiteur.prenom' },
         { title: 'Heure Prévue', value: 'heure_prevu' },
+        { title: 'Heure Validation', value: 'heure_validation' },
         { title: 'Temps Estimé', value: 'temps_estime' },
         { title: 'Date', value: 'date' },
       ],

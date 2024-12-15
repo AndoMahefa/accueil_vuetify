@@ -44,7 +44,8 @@ export default {
       autreService: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"}
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
+        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" }
       ]
     };
   },

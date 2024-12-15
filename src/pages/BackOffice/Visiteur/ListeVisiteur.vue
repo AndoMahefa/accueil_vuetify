@@ -143,7 +143,7 @@
               label="Sélectionner un service"
               outlined
               dense
-              style="color: #6EC1B4; border-color: #6EC1B4;"
+              style="color: #fffff; border-color: #6EC1B4;"
               required
             ></v-select>
 
@@ -153,7 +153,7 @@
               v-model="demandeMotif"
               outlined
               dense
-              style="color: #6EC1B4; border-color: #6EC1B4; margin-top: 1.5rem;"
+              style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;"
               rows="4"
               required
             ></v-textarea>

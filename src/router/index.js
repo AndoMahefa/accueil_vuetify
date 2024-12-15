@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '@/components/AppLayout.vue';
-import LoginForm from '@/pages/Authentification/LoginForm.vue';
-import EnregistrerVisiteur from '@/pages/Visiteur/EnregistrerVisiteur.vue';
-import ListeVisiteur from '@/pages/Visiteur/ListeVisiteur.vue';
-import FileAttente from '@/pages/Visiteur/FileAttente.vue';
-import ListeDemandeRecu from '@/pages/Service/ListeDemandeRecu.vue';
-import FileAttenteService from '@/pages/Service/FileAttenteService.vue';
+import LoginForm from '@/pages/BackOffice/Authentification/LoginForm.vue';
+import EnregistrerVisiteur from '@/pages/BackOffice/Visiteur/EnregistrerVisiteur.vue';
+import ListeVisiteur from '@/pages/BackOffice/Visiteur/ListeVisiteur.vue';
+import FileAttente from '@/pages/BackOffice/Visiteur/FileAttente.vue';
+import ListeDemandeRecu from '@/pages/BackOffice/Service/ListeDemandeRecu.vue';
+import FileAttenteService from '@/pages/BackOffice/Service/FileAttenteService.vue';
+import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
+import JourCreneaux from '@/pages/BackOffice/Service/JourCreneaux.vue';
 
 const routes = [
   {
@@ -50,8 +52,18 @@ const routes = [
         path: 'file-attente-service',
         name: 'FileAttenteService',
         component: FileAttenteService
+      },
+      {
+        path: 'jour-creneaux',
+        name: 'JourCreneaux',
+        component: JourCreneaux
       }
     ]
+  },
+  {
+    path: '/rendez-vous',
+    name: 'RendezVous',
+    component: RendezVous
   }
 ];
 
