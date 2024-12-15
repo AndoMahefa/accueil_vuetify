@@ -22,7 +22,7 @@
                   <v-icon size="25">mdi-plus</v-icon>
                 </v-btn>
                 <!-- Icône pour supprimer le jour -->
-                <v-btn icon color="red" @click="supprimerJour(jour.id)">
+                <v-btn icon color="red" @click="openDeleteModal(jour.id)">
                   <v-icon size="25">mdi-delete</v-icon>
                 </v-btn>
               </div>
@@ -114,6 +114,33 @@
       </v-card>
     </v-dialog>
     
+        <!-- Modal de confirmation -->
+    <v-dialog v-model="isDeleteModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6">
+          Confirmer la suppression
+        </v-card-title>
+        <v-card-text>
+          <p>Choisissez les créneaux horaires à supprimer :</p>
+          <v-container>
+            <v-checkbox
+              v-model="selectedPeriodes"
+              label="Matin"
+              value="matin"
+            ></v-checkbox>
+            <v-checkbox
+              v-model="selectedPeriodes"
+              label="Apres-midi"
+              value="apres-midi"
+            ></v-checkbox>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="cancelDelete">Annuler</v-btn>
+          <v-btn color="error" @click="confirmDelete">Supprimer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -136,6 +163,9 @@ export default {
       nouveauJour: "", // Nom du jour pour un nouvel ajout
       heureDebut: null,
       heureFin: null,
+
+      isDeleteModalOpen: false, // Contrôle l'ouverture du modal
+      selectedPeriodes: [],     // Option sélectionnée (matin, après-midi, ou les deux)
     };
   },
   mounted() {
@@ -256,9 +286,6 @@ export default {
         throw error;
       }
     },
-    supprimerJour(jour) {
-      // this.tableData = this.tableData.filter((item) => item.jour !== jour);
-    },
     convertirEnMinutes(heure) {
       const [h, m] = heure.split(":").map(Number);
       return h * 60 + m;
@@ -269,6 +296,49 @@ export default {
         .padStart(2, "0");
       const m = (minutes % 60).toString().padStart(2, "0");
       return `${h}:${m}`;
+    },
+    openDeleteModal(idJour) {
+      this.jourSelectionne = idJour;
+      this.isDeleteModalOpen = true;
+    },
+    cancelDelete() {
+      this.isDeleteModalOpen = false;
+      this.selectedPeriodes = []; // Réinitialise l'option sélectionnée
+    },
+    async confirmDelete() {
+      if (this.selectedPeriodes && this.jourSelectionne) {
+        console.log("selectedPeriodes: " + this.selectedPeriodes)
+        // Appeler l'API pour supprimer les créneaux
+        await this.deleteCreneaux(this.selectedPeriodes);
+      } else {
+        alert("Veuillez sélectionner une option !");
+      }
+    },
+    async deleteCreneaux(option) {
+      console.log("options: " + option)
+      const token = localStorage.getItem("token");
+      const idService = localStorage.getItem("idService");
+      try {
+        const response = await fetch(`http://localhost:8000/api/service/${idService}/delete-creneaux/${this.jourSelectionne}`, {
+          method: "DELETE",
+          headers: { 
+            "Content-Type": "application/json", 
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            periodes: option,
+          }),
+        });
+        if (response.ok) {
+          alert("Les créneaux ont été supprimés !");
+          this.getCreneaux();
+        } else {
+          alert("Erreur lors de la suppression !");
+        }
+      } catch (error) {
+        console.error("Erreur:", error);
+      }
+      this.cancelDelete(); // Fermer le modal après l'opération
     },
   },
 }
