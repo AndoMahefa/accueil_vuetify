@@ -4,17 +4,6 @@
       <span class="title-text">Gestion des Disponibilités des jours et créneaux horaires</span>
     </div>
     
-    <!-- <v-row>
-      <v-col cols="12">
-        <v-card>
-          <v-card-title class="card-title">
-            <span>Disponibilités</span>
-            <v-spacer></v-spacer>
-            <v-btn class="custom-btn" @click="ouvrirModal('')">Planifier</v-btn>
-          </v-card-title>
-        </v-card>
-      </v-col>
-    </v-row> -->
     <v-row>
       <v-col>
         <div class="disponibilites-container">
@@ -30,11 +19,11 @@
               <div style="display:flex; gap: 10px;">
               <!-- Icône pour ajouter un créneau -->
                 <v-btn icon color="primary" @click="ouvrirModal(jour.id)">
-                  <v-icon size="30">mdi-plus</v-icon>
+                  <v-icon size="25">mdi-plus</v-icon>
                 </v-btn>
                 <!-- Icône pour supprimer le jour -->
                 <v-btn icon color="red" @click="supprimerJour(jour.id)">
-                  <v-icon size="30">mdi-delete</v-icon>
+                  <v-icon size="25">mdi-delete</v-icon>
                 </v-btn>
               </div>
             </v-card-title>
@@ -286,142 +275,151 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  padding: 20px 50px;
-}
+  .container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px 50px;
+  }
 
-.v-card-title {
-  display: flex;
-  justify-content: space-between;
-}
-/* Titre de la page */
-.page-title {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-family: 'Roboto', Arial, Helvetica, sans-serif;
-  font-size: 1.8rem;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 24px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+  .v-card-title {
+    display: flex;
+    justify-content: space-between;
+  }
+  /* Titre de la page */
+  .page-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Roboto', Arial, Helvetica, sans-serif;
+    font-size: 1.8rem;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 
-/* Conteneur des cartes de disponibilités */
-.disponibilites-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 5px;
-  margin-top: 16px;
-}
+  /* Conteneur des cartes de disponibilités */
+  .disponibilites-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 5px;
+    margin-top: 16px;
+  }
 
-/* Style des cartes */
-.jour-card {
-  width: 100%;
-  max-width: 250px;
-  background-color: #f5f5f5;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
+  /* Style des cartes */
+  .jour-card {
+    width: 100%;
+    max-width: 250px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
 
-.jour-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
+  .jour-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
 
-/* Titre du jour */
-.jour-title {
-  background-color: #007bff;
-  color: white;
-  font-family: 'Roboto', sans-serif;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: left;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
+  /* Titre du jour */
+  .jour-title {
+    background-color: #007bff;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: left;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+  }
 
-/* Bouton Planifier */
-.custom-btn {
-  background-color: #007bff;
-  color: white;
-  text-transform: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 4px;
-}
+  /* Bouton Planifier */
+  .custom-btn {
+    background-color: #007bff;
+    color: white;
+    text-transform: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+  }
 
-.custom-btn:hover {
-  background-color: #0056b3;
-}
+  .custom-btn:hover {
+    background-color: #0056b3;
+  }
 
-/* Liste des créneaux */
-.v-list {
-  background: transparent !important;
-}
+  /* Liste des créneaux */
+  .v-list {
+    background: transparent !important;
+  }
 
-.v-list-item {
-  text-align: center !important;
-  font-weight: 400 !important;
-  padding: 8px 16px !important;
-  border-bottom: 1px solid #e0e0e0 !important;
-  transition: background-color 0.3s !important;
-}
+  .v-list-item {
+    text-align: center !important;
+    font-weight: 400 !important;
+    padding: 8px 16px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+    transition: background-color 0.3s !important;
+  }
 
-.v-list-item-content {
-  font-size: 1.6rem !important;
-  color: #000 !important;
-}
+  .v-list-item-content {
+    font-size: 1.6rem !important;
+    color: #000 !important;
+  }
 
-/* Modal */
-.v-dialog .v-card {
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
+  /* Modal */
+  .v-dialog .v-card {
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
 
-.v-dialog .v-card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  background-color: #007bff;
-  color: whitesmoke;
-  padding: 16px;
-}
+  .v-dialog .v-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    background-color: #007bff;
+    color: whitesmoke;
+    padding: 16px;
+  }
 
-.v-dialog .v-card-text {
-  padding: 16px;
-}
+  .v-dialog .v-card-text {
+    padding: 16px;
+  }
 
-.v-dialog .btn-cancel {
-  color: #ff4d4d;
-}
+  .v-dialog .btn-cancel {
+    color: #ff4d4d;
+  }
 
-.v-dialog .btn-validate {
-  background-color: #007bff;
-  color: white;
-  text-transform: none;
-}
+  .v-dialog .btn-validate {
+    background-color: #007bff;
+    color: white;
+    text-transform: none;
+  }
 
-.v-dialog .btn-validate:disabled {
-  background-color: #b0c4de;
-  color: #fff;
-  cursor: not-allowed;
-}
+  .v-dialog .btn-validate:disabled {
+    background-color: #b0c4de;
+    color: #fff;
+    cursor: not-allowed;
+  }
 
 /* Responsive Design */
-@media (max-width: 600px) {
-  .disponibilites-container {
-    flex-direction: column;
-    align-items: center;
+  @media (max-width: 600px) {
+    .disponibilites-container {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .jour-card {
+      max-width: 100%;
+    }
   }
 
-  .jour-card {
-    max-width: 100%;
+/* icone */
+  .bg-primary{
+    background-color: transparent !important;
   }
-}
+  .v-btn--icon.v-btn--density-default {
+    width: calc(var(--v-btn-height)) !important;
+    height: calc(var(--v-btn-height)) !important;
+  }
 </style>
