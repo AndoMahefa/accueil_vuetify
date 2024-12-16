@@ -1,24 +1,30 @@
 <template>
-  <v-app-bar app color="primary" dark>
-    <!-- Logo et Titre -->
-    <div class="toolbar-title">
-      <img :src="logoFull" alt="Logo" class="logo" />
-      <span class="title">APIPA</span>
-    </div>
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <!-- Logo et Titre -->
+      <div class="toolbar-title">
+        <img :src="logoFull" alt="Logo" class="logo" />
+        <span class="title">APIPA</span>
+      </div>
 
-    <!-- Menus -->
-    <v-spacer></v-spacer>
-    <div class="menu-container">
-      <v-btn text v-for="menu in menus" :key="menu.text" @click="navigateTo(menu.route)" class="menu-btn">
-        {{ menu.text }}
+      <!-- Menus -->
+      <v-spacer></v-spacer>
+      <div class="menu-container">
+        <v-btn text v-for="menu in menus" :key="menu.text" @click="navigateTo(menu.route)" class="menu-btn">
+          {{ menu.text }}
+        </v-btn>
+      </div>
+
+      <!-- Actions -->
+      <v-btn icon>
+        <v-icon>mdi-account-circle</v-icon>
       </v-btn>
-    </div>
+    </v-app-bar>
 
-    <!-- Actions -->
-    <v-btn icon>
-      <v-icon>mdi-account-circle</v-icon>
-    </v-btn>
-  </v-app-bar>
+    <v-main>
+      <router-view />  
+    </v-main>    
+  </v-app>
 </template>
 
 <script>
@@ -27,18 +33,25 @@ export default {
     return {
       logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href,
       menus: [
-        { text: "Accueil", route: "/" },
-        { text: "Appel d'offre", route: "/appel-offre" },
-        { text: "Rendez-vous", route: "/rendez-vous"},
-        { text: "Contact", route: "/contact" },
+        { text: "Accueil", route: "/client" },
+        { text: "Appel d'offre", route: "/client/appel-offre" },
+        { text: "Rendez-vous", route: "/client/rendez-vous"},
+        { text: "Contact", route: "/client/contact" },
       ],
     };
   },
   methods: {
     navigateTo(route) {
-      this.$router.push(route);
+      if (route) {
+        this.$router.push(route).catch(err => {
+          // Ignorer les erreurs de navigation en double
+          if (err.name !== 'NavigationDuplicated') {
+            console.error(err);
+          }
+        });
+      }
     },
-  },
+  }
 };
 </script>
 

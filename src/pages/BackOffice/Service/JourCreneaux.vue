@@ -249,6 +249,7 @@ export default {
       try {
         // Appel de la fonction saveCreneaux
         await this.saveCreneaux(creneauData);
+        this.getCreneaux();
 
         alert("Créneaux ajoutés avec succès !");
         creneaux = [];

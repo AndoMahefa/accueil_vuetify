@@ -6,14 +6,16 @@ import ListeVisiteur from '@/pages/BackOffice/Visiteur/ListeVisiteur.vue';
 import FileAttente from '@/pages/BackOffice/Visiteur/FileAttente.vue';
 import ListeDemandeRecu from '@/pages/BackOffice/Service/ListeDemandeRecu.vue';
 import FileAttenteService from '@/pages/BackOffice/Service/FileAttenteService.vue';
-import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
 import JourCreneaux from '@/pages/BackOffice/Service/JourCreneaux.vue';
+
+import NavBarFrontOffice from '@/components/FrontOffice/NavBarFrontOffice.vue';
+import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
 
 const routes = [
   {
-      path: '/',
-      name: 'LoginForm',
-      component: LoginForm,
+    path: '/',
+    name: 'LoginForm',
+    component: LoginForm,
   },
   {
     path: '/home',
@@ -60,11 +62,23 @@ const routes = [
       }
     ]
   },
+  // {
+  //   path: '/rendez-vous',
+  //   name: RendezVous,
+  //   component: RendezVous
+  // }
   {
-    path: '/rendez-vous',
-    name: 'RendezVous',
-    component: RendezVous
-  }
+    path: '/client',
+    name: 'Client',
+    component: NavBarFrontOffice,
+    children: [
+      {
+        path: 'rendez-vous',
+        name: 'RendezVous',
+        component: RendezVous
+      }
+    ]
+  } 
 ];
 
 const router = createRouter({
