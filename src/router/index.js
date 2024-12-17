@@ -7,6 +7,7 @@ import FileAttente from '@/pages/BackOffice/Visiteur/FileAttente.vue';
 import ListeDemandeRecu from '@/pages/BackOffice/Service/ListeDemandeRecu.vue';
 import FileAttenteService from '@/pages/BackOffice/Service/FileAttenteService.vue';
 import JourCreneaux from '@/pages/BackOffice/Service/JourCreneaux.vue';
+import Calendrier from '@/pages/BackOffice/Service/Calendrier.vue';
 
 import NavBarFrontOffice from '@/components/FrontOffice/NavBarFrontOffice.vue';
 import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
@@ -59,6 +60,11 @@ const routes = [
         path: 'jour-creneaux',
         name: 'JourCreneaux',
         component: JourCreneaux
+      },
+      {
+        path: 'rendez-vous',
+        name: 'Calendrier',
+        component: Calendrier
       }
     ]
   },
@@ -78,7 +84,7 @@ const routes = [
         component: RendezVous
       }
     ]
-  } 
+  }
 ];
 
 const router = createRouter({

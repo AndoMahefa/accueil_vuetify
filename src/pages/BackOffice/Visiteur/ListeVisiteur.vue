@@ -3,8 +3,14 @@
     <v-card>
       <v-card-title>Liste des visiteurs</v-card-title>
 
-      <v-data-table :items="items" :headers="headers" item-value="id" class="elevation-1"
-        loading-text="Chargement des données..." :hide-default-footer="true">
+      <v-data-table
+        :items="items"
+        :headers="headers"
+        item-value="id"
+        class="elevation-1"
+        loading-text="Chargement des données..."
+        :hide-default-footer="true"
+      >
         <!-- Colonnes personnalisées -->
         <template #item="{ item }">
           <tr>
@@ -187,11 +193,11 @@
 
   </v-container>
 </template>
-  
+
   <script>
   import Pagination from '@/components/Pagination.vue';
   import { get, put, post } from '@/service/ApiService.js';
-  
+
   export default {
     components: {
         Pagination,
@@ -215,7 +221,7 @@
                 cin: '',
                 email: '',
                 telephone: ''
-            }, 
+            },
             editDialog: false, // Indicateur pour la modal d'édition
             editVisiteur: {
               nom: '',
@@ -349,7 +355,7 @@
     },
   };
   </script>
-  
+
 <style scoped>
   .v-btn--active {
       background-color: #189fdd;
@@ -379,4 +385,3 @@
   color: #757575;
   }
 </style>
-  

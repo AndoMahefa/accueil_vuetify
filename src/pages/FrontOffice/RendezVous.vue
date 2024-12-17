@@ -158,7 +158,6 @@ export default {
       selectedSlot: null, // Créneau horaire sélectionné
       availableSlots: [], // Créneaux disponibles
       minDate: new Date().toISOString().substr(0, 10), // Date minimale (aujourd'hui)
-      // holidays: ["2024-12-25", "2024-12-31"], // Jours fériés
       holidays: [], // Jours fériés
       allTimeSlots: [], // Tous les créneaux horaires
       joursDispo: [],
@@ -248,7 +247,7 @@ export default {
       const isoDate = this.toISODate(date); // Convertir la date en ISO pour comparaison
       // console.log(isoDate)
       const day = new Date(date).getDay(); // Récupérer le jour de la semaine (0-6)
-      
+
       // Vérification : jour présent dans joursDispo, non week-end, et pas un jour férié
       return (
           this.joursDispo.includes(day) && // Vérifie si le jour est autorisé
@@ -282,7 +281,7 @@ export default {
           return this.allTimeSlots;
         }
       } catch (error) {
-        
+
       }
     },
     // Charger les créneaux disponibles pour une date et un service

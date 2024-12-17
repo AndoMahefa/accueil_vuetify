@@ -1,6 +1,6 @@
 <template>
   <v-app class="content">
-    <SideBar 
+    <SideBar
       :drawer="drawer"
       :toggle-mini="toggleMini"
       :items="sidebarItems"
@@ -8,12 +8,12 @@
       @toggle-sidebar="toggleSidebar"
     />
     <NavBar @toggle-sidebar="toggleSidebar" />
-    
+
     <v-main>
-      <v-container 
-        fluid 
+      <v-container
+        fluid
         class="pa-4"
-      >      
+      >
         <router-view />
       </v-container>
     </v-main>
@@ -45,7 +45,8 @@ export default {
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
         { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
-        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" }
+        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
+        { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" }
       ]
     };
   },
