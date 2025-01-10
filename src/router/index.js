@@ -8,9 +8,15 @@ import ListeDemandeRecu from '@/pages/BackOffice/Service/ListeDemandeRecu.vue';
 import FileAttenteService from '@/pages/BackOffice/Service/FileAttenteService.vue';
 import JourCreneaux from '@/pages/BackOffice/Service/JourCreneaux.vue';
 import Calendrier from '@/pages/BackOffice/Service/Calendrier.vue';
+import AppelOffrePrmp from '@/pages/BackOffice/PRMP/AppelOffrePrmp.vue';
+import ListeAppelOffre from '@/pages/BackOffice/PRMP/ListeAppelOffre.vue';
+import AjouterAppel from '@/pages/BackOffice/PRMP/AjouterAppel.vue'
 
 import NavBarFrontOffice from '@/components/FrontOffice/NavBarFrontOffice.vue';
 import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
+import AppOffre from '@/pages/FrontOffice/AppelOffre.vue'
+import ListeAppelOffrePerso from '@/pages/BackOffice/PRMP/ListeAppelOffrePerso.vue';
+import ReferencePpm from '@/pages/BackOffice/PRMP/ReferencePpm.vue';
 
 const routes = [
   {
@@ -65,6 +71,31 @@ const routes = [
         path: 'rendez-vous',
         name: 'Calendrier',
         component: Calendrier
+      },
+      {
+        path: 'appel-offre',
+        name: 'AppelOffrePrmp',
+        component: AppelOffrePrmp
+      },
+      {
+        path: 'liste-appel-offre',
+        name: 'ListeAppelOffre',
+        component: ListeAppelOffre
+      },
+      {
+        path: 'ajouter-appel',
+        name: 'AjouterAppel',
+        component: AjouterAppel
+      },
+      {
+        path: 'liste-appels',
+        name: 'ListeAppelOffrePerso',
+        component: ListeAppelOffrePerso
+      },
+      {
+        path: 'save-reference',
+        name: 'ReferencePpm',
+        component: ReferencePpm
       }
     ]
   },
@@ -82,6 +113,11 @@ const routes = [
         path: 'rendez-vous',
         name: 'RendezVous',
         component: RendezVous
+      },
+      {
+        path: 'liste-appel-offre',
+        name: 'AppelOffre',
+        component: AppOffre
       }
     ]
   }

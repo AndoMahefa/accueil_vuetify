@@ -3,13 +3,13 @@
     <div class="page-title">
       <span class="title-text">Gestion des Disponibilités des jours et créneaux horaires</span>
     </div>
-    
+
     <v-row>
       <v-col>
         <div class="disponibilites-container">
-          <v-card 
-            v-for="jour in jours" 
-            :key="jour.id" 
+          <v-card
+            v-for="jour in jours"
+            :key="jour.id"
             class="jour-card"
             style="background-color: #f5f5f5;"
           >
@@ -32,8 +32,8 @@
               <div class="mb-3 text-center">
                 <h3 style="color: #007BFF;">Matin</h3>
                 <v-list>
-                  <v-list-item 
-                    v-for="cre in matinCreneaux(jour.id)" 
+                  <v-list-item
+                    v-for="cre in matinCreneaux(jour.id)"
                     :key="'matin-' + cre.id"
                   >
                     <v-list-item-content>
@@ -46,8 +46,8 @@
               <div class="time-section">
                 <h4 class="mb-3 text-center" style="color: #007BFF;">Après-midi</h4>
                 <v-list>
-                  <v-list-item 
-                    v-for="cre in apresMidiCreneaux(jour.id)" 
+                  <v-list-item
+                    v-for="cre in apresMidiCreneaux(jour.id)"
                     :key="'apres-midi-' + cre.id"
                   >
                     <v-list-item-content>
@@ -103,9 +103,9 @@
         </v-card-text>
         <v-card-actions>
           <v-btn text class="btn-cancel" @click="fermerModal">Annuler</v-btn>
-          <v-btn 
-            text class="btn-validate" 
-            @click="ajouterCreneaux" 
+          <v-btn
+            text class="btn-validate"
+            @click="ajouterCreneaux"
             :disabled="!heureDebut || !heureFin || (convertirEnMinutes(heureDebut) >= convertirEnMinutes(heureFin))"
           >
             Ajouter
@@ -113,7 +113,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    
+
         <!-- Modal de confirmation -->
     <v-dialog v-model="isDeleteModalOpen" max-width="500px">
       <v-card>
@@ -174,7 +174,7 @@ export default {
   methods: {
     matinCreneaux(jourId) {
       const response = this.creneaux.filter(cre => cre.jour == jourId && cre.heure <= '12:00:00')
-        
+
       return response
     },
     apresMidiCreneaux(jourId) {
@@ -322,8 +322,8 @@ export default {
       try {
         const response = await fetch(`http://localhost:8000/api/service/${idService}/delete-creneaux/${this.jourSelectionne}`, {
           method: "DELETE",
-          headers: { 
-            "Content-Type": "application/json", 
+          headers: {
+            "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({

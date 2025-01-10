@@ -1,52 +1,52 @@
 <template>
-    <v-sheet class="mx-auto" width="450">
+    <v-sheet class="mx-auto mt-10" max-width="500 px" width="100%">
         <div class="form-title">
             <span class="bold-text">Visiteur</span> / Enregistrer
         </div>
-        <v-form                 
-        v-model="valid" 
+        <v-form
+        v-model="valid"
         ref="form"
         >
         <v-text-field
             v-model="visiteur.nom"
             label="Nom"
             :rules="[rules.required]"
-            
+
             required
             />
             <v-text-field
             v-model="visiteur.prenom"
             label="Prenom"
             :rules="[rules.required]"
-            
+
             required
             />
             <v-text-field
             v-model="visiteur.cin"
             label="CIN"
             :rules="[rules.required]"
-            
+
             required
             />
             <v-text-field
             v-model="visiteur.email"
             label="Email"
             :rules="[rules.required, rules.email]"
-            
+
             required
             ></v-text-field>
 
             <v-text-field
             v-model="visiteur.telephone"
             label="Numéro de téléphone"
-            
+
             ></v-text-field>
-  
+
             <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
       </v-form>
     </v-sheet>
   </template>
-  
+
   <script>
   export default {
     data() {
@@ -100,7 +100,7 @@
     }
   };
 </script>
-  
+
 <style scoped>
     .form-title {
         display: flex;
@@ -119,13 +119,7 @@
         max-width: 600px;  /* Maximum width */
     }
 
-
-    .v-text-field {
-        /* margin-bottom: 10px; */
-    }
-
     .v-btn {
         margin-top: 15px;
     }
 </style>
-  

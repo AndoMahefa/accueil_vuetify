@@ -22,8 +22,8 @@
     </v-app-bar>
 
     <v-main>
-      <router-view />  
-    </v-main>    
+      <router-view />
+    </v-main>
   </v-app>
 </template>
 
@@ -34,7 +34,7 @@ export default {
       logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href,
       menus: [
         { text: "Accueil", route: "/client" },
-        { text: "Appel d'offre", route: "/client/appel-offre" },
+        { text: "Appel d'offre", route: "/client/liste-appel-offre" },
         { text: "Rendez-vous", route: "/client/rendez-vous"},
         { text: "Contact", route: "/client/contact" },
       ],

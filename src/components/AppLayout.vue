@@ -47,6 +47,18 @@ export default {
         { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
         { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
         { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" }
+      ],
+      prmp: [
+        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
+        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
+        { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
+        // { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/appel-offre" },
+        // { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appel-offre" },
+
+        // Appel d'offre personalise
+        { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/save-reference" },
+        { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
       ]
     };
   },
@@ -56,6 +68,8 @@ export default {
       console.log(this.idService)
       if (this.idService === "2") {
         return this.itemsAccueil;
+      } else if(this.idService === "6") {
+        return this.prmp;
       } else {
         return this.autreService;
       }

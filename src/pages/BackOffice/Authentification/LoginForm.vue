@@ -1,52 +1,116 @@
 <template>
-  <v-container>
-    <v-card>
-      <v-card-title>
-        <h2>Connexion</h2>
-      </v-card-title>
-      <v-card-text>
-        <v-form 
-          ref="form" 
-          @submit.prevent="login"
+  <v-container class="d-flex justify-center align-center" style="margin-left: 30px;">
+    <v-row
+      class="align-center"
+      justify="center"
+    >
+      <!-- Section de bienvenue -->
+      <v-col cols="12" md="6" class="text-center">
+        <v-img
+          :src="loginImage"
+          alt="Illustration"
+          class="mt-5"
+          contain
+        />
+      </v-col>
+
+      <!-- Section de connexion -->
+      <v-col
+        cols="12"
+        md="5"
+      >
+        <v-card
+          class="pa-6"
+          elevation="3"
+          width="550px"
         >
-          <v-text-field
-            v-model="email"
-            label="Email"
-            type="email"
-            required
-          />
-          <v-text-field
-            v-model="mot_de_passe"
-            label="Mot de passe"
-            type="password"
-            required
-          />
-          <v-btn 
-            type="submit" 
-            color="primary"
+          <p
+            class="text-center mb-4"
+            style="color: #01005d; font-size: 40px; line-height: normal; outline: none;"
           >
             Se connecter
-          </v-btn>
-          <v-alert 
-            v-if="errorMessage" 
-            type="error" 
-            dismissible
+          </p>
+          <p class="text-center mb-5">
+            Veuillez vous connecter pour profiter pleinement de la plateforme.
+          </p>
+
+          <v-form
+            ref="form"
+            @submit.prevent="login"
           >
-            {{ errorMessage }}
-          </v-alert>
-        </v-form>
-      </v-card-text>
-    </v-card>
+            <v-text-field
+              v-model="email"
+              label="Email"
+              prepend-inner-icon="mdi-account"
+              type="email"
+              outlined
+              dense
+              class="mb-4"
+              required
+            />
+
+            <v-text-field
+              v-model="mot_de_passe"
+              label="Mot de passe"
+              prepend-inner-icon="mdi-lock"
+              type="password"
+              outlined
+              density="comfortable"
+              class="mb-4"
+              required
+            />
+
+            <div class="d-flex justify-space-between align-center mt-2">
+              <v-checkbox
+                v-model="rememberMe"
+                label="Rester connecté"
+                class="mt-2"
+              />
+              <a
+                href="#"
+                style="text-align: center; text-decoration: none;"
+              >
+                Mot de passe oublié ?
+              </a>
+            </div>
+
+            <v-btn
+              block
+              class="mt-4"
+              color="#01005d"
+              type="submit"
+            >
+              Connexion
+            </v-btn>
+
+            <div class="text-center mt-3">
+              <span>OU</span>
+            </div>
+
+            <v-btn
+              block
+              class="mt-3"
+              outlined
+              color="whitesmoke"
+              @click="register"
+            >
+              Inscription
+            </v-btn>
+          </v-form>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
-  
+
 <script>
 export default {
     data() {
         return {
             email: '',
             mot_de_passe: '',
-            errorMessage: ''
+            errorMessage: '',
+            loginImage: new URL('@/assets/images/login.png', import.meta.url).href
         };
     },
     methods: {
@@ -63,7 +127,7 @@ export default {
                     mot_de_passe: this.mot_de_passe
                 })
             });
-    
+
             if (!response.ok) {
                 // Gérer les erreurs de réponse
                 if (response.status === 401) {
@@ -73,23 +137,8 @@ export default {
                 }
                 return;
             }
-    
+
             const data = await response.json();
-            
-            // Stockez le token dans localStorage
-            // const role = data.role;
-            // localStorage.setItem('token_'+role, data.token);
-            
-            
-            // if(role === 'accueil') {
-            //   this.$router.push('/accueil/dashboard');
-            // } else if(role === 'Directeur General') {
-            //   this.$router.push('/dg/dashboard');
-            // } else if(role === 'Ressources hunaine') {
-            //   this.$router.push('/rh/dashboard');
-            // } else if(role === 'Daf') {
-            //   this.$router.push('daf/dashboard');
-            // }
 
             localStorage.setItem('token', data.token);
             localStorage.setItem('idService', data.idService);
@@ -102,3 +151,8 @@ export default {
     }
 };
 </script>
+<style>
+  h1 {
+    color: #1a237e;
+  }
+</style>

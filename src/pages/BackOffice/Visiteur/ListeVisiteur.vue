@@ -35,7 +35,20 @@
       </v-data-table>
 
       <!-- Pagination -->
-      <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" />
+      <v-row justify="center">
+        <v-col cols="8">
+          <v-container class="max-width">
+            <v-pagination
+              v-model="page"
+              :length="totalPages"
+              class="my-4"
+              rounded="circle"
+              @update:model-value="fetchData"
+            />
+          </v-container>
+        </v-col>
+      </v-row>
+      <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
     </v-card>
 
     <!-- Modal pour afficher les détails du visiteur -->
@@ -189,60 +202,52 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-
   </v-container>
 </template>
 
   <script>
-  import Pagination from '@/components/Pagination.vue';
   import { get, put, post } from '@/service/ApiService.js';
 
   export default {
-    components: {
-        Pagination,
-    },
     data() {
         return {
-            items: [], // Liste des items
-            headers: [
-                { title: 'Nom', value: 'nom' },
-                { title: 'Prénom', value: 'prenom' },
-            ], // Colonnes du tableau
-            totalPages: 0, // Nombre total de pages
-            loading: false, // Indicateur de chargement
-            pagination: {
-                page: 1,
-            },
-            dialog: false, // Indicateur pour afficher le modal
-            visiteur: {
-                nom: '',
-                prenom: '',
-                cin: '',
-                email: '',
-                telephone: ''
-            },
-            editDialog: false, // Indicateur pour la modal d'édition
-            editVisiteur: {
+          page: null, // Page actuelle
+          totalPages: null,
+          items: [], // Liste des items
+          headers: [
+              { title: 'Nom', value: 'nom' },
+              { title: 'Prénom', value: 'prenom' },
+          ],
+          loading: false, // Indicateur de chargement
+          dialog: false, // Indicateur pour afficher le modal
+          visiteur: {
               nom: '',
               prenom: '',
-              email: '',
-              telephone: '',
               cin: '',
-            },
-            formValid: false, // Validation du formulaire
-            rules: {
-              required: (value) => !!value || 'Ce champ est requis',
-              email: (value) =>
-                /.+@.+\..+/.test(value) || 'Veuillez entrer une adresse email valide',
-            },
-            showDemandeDialog: false,
-            // Liste des services
-            services: [], // À remplir avec les services disponibles
-            selectedService: null, // Service sélectionné
-            demandeMotif: "", // Motif de la demande
-            selectedVisiteur: {}
-          };
+              email: '',
+              telephone: ''
+          },
+          editDialog: false, // Indicateur pour la modal d'édition
+          editVisiteur: {
+            nom: '',
+            prenom: '',
+            email: '',
+            telephone: '',
+            cin: '',
+          },
+          formValid: false, // Validation du formulaire
+          rules: {
+            required: (value) => !!value || 'Ce champ est requis',
+            email: (value) =>
+              /.+@.+\..+/.test(value) || 'Veuillez entrer une adresse email valide',
+          },
+          showDemandeDialog: false,
+
+          services: [], // À remplir avec les services disponibles
+          selectedService: null, // Service sélectionné
+          demandeMotif: "", // Motif de la demande
+          selectedVisiteur: {}
+        };
     },
     watch: {
       "pagination.page"() {
@@ -250,16 +255,18 @@
       },
     },
     mounted() {
-      if (this.pagination.page && this.pagination.page > 0) {
-        this.fetchData();
-      }
+      this.fetchData();
       this.fetchServices()
     },
     methods: {
       async fetchData() {
         this.loading = true;
         try {
-          const data = await get(`accueil/visiteurs?page=${this.pagination.page}`);
+          let url = 'accueil/visiteurs';
+          if(this.page) {
+            url += `?page=${this.page}`
+          }
+          const data = await get(url);
           if (data && data.ok) {
             const response = await data.json();
             this.items = response.data;
@@ -269,11 +276,6 @@
           console.error("Erreur lors de la récupération des données :", error);
         } finally {
           this.loading = false;
-        }
-      },
-      changePage(page) {
-        if (page > 0 && page <= this.totalPages) {
-          this.pagination.page = page;
         }
       },
       showDetails(item) {
@@ -358,28 +360,28 @@
 
 <style scoped>
   .v-btn--active {
-      background-color: #189fdd;
-      color: white;
+    background-color: #189fdd;
+    color: white;
   }
   .digital-id-card {
-  border-radius: 16px;
-  background: linear-gradient(to right, #e3f2fd, #bbdefb);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  padding: 16px;
+    border-radius: 16px;
+    background: linear-gradient(to right, #e3f2fd, #bbdefb);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 16px;
   }
   .digital-id-card h3 {
-  font-weight: bold;
-  margin: 0;
+    font-weight: bold;
+    margin: 0;
   }
   .universal-icon {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e3f2fd;
-  border-radius: 50%;
-  border: 3px solid #42a5f5;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e3f2fd;
+    border-radius: 50%;
+    border: 3px solid #42a5f5;
   }
   .text-grey {
   color: #757575;

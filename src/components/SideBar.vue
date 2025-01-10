@@ -1,19 +1,19 @@
 <template>
-    <v-navigation-drawer 
+    <v-navigation-drawer
         :model-value="drawer"
         :mini-variant="toggleMini"
         permanent
         color="#6EC1B4"
-        app 
+        app
         @update:model-value="$emit('update:drawer', $event)"
     >
     <!-- Logo -->
-        <v-list-item 
-        class="sidebar-logo-container" 
+        <v-list-item
+        class="sidebar-logo-container"
         @click="toggleSidebar"
         >
             <div class="d-flex align-center">
-                <img 
+                <img
                     :src="logoFull"
                     alt="Logo"
                     class="sidebar-logo"
@@ -37,7 +37,7 @@
                             {{ item.icon }}
                         </v-icon>
                     </v-list-item-icon>
-                
+
                     <v-list-item-content v-if="!toggleMini">
                         <v-list-item-title :style="{ color: '#FFF' }">{{ item.title }}</v-list-item-title>
                     </v-list-item-content>
@@ -50,24 +50,24 @@
 <script>
 export default {
     props: {
-        drawer: Boolean,        
-        toggleMini: Boolean,     
-        items: Array,          
-        userName: String        
+        drawer: Boolean,
+        toggleMini: Boolean,
+        items: Array,
+        userName: String
     },
 emits: ['update:drawer'],
     data() {
         return {
-        logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href 
+          logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href
         };
     },
     methods: {
         toggleSidebar() {
-            this.$emit('update:drawer', !this.drawer); 
+            this.$emit('update:drawer', !this.drawer);
         },
         navigate(item) {
             if (item.to) {
-                this.$router.push(item.to); 
+                this.$router.push(item.to);
             }
         }
     }
@@ -93,14 +93,14 @@ emits: ['update:drawer'],
         justify-content: center;
         align-items: center;
         width: 100%;
-        height: 100px; 
+        height: 100px;
     }
 
     .sidebar-logo {
-        width: 100%; 
-        max-width: 100px; 
-        height: auto; 
-        object-fit: contain; 
+        width: 100%;
+        max-width: 100px;
+        height: auto;
+        object-fit: contain;
         transition: all 0.3s ease;
     }
 </style>

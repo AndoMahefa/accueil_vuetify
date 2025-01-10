@@ -1,15 +1,15 @@
 <template>
   <div class="d-flex justify-center mt-4">
-    <v-btn 
-      :disabled="page === 1" 
+    <v-btn
+      :disabled="page === 1"
       class="mx-1"
       @click="changePage(page - 1)"
     >
       Précédent
     </v-btn>
-  
-    <v-btn 
-      v-for="p in pageNumbers" 
+
+    <v-btn
+      v-for="p in pageNumbers"
       :key="p"
       :class="{'v-btn--active': page === p}"
       class="mx-1"
@@ -17,9 +17,9 @@
     >
       {{ p }}
     </v-btn>
-  
-    <v-btn 
-      :disabled="page === totalPages" 
+
+    <v-btn
+      :disabled="page === totalPages"
       class="mx-1"
       @click="changePage(page + 1)"
     >
@@ -27,7 +27,7 @@
     </v-btn>
   </div>
 </template>
-  
+
 <script>
     export default {
         props: {
@@ -57,11 +57,10 @@
         },
     };
     </script>
-    
+
 <style scoped>
     .v-btn--active {
         background-color: #72dae8;
         color: white;
     }
 </style>
-  
