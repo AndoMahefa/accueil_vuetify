@@ -1,9 +1,9 @@
 <template>
-  <v-app-bar 
-    app 
-    flat 
-    color="#F4F4F4" 
-    dark 
+  <v-app-bar
+    app
+    flat
+    color="#F4F4F4"
+    dark
     class="navbar-shadow"
   >
     <!-- Menu hamburger -->
@@ -27,15 +27,15 @@
     </v-btn>
 
     <!-- Dropdown menu for logout -->
-    <v-menu 
-      location="bottom" 
+    <v-menu
+      location="bottom"
       offset-y
     >
-      <template 
+      <template
         #activator="{ props }"
       >
-        <v-btn 
-          icon 
+        <v-btn
+          icon
           v-bind="props"
         >
           <v-icon>mdi-account-circle</v-icon>
@@ -75,6 +75,11 @@ export default {
   methods: {
     async fetchServiceName() {
       const idService = localStorage.getItem('idService'); // Récupère l'idService
+      const role = localStorage.getItem("role");
+      if(role === 'admin') {
+        this.serviceName = 'Administrateur'
+        return
+      }
       if (!idService) {
         this.serviceName = 'Service Inconnu';
         return;

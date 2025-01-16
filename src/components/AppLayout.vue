@@ -33,8 +33,10 @@ export default {
     return {
       drawer: false,
       toggleMini: false,
+      serviceName: null,
       userName: 'Rakshith Bellare',
       idService : null,
+      role: null,
       itemsAccueil: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
@@ -59,6 +61,29 @@ export default {
         // Appel d'offre personalise
         { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/save-reference" },
         { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
+      ],
+      itemsAdmin: [
+        // Special admin
+        { title: "Ajouter un service", icon: "mdi-account-plus", to: "/home/ajouter-service" },
+        { title: "Liste de tous les services", icon: "mdi-format-list-bulleted", to: "/home/liste-services" },
+        { title: "Ajouter un employe", icon: "mdi-account-plus", to: "/home/ajouter-employe" },
+        { title: "Liste de tous les employes", icon: "mdi-format-list-bulleted", to: "/home/liste-employes" },
+
+        // Accueil
+        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
+        { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
+        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" },
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
+
+        // Tous les autres services
+        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
+        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
+        { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
+
+        // PRMP
+        { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/save-reference" },
+        { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
       ]
     };
   },
@@ -66,21 +91,54 @@ export default {
     // Renvoie les items du SideBar selon le service actuel
     sidebarItems() {
       console.log(this.idService)
-      if (this.idService === "2") {
-        return this.itemsAccueil;
-      } else if(this.idService === "6") {
-        return this.prmp;
+      if(this.role === 'admin') {
+        return this.itemsAdmin;
       } else {
-        return this.autreService;
+        this.fetchServiceName()
+        if(this.serviceName === "Accueil") {
+          return this.itemsAccueil;
+        } else if(this.idService === "PRMP") {
+          return this.prmp;
+        } else {
+          return this.autreService;
+        }
       }
     }
   },
   mounted() {
     this.idService = localStorage.getItem("idService");
+    this.role = localStorage.getItem("role");
   },
   methods: {
     toggleSidebar() {
       this.drawer = !this.drawer;
+    },
+    async fetchServiceName() {
+      const idService = localStorage.getItem('idService'); // Récupère l'idService
+      if (!idService) {
+        this.serviceName = 'Service Inconnu';
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const idService = localStorage.getItem('idService');
+        const response = await fetch(`http://localhost:8000/api/service/${idService}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.serviceName = data.nom || 'Service Inconnu'; // Assurez-vous que l'API retourne un champ `name`
+        } else {
+          this.serviceName = 'Service Inaccessible';
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération du nom du service:', error);
+        this.serviceName = 'Erreur de Chargement';
+      }
     }
   }
 };
