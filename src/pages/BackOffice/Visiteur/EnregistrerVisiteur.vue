@@ -69,30 +69,37 @@
         async submitForm(e) {
             e.preventDefault()
             const token = localStorage.getItem("token");
+            const role = localStorage.getItem("role")
             console.log(this.visiteur)
             try {
-                const response = await fetch('http://localhost:8000/api/accueil/visiteurs', {
-                    method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(this.visiteur),
-                });
+              let url = 'http://localhost:8000/api'
+              if(role === 'admin') {
+                url += '/admin/accueil/visiteurs'
+              } else {
+                url += '/role/accueil/visiteurs'
+              }
+              const response = await fetch(url, {
+                  method: 'POST',
+                  headers: {
+                      Authorization: `Bearer ${token}`,
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(this.visiteur),
+              });
 
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    alert('Votre session a expiré ou le token est invalide. Veuillez vous reconnecter.');
-                    this.$router.push('/');
-                    return;
-                }
-                if (response.ok) {
-                    console.log(await response.json());
-                    alert('Visiteur ajouté avec succès.');
-                    this.visiteur = {}
-                } else {
-                    throw new Error('Erreur lors de l\'ajout du visiteur.');
-                }
+              if (response.status === 401) {
+                  localStorage.removeItem('token');
+                  alert('Votre session a expiré ou le token est invalide. Veuillez vous reconnecter.');
+                  this.$router.push('/');
+                  return;
+              }
+              if (response.ok) {
+                  console.log(await response.json());
+                  alert('Visiteur ajouté avec succès.');
+                  this.visiteur = {}
+              } else {
+                  throw new Error('Erreur lors de l\'ajout du visiteur.');
+              }
             } catch (error) {
                 console.error(error);
             }

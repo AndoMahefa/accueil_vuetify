@@ -249,11 +249,11 @@
           selectedVisiteur: {}
         };
     },
-    watch: {
-      "pagination.page"() {
-        this.fetchData();
-      },
-    },
+    // watch: {
+    //   "pagination.page"() {
+    //     this.fetchData();
+    //   },
+    // },
     mounted() {
       this.fetchData();
       this.fetchServices()
@@ -262,11 +262,7 @@
       async fetchData() {
         this.loading = true;
         try {
-          let url = 'accueil/visiteurs';
-          if(this.page) {
-            url += `?page=${this.page}`
-          }
-          const data = await get(url);
+          const data = await get('accueil/visiteurs');
           if (data && data.ok) {
             const response = await data.json();
             this.items = response.data;
