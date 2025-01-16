@@ -3,12 +3,12 @@
         <v-card>
             <v-card-title>Liste des demandes reçues du jour</v-card-title>
 
-            <v-data-table 
-                :items="demandes" 
-                :headers="headers" 
-                item-value="id" 
+            <v-data-table
+                :items="demandes"
+                :headers="headers"
+                item-value="id"
                 class="elevation-1"
-                loading-text="Chargement des données..." 
+                loading-text="Chargement des données..."
                 :hide-default-footer="true"
             >
                 <!-- Colonnes personnalisées -->
@@ -100,53 +100,49 @@
             </v-card>
         </v-dialog>
 
-        <!-- Modal pour accepter un demande et generer un ticket -->
+    <!-- Modal pour accepter un demande et generer un ticket -->
         <v-dialog v-model="genererTicket" max-width="500px">
-    <v-card class="ticket-card">
-        <v-card-title class="card-title">Générer un ticket</v-card-title>
-        <v-card-text class="card-text">
-            <v-form @submit.prevent="generateTicket">
-                <v-text-field 
-                    label="Temps estimé" 
-                    type="time" 
-                    v-model="ticket.temps_estime" 
-                    required
-                    class="input-field"
-                >
-                </v-text-field>
-            </v-form>
-        </v-card-text>
-        <v-card-actions class="card-actions">
-            <v-btn color="secondary" @click="genererTicket=false" class="action-btn">Annuler</v-btn>
-            <v-btn color="primary" @click="generateTicket" class="action-btn">Générer</v-btn>
-        </v-card-actions>
-    </v-card>
-</v-dialog>
+            <v-card class="ticket-card">
+                <v-card-title class="card-title">Générer un ticket</v-card-title>
+                <v-card-text class="card-text">
+                    <v-form @submit.prevent="generateTicket">
+                        <v-text-field
+                            label="Temps estimé"
+                            type="time"
+                            v-model="ticket.temps_estime"
+                            required
+                            class="input-field"
+                        >
+                        </v-text-field>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions class="card-actions">
+                    <v-btn color="secondary" @click="genererTicket=false" class="action-btn">Annuler</v-btn>
+                    <v-btn color="primary" @click="generateTicket" class="action-btn">Générer</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
-<v-dialog v-model="refuserDemande" max-width="500px">
-    <v-card class="reject-card">
-        <v-card-title class="card-title">Traitement de la demande</v-card-title>
-        <v-card-text class="card-text">
-            <span class="warning-text">Voulez-vous vraiment refuser ?</span>
-        </v-card-text>
-        <v-card-actions class="card-actions">
-            <v-btn color="secondary" @click="refuserDemande=false" class="action-btn">Annuler</v-btn>
-            <v-btn color="error" @click="refus" class="action-btn">Refuser</v-btn>
-        </v-card-actions>
-    </v-card>
-</v-dialog>
+        <v-dialog v-model="refuserDemande" max-width="500px">
+            <v-card class="reject-card">
+                <v-card-title class="card-title">Traitement de la demande</v-card-title>
+                <v-card-text class="card-text">
+                    <span class="warning-text">Voulez-vous vraiment refuser ?</span>
+                </v-card-text>
+                <v-card-actions class="card-actions">
+                    <v-btn color="secondary" @click="refuserDemande=false" class="action-btn">Annuler</v-btn>
+                    <v-btn color="error" @click="refus" class="action-btn">Refuser</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
 
     </v-container>
 </template>
 
 <script>
-import Pagination from '@/components/Pagination.vue';
 import { get, post } from '@/service/ApiService';
 
 export default {
-    components: {
-        Pagination
-    },  
     data() {
         return {
             demandes: [],
@@ -188,7 +184,7 @@ export default {
             try {
                 const response = await get(`services/${idService}/demandes`)
                 if (response && response.ok) {
-                    const data = await response.json() 
+                    const data = await response.json()
                     console.log(data.visiteurs)
                     this.demandes = data.visiteurs
                 }
@@ -248,11 +244,6 @@ export default {
                 console.log(error)
             }
         }
-        // changePage(page) {
-        //     if (page > 0 && page <= this.totalPages) {
-        //     this.pagination.page = page;
-        //     }
-        // },   
     }
 }
 </script>
