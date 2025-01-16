@@ -131,17 +131,25 @@ export default {
             if (!response.ok) {
                 // Gérer les erreurs de réponse
                 if (response.status === 401) {
-                  this.errorMessage = 'Identifiants invalides. Veuillez réessayer.';
+                  alert("Connexion expire")
+                  // this.errorMessage = 'Identifiants invalides. Veuillez réessayer.';
                 } else {
-                  this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
+                  alert("Une erreur est survenue. Veuillez réessayer.");
+                  // this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
                 }
                 return;
             }
 
             const data = await response.json();
 
+            console.log(data.token);
+            console.log(data.user.id)
+            console.log(data.idService)
             localStorage.setItem('token', data.token);
+            localStorage.setItem('idUser', data.user.id);
             localStorage.setItem('idService', data.idService);
+            localStorage.setItem('role', data.user.role)
+
             this.$router.push('/home');
 
             } catch (error) {
