@@ -17,6 +17,12 @@ import RendezVous from '@/pages/FrontOffice/RendezVous.vue';
 import AppOffre from '@/pages/FrontOffice/AppelOffre.vue'
 import ListeAppelOffrePerso from '@/pages/BackOffice/PRMP/ListeAppelOffrePerso.vue';
 import ReferencePpm from '@/pages/BackOffice/PRMP/ReferencePpm.vue';
+import AjouterService from '@/pages/BackOffice/Admin/Service/AjouterService.vue';
+import AjouterEmploye from '@/pages/BackOffice/Admin/Employe/AjouterEmploye.vue';
+import ListeService from '@/pages/BackOffice/Admin/Service/ListeService.vue';
+import ListeEmploye from '@/pages/BackOffice/Admin/Employe/ListeEmploye.vue';
+import ListeEmployeParService from '@/pages/BackOffice/Admin/Employe/ListeEmployeParService.vue';
+import DeletedService from '@/pages/BackOffice/Admin/Service/DeletedService.vue';
 
 const routes = [
   {
@@ -96,6 +102,37 @@ const routes = [
         path: 'save-reference',
         name: 'ReferencePpm',
         component: ReferencePpm
+      },
+      //admin only
+      {
+        path: 'ajouter-service',
+        name: 'AjouterService',
+        component: AjouterService
+      },
+      {
+        path: 'liste-services',
+        name: 'ListeService',
+        component: ListeService
+      },
+      {
+        path: 'ajouter-employe',
+        name: 'AjouterEmploye',
+        component: AjouterEmploye
+      },
+      {
+        path: 'liste-employes',
+        name: 'ListeEmploye',
+        component: ListeEmploye
+      },
+      {
+        path: 'liste-employes-service',
+        name: 'ListeEmployeParService',
+        component: ListeEmployeParService
+      },
+      {
+        path: 'deleted-services',
+        name: 'DeletedService',
+        component: DeletedService
       }
     ]
   },
