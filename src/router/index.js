@@ -23,6 +23,8 @@ import ListeService from '@/pages/BackOffice/Admin/Service/ListeService.vue';
 import ListeEmploye from '@/pages/BackOffice/Admin/Employe/ListeEmploye.vue';
 import ListeEmployeParService from '@/pages/BackOffice/Admin/Employe/ListeEmployeParService.vue';
 import DeletedService from '@/pages/BackOffice/Admin/Service/DeletedService.vue';
+import DeletedEmploye from '@/pages/BackOffice/Admin/Employe/DeletedEmploye.vue';
+import RoleEmploye from '@/pages/BackOffice/Admin/Employe/RoleEmploye.vue';
 
 const routes = [
   {
@@ -133,6 +135,16 @@ const routes = [
         path: 'deleted-services',
         name: 'DeletedService',
         component: DeletedService
+      },
+      {
+        path: 'deleted-employes',
+        name: 'DeletedEmploye',
+        component: DeletedEmploye
+      },
+      {
+        path: 'role-employe',
+        name: 'RoleEmploye',
+        component: RoleEmploye
       }
     ]
   },
