@@ -25,27 +25,46 @@
     <v-divider />
 
     <v-list>
-      <v-list-item
-        v-for="item in items"
-        :key="item.title"
-        link
-        class="d-flex align-center"
-        @click="navigate(item)"
-      >
-        <div class="d-flex align-center">
-          <v-list-item-icon class="mr-4">
-            <v-icon color="#fff">
-              {{ item.icon }}
-            </v-icon>
-          </v-list-item-icon>
+      <template v-for="(item, index) in items" :key="item.title">
+        <!-- Menu avec sous-menus -->
+        <v-list-group
+          v-if="item.items"
+          :value="openGroups[index]"
+          @click="toggleGroup(index)"
+        >
+          <template v-slot:activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              :prepend-icon="item.icon"
+              :title="item.title"
+              class="text-white"
+            />
+          </template>
 
-          <v-list-item-content v-if="!toggleMini">
-            <v-list-item-title :style="{ color: '#FFF' }">
-              {{ item.title }}
-            </v-list-item-title>
-          </v-list-item-content>
-        </div>
-      </v-list-item>
+          <v-list-item
+            v-for="subItem in item.items"
+            :key="subItem.title"
+            :to="subItem.to"
+            :title="subItem.title"
+            class="text-white pl-4"
+          />
+        </v-list-group>
+
+        <!-- Menu simple -->
+        <v-list-item
+          v-else
+          :to="item.to"
+          link
+          class="d-flex align-center text-white"
+        >
+          <template #prepend>
+            <v-icon color="white">{{ item.icon }}</v-icon>
+          </template>
+          <v-list-item-title v-if="!toggleMini">
+            {{ item.title }}
+          </v-list-item-title>
+        </v-list-item>
+      </template>
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -58,10 +77,11 @@ export default {
       items: Array,
       userName: String
     },
-emits: ['update:drawer'],
+    emits: ['update:drawer'],
     data() {
         return {
-          logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href
+          logoFull: new URL('@/assets/images/LogoApipa.png', import.meta.url).href,
+          openGroups: {} // Pour suivre l'état d'ouverture de chaque groupe
         };
     },
     methods: {
@@ -72,6 +92,10 @@ emits: ['update:drawer'],
             if (item.to) {
                 this.$router.push(item.to);
             }
+        },
+        toggleGroup(index) {
+            // Utilise Vue.set pour assurer la réactivité
+            this.$set(this.openGroups, index, !this.openGroups[index]);
         }
     }
 };
@@ -105,5 +129,21 @@ emits: ['update:drawer'],
       height: auto;
       object-fit: contain;
       transition: all 0.3s ease;
+  }
+
+  .v-list-group__items .v-list-item {
+    padding-left: 16px;
+  }
+
+  .v-list-group__header .v-list-item__title {
+    color: white;
+  }
+
+  .v-list-item--active {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .v-list-group__items .v-list-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
   }
 </style>
