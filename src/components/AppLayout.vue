@@ -63,27 +63,49 @@ export default {
         { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
       ],
       itemsAdmin: [
-        // Special admin
-        { title: "Ajouter un service", icon: "mdi-account-plus", to: "/home/ajouter-service" },
-        { title: "Liste de tous les services", icon: "mdi-format-list-bulleted", to: "/home/liste-services" },
-        { title: "Ajouter un employe", icon: "mdi-account-plus", to: "/home/ajouter-employe" },
-        { title: "Liste de tous les employes", icon: "mdi-format-list-bulleted", to: "/home/liste-employes" },
-
-        // Accueil
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
-        { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
-        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
+        // Services
+        {
+          title: "Services",
+          icon: "mdi-domain",
+          items: [
+            { title: "Ajouter un service", to: "/home/ajouter-service" },
+            { title: "Liste des services", to: "/home/liste-services" }
+          ]
+        },
+        // Employés
+        {
+          title: "Employés",
+          icon: "mdi-account-group",
+          items: [
+            { title: "Ajouter un employé", to: "/home/ajouter-employe" },
+            { title: "Liste des employés", to: "/home/liste-employes" }
+          ]
+        },
+        {
+          title: "Visiteurs",
+          icon: "mdi-account-group",
+          items: [
+            { title: "Ajouter un visiteur", to: "/home/enregistrer-visiteur" },
+            { title: "Liste des visiteurs", to: "/home/liste-visiteurs" }
+          ]
+        },
+        // PRMP
+        {
+          title: "Appel d'offre",
+          icon: "mdi-file-document",
+          items: [
+            { title: "Ajout d'un appel d'offre", to: "/home/save-reference" },
+            { title: "Liste des appels d'offres", to: "/home/liste-appels" }
+          ]
+        },
 
         // Tous les autres services
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
         { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
         { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
         { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
 
-        // PRMP
-        { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/save-reference" },
-        { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
       ]
     };
   },
