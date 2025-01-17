@@ -25,6 +25,7 @@
         <template #item="{ item }">
           <tr>
             <td> {{ item.nom }}</td>
+            <td> {{ FormatDate(item.deleted_at) }} </td>
             <td>
               <!-- Icônes pour les actions -->
               <v-icon
@@ -38,6 +39,11 @@
           </tr>
         </template>
       </v-data-table>
+      <Pagination
+        :currentPage="page"
+        :totalPages="totalPages"
+        @page-changed="fetchServicesDeleted"
+      />
     </v-card>
 
     <!-- Modal de confirmation pour restaurer -->
@@ -58,9 +64,14 @@
 </template>
 
 <script>
+import Pagination from '@/components/Pagination.vue';
 import { get, post } from '@/service/ApiService';
+import FormatDate from '@/service/FormatDate';
 
 export default {
+  components: {
+    Pagination
+  },
   data() {
     return {
       services: [],
@@ -68,10 +79,13 @@ export default {
 
       headers: [
         { title: 'Nom', align: "start", value: 'nom' },
+        { title: 'Supprimé le', value: 'deleted_at' },
         { title: 'Actions', width: '350px', sortable: 'false' },
       ],
       service: null,
-      restoreConfirmationDialog: false
+      restoreConfirmationDialog: false,
+      page: null,
+      totalPages: null
     }
   },
   mounted() {
@@ -85,6 +99,7 @@ export default {
       if(response.ok) {
         const data = await response.json();
         this.services = data.services;
+        this.totalPages = data.last_page;
         this.loading = false;
       }
     },
@@ -104,7 +119,8 @@ export default {
         this.fetchServicesDeleted()
         this.closeRestoreConfirmation()
       }
-    }
+    },
+    FormatDate
   }
 }
 </script>
