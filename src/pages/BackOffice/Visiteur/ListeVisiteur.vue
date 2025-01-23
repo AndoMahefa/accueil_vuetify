@@ -34,7 +34,6 @@
         </template>
       </v-data-table>
 
-      <!-- Pagination -->
       <v-row justify="center">
         <v-col cols="8">
           <v-container class="max-width">
@@ -48,7 +47,6 @@
           </v-container>
         </v-col>
       </v-row>
-      <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
     </v-card>
 
     <!-- Modal pour afficher les détails du visiteur -->
@@ -164,18 +162,18 @@
               dense
               style="color: #fffff; border-color: #6EC1B4;"
               required
-            ></v-select>
+            />
 
             <!-- Motif de la demande -->
             <v-textarea
-              label="Motif de la demande"
               v-model="demandeMotif"
+              label="Motif de la demande"
               outlined
               dense
               style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;"
               rows="4"
               required
-            ></v-textarea>
+            />
           </v-form>
         </v-card-text>
 
@@ -249,11 +247,6 @@
           selectedVisiteur: {}
         };
     },
-    // watch: {
-    //   "pagination.page"() {
-    //     this.fetchData();
-    //   },
-    // },
     mounted() {
       this.fetchData();
       this.fetchServices()
@@ -262,10 +255,15 @@
       async fetchData() {
         this.loading = true;
         try {
-          const data = await get('accueil/visiteurs');
+          let url = 'accueil/visiteurs'
+          if(this.page) {
+            url += `?page=${this.page}`
+          }
+          const data = await get(url);
           if (data && data.ok) {
             const response = await data.json();
             this.items = response.data;
+            this.page = response.current_page;
             this.totalPages = response.last_page;
           }
         } catch (error) {
@@ -288,7 +286,7 @@
       async saveChanges() {
         if (this.$refs.editForm.validate()) { // Validation du formulaire
           try {
-            const response = await put(`accueil/visiteurs/${this.editVisiteur.id}`, this.editVisiteur);
+            const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
             if (response && response.ok) {
               console.log(this.editVisiteur)
               this.editDialog = false;

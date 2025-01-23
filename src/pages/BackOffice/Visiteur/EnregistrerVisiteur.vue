@@ -1,53 +1,54 @@
 <template>
-    <v-sheet class="mx-auto mt-10" max-width="500 px" width="100%">
-        <div class="form-title">
-            <span class="bold-text">Visiteur</span> / Enregistrer
-        </div>
-        <v-form
-        v-model="valid"
-        ref="form"
-        >
-        <v-text-field
-            v-model="visiteur.nom"
-            label="Nom"
-            :rules="[rules.required]"
+  <v-sheet class="mx-auto mt-10" max-width="500 px" width="100%">
+    <div class="form-title">
+      <span class="bold-text">Visiteur</span> / Enregistrer
+    </div>
+    <v-form
+      ref="form"
+      v-model="valid"
+    >
+      <v-text-field
+        v-model="visiteur.nom"
+        label="Nom"
+        :rules="[rules.required]"
 
-            required
-            />
-            <v-text-field
-            v-model="visiteur.prenom"
-            label="Prenom"
-            :rules="[rules.required]"
+        required
+      />
+      <v-text-field
+        v-model="visiteur.prenom"
+        label="Prenom"
+        :rules="[rules.required]"
 
-            required
-            />
-            <v-text-field
-            v-model="visiteur.cin"
-            label="CIN"
-            :rules="[rules.required]"
+        required
+      />
+      <v-text-field
+        v-model="visiteur.cin"
+        label="CIN"
+        :rules="[rules.required]"
 
-            required
-            />
-            <v-text-field
-            v-model="visiteur.email"
-            label="Email"
-            :rules="[rules.required, rules.email]"
+        required
+      />
+      <v-text-field
+        v-model="visiteur.email"
+        label="Email"
+        :rules="[rules.required, rules.email]"
 
-            required
-            ></v-text-field>
+        required
+      />
 
-            <v-text-field
-            v-model="visiteur.telephone"
-            label="Numéro de téléphone"
+      <v-text-field
+        v-model="visiteur.telephone"
+        label="Numéro de téléphone"
+      />
 
-            ></v-text-field>
-
-            <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
-      </v-form>
-    </v-sheet>
-  </template>
+      <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
+    </v-form>
+  </v-sheet>
+</template>
 
   <script>
+import { post } from '@/service/ApiService';
+
   export default {
     data() {
       return {
@@ -67,42 +68,18 @@
     },
     methods: {
         async submitForm(e) {
-            e.preventDefault()
-            const token = localStorage.getItem("token");
-            const role = localStorage.getItem("role")
-            console.log(this.visiteur)
-            try {
-              let url = 'http://localhost:8000/api'
-              if(role === 'admin') {
-                url += '/admin/accueil/visiteurs'
-              } else {
-                url += '/role/accueil/visiteurs'
-              }
-              const response = await fetch(url, {
-                  method: 'POST',
-                  headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(this.visiteur),
-              });
+          e.preventDefault()
+          try {
+            const response = await post('accueil/visiteurs', {
+              ...this.visiteur
+            })
 
-              if (response.status === 401) {
-                  localStorage.removeItem('token');
-                  alert('Votre session a expiré ou le token est invalide. Veuillez vous reconnecter.');
-                  this.$router.push('/');
-                  return;
-              }
-              if (response.ok) {
-                  console.log(await response.json());
-                  alert('Visiteur ajouté avec succès.');
-                  this.visiteur = {}
-              } else {
-                  throw new Error('Erreur lors de l\'ajout du visiteur.');
-              }
-            } catch (error) {
-                console.error(error);
+            if(response.ok) {
+              this.visiteur = {}
             }
+          } catch (error) {
+            console.log(error)
+          }
         }
     }
   };

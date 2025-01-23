@@ -117,7 +117,7 @@ export default {
         async login() {
             this.errorMessage = ''; // Réinitialiser le message d'erreur
             try {
-            const response = await fetch('http://localhost:8000/api/login', {
+              const response = await fetch('http://localhost:8000/api/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -126,9 +126,9 @@ export default {
                     email: this.email,
                     mot_de_passe: this.mot_de_passe
                 })
-            });
+              });
 
-            if (!response.ok) {
+              if (!response.ok) {
                 // Gérer les erreurs de réponse
                 if (response.status === 401) {
                   alert("Connexion expire")
@@ -138,19 +138,16 @@ export default {
                   // this.errorMessage = 'Une erreur est survenue. Veuillez réessayer.';
                 }
                 return;
-            }
+              }
 
-            const data = await response.json();
+              const data = await response.json();
 
-            console.log(data.token);
-            console.log(data.user.id)
-            console.log(data.idService)
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('idUser', data.user.id);
-            localStorage.setItem('idService', data.idService);
-            localStorage.setItem('role', data.user.role)
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('idUser', data.user.id);
+              localStorage.setItem('idService', data.idService);
+              localStorage.setItem('role', data.user.role)
 
-            this.$router.push('/home');
+              this.$router.push('/home');
 
             } catch (error) {
               this.errorMessage = error;

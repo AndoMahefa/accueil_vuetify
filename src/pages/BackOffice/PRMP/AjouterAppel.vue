@@ -54,11 +54,6 @@
       Valider les Champs
     </v-btn>
 
-    <!-- Bouton Ajouter un Champ -->
-    <!-- <v-btn color="primary" @click="openAddChampDialog">
-      Ajouter un Champ
-    </v-btn> -->
-
     <v-btn
       fab
       color="primary"
@@ -216,6 +211,8 @@
 </template>
 
 <script>
+import { get, post, put } from '@/service/ApiService';
+
 export default {
   data() {
     return {
@@ -260,20 +257,11 @@ export default {
     // Récupérer les champs depuis l'API
     async fetchChamps() {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch("http://localhost:8000/api/prmp/appel-offre-champs", {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization':  `Bearer ${token}`
-          }
-        });
+        const response = await get('prmp/appel-offre-champs')
 
         if(response.ok) {
           const data = await response.json();
-          console.log("data: " + data)
           this.champs = data;
-          console.log(this.champs)
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des champs :", error);
@@ -308,15 +296,9 @@ export default {
           options: options,
         };
 
-        console.log(payload)
-        const token = localStorage.getItem("token")
-        const response = await fetch('http://localhost:8000/api/prmp/ajout-champ', {
-          method: 'POST',
-          headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
+
+        const response = await post('prmp/ajout-champ', {
+          ...payload
         })
 
         if(response.ok) {
@@ -347,14 +329,18 @@ export default {
 
       console.log(formDataArray)
       // Envoyer les données à l'API
-      const token = localStorage.getItem("token");
-      const response = await fetch('http://localhost:8000/api/prmp/appel-offre-donnees', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ data: formDataArray, id_reference: this.reference_ppm.id }),
+      // const token = localStorage.getItem("token");
+      // const response = await fetch('http://localhost:8000/api/prmp/appel-offre-donnees', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify({ data: formDataArray, id_reference: this.reference_ppm.id }),
+      // })
+      const response = await post('prmp/appel-offre-donnees', {
+        'data': formDataArray,
+        'id_reference': this.reference_ppm.id
       })
 
       if(response.ok) {
@@ -395,15 +381,18 @@ export default {
         };
 
         console.log(payload)
-        const token = localStorage.getItem("token");
-        const response = await fetch(`http://localhost:8000/api/prmp/modif-champ-appel/${this.editedChamp.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
+        // const token = localStorage.getItem("token");
+        // const response = await fetch(`http://localhost:8000/api/prmp/modif-champ-appel/${this.editedChamp.id}`, {
+        //   method: 'PUT',
+        //   headers: {
+        //     'Content-type': 'application/json',
+        //     'Authorization': `Bearer ${token}`,
+        //   },
+        //   body: JSON.stringify(payload),
+        // });
+        const response = await put(`prmp/modif-champ-appel/${this.editedChamp.id}`, {
+          ...payload
+        })
 
         if (response.ok) {
           alert('Champ modifié avec succès');

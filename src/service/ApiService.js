@@ -96,24 +96,30 @@ async function put(endpoint, body) {
 }
 
 // Fonction générique pour effectuer une requête DELETE
-async function del(endpoint) {
+async function del(endpoint, body = null) {
   const token = getAuthToken();
   const role = getRole();
   const url = `${BASE_URL}/${role === 'admin' ? 'admin' : 'user'}/${endpoint}`;
   try {
-    const response = await fetch(url, {
+    const options = {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-      },
-    });
+      }
+    };
+
+    // Ajouter le body seulement s'il existe
+    if (body) {
+      options.body = JSON.stringify(body);
+    }
+
+    const response = await fetch(url, options);
 
     if (response.status === 401) {
-        // Si non autorisé, déconnecter l'utilisateur
-        localStorage.removeItem('token');
-        localStorage.removeItem('idService');
-        window.location.href = '/';  // Rediriger vers la page de login
+      localStorage.removeItem('token');
+      localStorage.removeItem('idService');
+      window.location.href = '/';
     }
 
     return response;

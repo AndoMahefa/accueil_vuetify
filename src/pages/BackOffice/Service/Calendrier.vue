@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import { get } from '@/service/ApiService';
+
 export default {
   data() {
     return {
@@ -54,30 +56,35 @@ export default {
       selectedDate: null,
     }
   },
+  mounted() {
+    this.fetchRdv();
+  },
   methods: {
     async fetchRdv() {
       this.loading = true;
       try {
-        const token = localStorage.getItem('token');
+        // const token = localStorage.getItem('token');
         const idService = localStorage.getItem('idService');
 
-        let url = `http://localhost:8000/api/service/${idService}/rendez-vous`;
+        // let url = `http://localhost:8000/api/service/${idService}/rendez-vous`;
+        let url = `service/${idService}/rendez-vous`;
         if(this.selectedDate) {
           url += `?date=${this.selectedDate}`;
         }
 
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        // const response = await fetch(url, {
+        //   method: 'GET',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${token}`
+        //   }
+        // });
+        const response = await get(url)
 
         if (response.ok) {
           const data = await response.json();
           this.rdv = data.rdv;
-          console.log(this.rdv);
+          // console.log(this.rdv);
         } else {
           console.error('Erreur lors de la récupération des rendez-vous');
         }
@@ -93,9 +100,6 @@ export default {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     },
   },
-  mounted() {
-    this.fetchRdv();
-  }
 }
 </script>
 

@@ -29,17 +29,64 @@
       :hide-default-footer="true"
     >
       <template v-slot:item.actions="{ item }">
-        <v-btn @click="viewDetails(item)" icon class="icon-spacing" color="#6EC1B4">
-          <v-icon>mdi-eye</v-icon>
-        </v-btn>
-        <v-btn @click="editAppelOffre(item)" icon class="icon-spacing" color="#FF7043">
-          <v-icon>mdi-pencil</v-icon>
-        </v-btn>
-        <v-btn @click="confirmDelete(item)" icon class="icon-spacing" color="#66BB6A">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+        <v-icon
+          color="#6EC1B4"
+          class="icon-spacing"
+          @click="viewDetails(item)"
+        >
+          mdi-eye
+        </v-icon>
+        <v-icon
+          class="icon-spacing"
+          color="#FF7043"
+          @click="editAppelOffre(item)"
+        >
+          mdi-pencil
+        </v-icon>
+        <v-icon
+          class="icon-spacing"
+          color="red"
+          @click="confirmDelete(item)"
+        >
+          mdi-delete
+        </v-icon>
+
+        <!-- Modification pour l'icône de création de compte -->
+        <template v-if="item.date_publication != null">
+          <v-tooltip bottom>
+            <template #activator="{ on, attrs }">
+              <v-icon
+                color="green"
+                class="mx-2"
+                v-bind="attrs"
+                v-on="on"
+              >
+                mdi-check
+              </v-icon>
+            </template>
+            <span> Cet Appel d'offre a déjà été publié </span>
+          </v-tooltip>
+        </template>
+        <template v-else>
+          <v-icon
+            color="blue"
+            class="mx-2"
+            @click="confirmPublish(item)"
+          >
+            mdi-publish
+          </v-icon>
+        </template>
       </template>
     </v-data-table>
+
+    <v-btn
+      fab
+      color="primary"
+      @click="showDeletedAppelOffre"
+      rounded
+      style="position: fixed; bottom: 70px; right: 50px; width: 60px; height: 60px; font-size: 25px;">
+      <v-icon>mdi-delete</v-icon>
+    </v-btn>
 
     <!-- Details appel d'offres -->
     <v-dialog v-model="isDetailsOpen" width="100%" max-width="800px">
@@ -79,15 +126,57 @@
 
 
     <!-- Modal de confirmation de suppression -->
-    <v-dialog v-model="isDeleteDialogOpen" max-width="400px">
+    <v-dialog v-model="isDeleteDialogOpen" width="100%" max-width="800px">
       <v-card>
-        <v-card-title class="headline">Confirmer la suppression</v-card-title>
+        <v-card-title class="headline">Confirmer la suppression : {{ appelToDelete.objet }} </v-card-title>
         <v-card-text>
           Êtes-vous sûr de vouloir supprimer cet appel d'offre ?
         </v-card-text>
         <v-card-actions>
           <v-btn text @click="isDeleteDialogOpen = false">Annuler</v-btn>
-          <v-btn color="red" text @click="deleteAppelOffreConfirmed">Confirmer</v-btn>
+          <v-btn color="red" text @click="deleteAppelOffre">Confirmer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modal de publication -->
+    <v-dialog v-model="publishModal" max-width="500px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h6">Publier l'appel d'offre</span>
+        </v-card-title>
+        <v-card-text>
+          <v-container>
+            <v-row>
+              <!-- Champ pour la date d'ouverture de plis -->
+              <v-col cols="12">
+                <v-text-field
+                  v-model="publishData.dateOuverture"
+                  label="Date d'ouverture des plis"
+                  type="date"
+                  outlined
+                  required
+                />
+              </v-col>
+              <!-- Champ pour l'heure limite -->
+              <v-col cols="12">
+                <v-text-field
+                  v-model="publishData.heureLimite"
+                  label="Heure limite"
+                  type="time"
+                  outlined
+                  required
+                />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <!-- Bouton Annuler -->
+          <v-btn text @click="closePublishModal">Annuler</v-btn>
+          <!-- Bouton Publier -->
+          <v-btn color="primary" @click="sendPublish">Publier</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -95,6 +184,8 @@
 </template>
 
 <script>
+import { del, get, put } from '@/service/ApiService';
+
 export default {
   data() {
     return {
@@ -102,7 +193,7 @@ export default {
       headers: [
         { title: "Nature", align: 'start', value: 'nature', sortable: true },
         { title: "Objet", align: 'start', width: '700px', value: 'objet', sortable: true },
-        { title: 'Actions', value: 'actions', sortable: false },
+        { title: 'Actions', align: 'center', value: 'actions', sortable: false },
       ],
       references: [],
       selectedRef: null,
@@ -112,6 +203,13 @@ export default {
 
       isDeleteDialogOpen: false,
       appelToDelete: null, // L'appel d'offre à supprimer
+
+      publishModal: false,
+      publishData: {
+        dateOuverture: null,
+        heureLimite: null,
+      },
+      selectedAppel: null,
     };
   },
   mounted() {
@@ -122,23 +220,15 @@ export default {
     // Récupérer tous les appels d'offres depuis l'API
     async fetchAppelsOffres() {
       try {
-        const token = localStorage.getItem("token");
-        let url = 'http://localhost:8000/api/prmp/appels-offres';
+        let url = 'prmp/appels-offres';
         if(this.selectedRef) {
           url += `?reference=${this.selectedRef}`
         }
-        console.log(url)
-        const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await get(url)
 
         if (response.ok) {
           const data = await response.json();
-          console.log(data)
+          // console.log(data)
           this.appelsOffres = data;
         }
       } catch (error) {
@@ -146,15 +236,7 @@ export default {
       }
     },
     async fetchRef() {
-      const token = localStorage.getItem("token")
-      const response = await fetch('http://localhost:8000/api/prmp/references', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      })
-
+      const response = await get('prmp/references')
 
       if(response.ok) {
         const refs = await response.json();
@@ -162,15 +244,8 @@ export default {
       }
     },
     async viewDetails(item) {
-      const token = localStorage.getItem("token");
       try {
-        const response = await fetch(`http://localhost:8000/api/prmp/appels-offres/${item.id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const response = await get(`prmp/appels-offres/${item.id}`)
 
         if (response.ok) {
           const data = await response.json();
@@ -201,28 +276,41 @@ export default {
       this.isDeleteDialogOpen = true; // Ouvrir la modal de confirmation
     },
     // Fonction pour supprimer un appel d'offre
-    async deleteAppelOffre(item) {
+    async deleteAppelOffre() {
       try {
-        const token = localStorage.getItem("token")
-        const response = await fetch(`http://localhost:8000/api/prmp/appel-offre/${item.id}/delete`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await del(`prmp/appel-offre/${this.appelToDelete.id}/delete`)
 
         if (response.ok) {
           this.fetchAppelsOffres(); // Recharger la liste après suppression
           this.isDeleteDialogOpen = false
-          alert('Appel d\'offre supprimé avec succès');
         } else {
           alert('Erreur lors de la suppression de l\'appel d\'offre');
         }
       } catch (error) {
         console.error("Erreur lors de la suppression de l'appel d'offre :", error);
       }
-    }
+    },
+    showDeletedAppelOffre() {
+      this.$router.push({ name: 'DeletedAppelOffre' });
+    },
+    confirmPublish(item) {
+      this.selectedAppel = item;
+      this.publishModal = true;
+    },
+    closePublishModal() {
+      this.publishModal = false;
+    },
+    async sendPublish() {
+      const response = await put(`prmp/appel-offre/${this.selectedAppel.id}/publier`, {
+        'date_ouverture_plis': this.publishData.dateOuverture,
+        'heure_limite': this.publishData.heureLimite,
+      })
+
+      if(response.ok) {
+        this.fetchAppelsOffres();
+        this.closePublishModal();
+      }
+    },
   },
 };
 </script>

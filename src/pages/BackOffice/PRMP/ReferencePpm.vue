@@ -33,6 +33,8 @@
 </template>
 
 <script>
+import { get, post } from '@/service/ApiService';
+
 export default {
   data() {
     return {
@@ -51,13 +53,15 @@ export default {
   methods: {
     async fetchReferences() {
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/prmp/references", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        // const token = localStorage.getItem("token");
+        // const response = await fetch("http://localhost:8000/api/prmp/references", {
+        //   method: "GET",
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        // });
+        const response = await get('prmp/references')
+
         if (response.ok) {
           const result = await response.json();
           this.references = result; // Charger les références
@@ -70,19 +74,23 @@ export default {
     },
     async submitForm() {
       try {
-        const token = localStorage.getItem("token");
+        // const token = localStorage.getItem("token");
         let referenceToUse = null;
 
         // Si une nouvelle référence est saisie, l'enregistrer
         if (this.newReference) {
-          const response = await fetch("http://localhost:8000/api/prmp/reference", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ reference: this.newReference }),
-          });
+          console.log("nouvelle reference : " + this.newReference)
+          // const response = await fetch("http://localhost:8000/api/prmp/reference", {
+          //   method: "POST",
+          //   headers: {
+          //     "Content-Type": "application/json",
+          //     Authorization: `Bearer ${token}`,
+          //   },
+          //   body: JSON.stringify({ reference: this.newReference }),
+          // });
+          const response = await post('prmp/reference', {
+            'reference': this.newReference
+          })
 
           if (response.ok) {
             const result = await response.json();

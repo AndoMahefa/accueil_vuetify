@@ -33,6 +33,7 @@
 </template>
 
 <script>
+import { post } from '@/service/ApiService';
 import FormatDate from '@/service/FormatDate';
 
 export default {
@@ -59,18 +60,21 @@ export default {
     async fetchTickets() {
       this.loading = true;
       const idService = localStorage.getItem('idService');
-      const token = localStorage.getItem('token');
+      // const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`http://localhost:8000/api/service/file-d'attente`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id_service: idService, // Filtrer par id_service
-          }),
-        });
+        // const response = await fetch(`http://localhost:8000/api/service/file-d'attente`, {
+        //   method: 'POST',
+        //   headers: {
+        //     Authorization: `Bearer ${token}`,
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify({
+        //     id_service: idService, // Filtrer par id_service
+        //   }),
+        // });
+        const response = await post(`service/file-d'attente`, {
+          'id_service': idService
+        })
 
         if (response.ok) {
           const data = await response.json();

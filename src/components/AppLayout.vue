@@ -41,7 +41,8 @@ export default {
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
         { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"}
+        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
+        { title: "Remise d'offre", icon: "mdi-file-document", to: "/home/remise-offre" }
       ],
       autreService: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
@@ -101,11 +102,12 @@ export default {
         },
 
         // Tous les autres services
+        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu-service" },
         { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
-        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
-        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
+        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux-service" },
         { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
-
+        { title: "Remise d'offre", icon: "mdi-file-document", to: "/home/remise-offre" },
+        { title: "Liste soumissionaire", icon: "mdi-format-list-bulleted", to: "/home/liste-soumissionaire" }
       ]
     };
   },

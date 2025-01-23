@@ -25,6 +25,12 @@ import ListeEmployeParService from '@/pages/BackOffice/Admin/Employe/ListeEmploy
 import DeletedService from '@/pages/BackOffice/Admin/Service/DeletedService.vue';
 import DeletedEmploye from '@/pages/BackOffice/Admin/Employe/DeletedEmploye.vue';
 import RoleEmploye from '@/pages/BackOffice/Admin/Employe/RoleEmploye.vue';
+import ListeDemandeRecuService from '@/pages/BackOffice/Admin/Service/ListeDemandeRecuService.vue';
+import JourCreneauxService from '@/pages/BackOffice/Admin/Service/JourCreneauxService.vue';
+import Inscription from '@/pages/BackOffice/Admin/Inscription/Inscription.vue';
+import DeletedAppelOffre from '@/pages/BackOffice/Admin/AO/DeletedAppelOffre.vue';
+import RemiseOffre from '@/pages/BackOffice/Visiteur/RemiseOffre.vue';
+import ListeSoumissionaire from '@/pages/BackOffice/Visiteur/ListeSoumissionaire.vue';
 
 const routes = [
   {
@@ -65,6 +71,13 @@ const routes = [
         name: 'DemandeRecu',
         component: ListeDemandeRecu
       },
+
+      {
+        path: 'demande-recu-service',
+        name: 'DemandeRecuService',
+        component: ListeDemandeRecuService
+      },
+
       {
         path: 'file-attente-service',
         name: 'FileAttenteService',
@@ -74,6 +87,11 @@ const routes = [
         path: 'jour-creneaux',
         name: 'JourCreneaux',
         component: JourCreneaux
+      },
+      {
+        path: 'jour-creneaux-service',
+        name: 'JourCreneauxService',
+        component: JourCreneauxService
       },
       {
         path: 'rendez-vous',
@@ -145,14 +163,25 @@ const routes = [
         path: 'role-employe',
         name: 'RoleEmploye',
         component: RoleEmploye
+      },
+      {
+        path: 'deleted-appel-offre',
+        name: 'DeletedAppelOffre',
+        component: DeletedAppelOffre
+      },
+      {
+        path: 'remise-offre',
+        name: 'RemiseOffre',
+        component: RemiseOffre
+      },
+      {
+        path: 'liste-soumissionaire',
+        name: 'ListeSoumissionaire',
+        component: ListeSoumissionaire
       }
     ]
   },
-  // {
-  //   path: '/rendez-vous',
-  //   name: RendezVous,
-  //   component: RendezVous
-  // }
+
   {
     path: '/client',
     name: 'Client',
@@ -169,6 +198,12 @@ const routes = [
         component: AppOffre
       }
     ]
+  },
+
+  {
+    path: '/admin/inscription',
+    name: 'Inscription',
+    component: Inscription
   }
 ];
 

@@ -1,57 +1,58 @@
 <template>
   <v-sheet class="mx-auto mt-10" max-width="500 px" width="100%">
-      <div class="form-title">
-          <span class="bold-text">Appel d'offre</span> / Ajouter
-      </div>
-              <v-form ref="form">
-          <!-- Titre -->
-          <v-text-field
-            label="Titre"
-            v-model="appelOffre.titre"
-            required
-          ></v-text-field>
+    <div class="form-title">
+      <span class="bold-text">Appel d'offre</span> / Ajouter
+    </div>
+    <v-form ref="form">
+      <!-- Titre -->
+      <v-text-field
+        v-model="appelOffre.titre"
+        label="Titre"
+        required
+      />
+      <!-- Description -->
+      <v-textarea
+        v-model="appelOffre.description"
+        label="Description"
+        required
+      />
 
-          <!-- Description -->
-          <v-textarea
-            label="Description"
-            v-model="appelOffre.description"
-            required
-          ></v-textarea>
+      <!-- Date de lancement -->
+      <v-text-field
+        v-model="appelOffre.date_lancement"
+        label="Date de lancement"
+        type="date"
+        :min="minDate"
+        required
+      />
 
-          <!-- Date de lancement -->
-          <v-text-field
-            label="Date de lancement"
-            type="date"
-            :min="minDate"
-            v-model="appelOffre.date_lancement"
-            required
-          ></v-text-field>
+      <!-- Date limite -->
+      <v-text-field
+        v-model="appelOffre.date_limite"
+        label="Date limite"
+        type="date"
+        :min="minDate"
+        required
+      />
 
-          <!-- Date limite -->
-          <v-text-field
-            label="Date limite"
-            type="date"
-            :min="minDate"
-            v-model="appelOffre.date_limite"
-            required
-          ></v-text-field>
+      <!-- Budget estimé -->
+      <v-text-field
+        v-model="appelOffre.budget_estime"
+        label="Budget estimé"
+        type="number"
+        required
+      />
+    </v-form>
 
-          <!-- Budget estimé -->
-          <v-text-field
-            label="Budget estimé"
-            v-model="appelOffre.budget_estime"
-            type="number"
-            required
-          ></v-text-field>
-        </v-form>
-
-        <v-btn class="mt-2" block color="primary" @click="submitForm">
-          Ajouter
-        </v-btn>
+    <v-btn class="mt-2" block color="primary" @click="submitForm">
+      Ajouter
+    </v-btn>
   </v-sheet>
 </template>
 
 <script>
+import { post } from '@/service/ApiService';
+
 export default {
   data() {
     return {
@@ -78,20 +79,22 @@ export default {
     },
 
     async submitForm() {
-      const token = localStorage.getItem('token');
-      console.log(this.appelOffre)
+      // const token = localStorage.getItem('token');
+      // console.log(this.appelOffre)
       try {
-        const response = await fetch('http://localhost:8000/api/prmp/appel-offre', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(this.appelOffre),
-        });
-        if (response.ok) {
-          alert('Appel d\'offre ajouté avec succès !');
+        // const response = await fetch('http://localhost:8000/api/prmp/appel-offre', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${token}`
+        //   },
+        //   body: JSON.stringify(this.appelOffre),
+        // });
+        const response = await post('prmp/appel-offre', {
+          ...this.appelOffre
+        })
 
+        if (response.ok) {
           this.resetForm();
         } else {
           alert('Erreur lors de l\'ajout de l\'appel d\'offre.');

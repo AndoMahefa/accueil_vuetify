@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/attribute-hyphenation -->
 <template>
   <v-container>
     <v-card>
@@ -12,27 +11,23 @@
           mdi-arrow-left
         </v-icon>
         <span>
-          Liste des employes supprimes
+          Liste des appels d'offres supprimes
         </span>
       </v-card-title>
       <!-- Tableau stylisé -->
       <v-data-table
         :headers="headers"
-        :items="employes"
+        :items="appelsOffres"
         item-key="id"
         :loading="loading"
         :hide-default-footer="true"
       >
         <template #item="{ item }">
           <tr>
-            <td> {{ item.nom }}</td>
-            <td> {{ item.prenom }}</td>
-            <td> {{ item.genre }}</td>
-            <td> {{ item.adresse }}</td>
-            <td> {{ item.cin }}</td>
-            <td> {{ item.telephone }}</td>
+            <td> {{ item.nature }}</td>
+            <td> {{ item.objet }}</td>
+            <td> {{ item.reference }}</td>
             <td> {{ FormatDate(item.deleted_at) }} </td>
-            <td> {{ item.service.nom }} </td>
             <td>
               <!-- Icônes pour les actions -->
               <v-icon
@@ -46,20 +41,6 @@
           </tr>
         </template>
       </v-data-table>
-
-      <v-row justify="center">
-        <v-col cols="8">
-          <v-container class="max-width">
-            <v-pagination
-              v-model="page"
-              :length="totalPages"
-              class="my-4"
-              rounded="circle"
-              @update:model-value="fetchAppels"
-            />
-          </v-container>
-        </v-col>
-      </v-row>
     </v-card>
 
     <!-- Modal de confirmation pour restaurer -->
@@ -67,11 +48,11 @@
       <v-card>
         <v-card-title>Confirmer la restauration</v-card-title>
         <v-card-text>
-          Êtes-vous sûr de vouloir restaurer le employe
-          <strong>{{ employe?.nom }}  {{ employe?.prenom }}</strong> ?
+          Êtes-vous sûr de vouloir restaurer l'appel d'offre : 
+          <strong>{{ appelOffre?.objet }}</strong> ?
         </v-card-text>
         <v-card-actions>
-          <v-btn color="red" @click="restoreService">Restaurer</v-btn>
+          <v-btn color="red" @click="restoreAppel">Restaurer</v-btn>
           <v-btn color="secondary" @click="closeRestoreConfirmation">Annuler</v-btn>
         </v-card-actions>
       </v-card>
@@ -86,59 +67,51 @@ import FormatDate from '@/service/FormatDate';
 export default {
   data() {
     return {
-      employes: [],
+      appelsOffres: [],
       loading: false,
 
       headers: [
-        { title: 'Nom', value: 'nom' },
-        { title: 'Prenom', value: 'prenom' },
-        { title: 'Genre', value: 'genre' },
-        { title: 'Adresse', value: 'adresse' },
-        { title: 'CIN', value: 'cin' },
-        { title: 'telephone', value: 'nom' },
+        { title: 'Nature', align: "start", value: 'nature' },
+        { title: 'Objet', align: "start", value: 'objet' },
+        { title: 'Reference', align: "start", value: 'reference' },
         { title: 'Supprimé le', value: 'deleted_at' },
-        { title: 'Service', value: 'service' },
-        { title: 'Actions', align: 'center', width: '50px', sortable: 'false' },
+        { title: 'Actions', width: '350px', sortable: 'false' },
       ],
-      employe: null,
+      appelOffre: null,
       restoreConfirmationDialog: false,
-      page: null, // Page actuelle
-      totalPages: null,
+      // page: null,
+      // totalPages: null
     }
   },
   mounted() {
-    this.fetchServicesDeleted();
+    this.fetchDeletedAppelOffre();
   },
   methods: {
-    async fetchServicesDeleted() {
+    async fetchDeletedAppelOffre() {
       this.loading = true;
-      let url = 'employes/deleted';
-      if(this.page) {
-        url += `?page=${this.page}`
-      }
-      const response = await get(url);
+      const response = await get('prmp/appels-offres-deleted');
 
       if(response.ok) {
         const data = await response.json();
-        this.employes = data.employes.data;
-        this.totalPages = data.last_pages
+        this.appelsOffres = data;
+        console.log(this.appelsOffres)
         this.loading = false;
       }
     },
     goBack() {
-      this.$router.push({ path: '/home/liste-employes' }); // Remplacez par le bon chemin
+      this.$router.push({ path: '/home/liste-appels' }); // Remplacez par le bon chemin
     },
     restoreModal(item) {
-      this.employe = item
+      this.appelOffre = item
       this.restoreConfirmationDialog = true
     },
     closeRestoreConfirmation() {
       this.restoreConfirmationDialog = false
     },
-    async restoreService() {
-      const response = await post(`employes/${this.employe.id}/restore`)
+    async restoreAppel() {
+      const response = await post(`prmp/appel-offre/${this.appelOffre.id}/restore`)
       if(response.ok) {
-        this.fetchServicesDeleted()
+        this.fetchDeletedAppelOffre()
         this.closeRestoreConfirmation()
       }
     },

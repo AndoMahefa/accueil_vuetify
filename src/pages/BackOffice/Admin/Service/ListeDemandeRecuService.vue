@@ -1,49 +1,57 @@
 <template>
   <v-container>
     <v-card>
-        <v-card-title>Liste des demandes reçues du jour</v-card-title>
-
-        <v-data-table
-            :items="demandes"
-            :headers="headers"
+      <v-card-title>Liste des demandes reçues du jour</v-card-title>
+      <v-row>
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="selectedService"
+            :items="services"
+            label="Choisir un service"
+            item-title="nom"
             item-value="id"
-            class="elevation-1"
-            loading-text="Chargement des données..."
-            :hide-default-footer="true"
-        >
-            <!-- Colonnes personnalisées -->
-            <template #item="{ item }">
-                <tr>
-                    <td> {{ item.nom }} </td>
-                    <td> {{ item.prenom }} </td>
-                    <td>
-                    <!-- Boutons avec des espacements -->
-                    <div class="d-flex">
-                        <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
-                            <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
-                        </v-btn>
-                        <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
-                            <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
-                        </v-btn>
-                        <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
-                            <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
-                        </v-btn>
-                    </div>
-                    </td>
-                </tr>
-            </template>
-        </v-data-table>
-
-        <!-- Pagination -->
-        <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
+            @update:model-value="fetchDemandes"
+          />
+        </v-col>
+      </v-row>
+      <v-data-table
+        :items="demandes"
+        :headers="headers"
+        item-value="id"
+        class="elevation-1"
+        loading-text="Chargement des données..."
+        :hide-default-footer="true"
+      >
+        <!-- Colonnes personnalisées -->
+        <template #item="{ item }">
+          <tr>
+            <td> {{ item.nom }} </td>
+            <td> {{ item.prenom }} </td>
+            <td>
+              <!-- Boutons avec des espacements -->
+              <div class="d-flex">
+                <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
+                  <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
+                </v-btn>
+                <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
+                  <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
+                </v-btn>
+                <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
+                  <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
     </v-card>
 
     <!-- Modal pour afficher les détails du visiteur -->
     <v-dialog v-model="dialog" max-width="500px">
       <v-card class="digital-id-card">
         <v-card-title class="d-flex align-center justify-space-between">
-            <div class="headline">Identité du Visiteur</div>
-            <v-icon color="grey darken-2">mdi-account-circle</v-icon>
+          <div class="headline">Identité du Visiteur</div>
+          <v-icon color="grey darken-2">mdi-account-circle</v-icon>
         </v-card-title>
 
         <v-card-text>
@@ -141,108 +149,121 @@
 import { get, post } from '@/service/ApiService';
 
 export default {
-    data() {
-        return {
-            demandes: [],
-            headers: [
-                { title: 'Nom', value: 'nom' },
-                { title: 'Prenom', value: 'prenom' }
-            ],
-            visiteur: {
-                nom: '',
-                prenom: '',
-                pivot: {
-                    motif_visite: '',
-                    date_heure_arrivee: ''
-                },
-                cin: '',
-                telephone: '',
-                email: ''
-            },
-            dialog: false,
-            genererTicket: false,
-            selectedRequest: null,
-            ticket: {
-                temps_estime: '',
-            },
-            refuserDemande: false
-            // totalPages: 0, // Nombre total de pages
-            // loading: false, // Indicateur de chargement
-            // pagination: {
-            //     page: 1,
-            // },
-        }
-    },
-    mounted() {
-        this.fetchDemandes()
-    },
-    methods: {
-        async fetchDemandes() {
-            const idService = localStorage.getItem('idService')
-            try {
-                const response = await get(`services/${idService}/demandes`)
-                if (response && response.ok) {
-                    const data = await response.json()
-                    console.log(data.visiteurs)
-                    this.demandes = data.visiteurs
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        },
-        showDetails(item) {
-            this.visiteur = item;
-            this.dialog = true;
-        },
-        acceptDemande(item) {
-            this.selectedRequest = item;
-            this.genererTicket = true;
-        },
-        async generateTicket() {
-            const idService = localStorage.getItem("idService");
-            const idVisiteur = this.selectedRequest.id;
-            console.log("idVisiteur: " + idVisiteur + " idService: " + idService + " temps estime: " + this.ticket.temps_estime);
-            try {
-                const response = await post(`service/generer-ticket`, {
-                    'temps_estime' : this.ticket.temps_estime,
-                    'id_service' : idService,
-                    'id_visiteur' : idVisiteur
-                });
+  data() {
+    return {
+      demandes: [],
+      headers: [
+          { title: 'Nom', value: 'nom' },
+          { title: 'Prenom', value: 'prenom' }
+      ],
+      visiteur: {
+          nom: '',
+          prenom: '',
+          pivot: {
+              motif_visite: '',
+              date_heure_arrivee: ''
+          },
+          cin: '',
+          telephone: '',
+          email: ''
+      },
+      dialog: false,
+      genererTicket: false,
+      selectedRequest: null,
+      ticket: {
+          temps_estime: '',
+      },
+      refuserDemande: false,
 
-                if (response && response.ok) {
-                    alert('Ticket generer avec succes');
-                    this.selectedRequest = null
-                    this.genererTicket = false;
-                    this.ticket.temps_estime = '';
-                    this.fetchDemandes()
-                }
-            } catch (error) {
-                console.log(error);
-            }
-        },
-        refuseDemande(item) {
-            this.selectedRequest = item;
-            this.refuserDemande = true;
-        },
-        async refus() {
-            const idService = localStorage.getItem("idService");
-            const idVisiteur = this.selectedRequest.id;
-            try {
-                const response = await post('service/refuser-demande', {
-                    'id_service' : idService,
-                    'id_visiteur' : idVisiteur
-                });
-
-                if (response && response.ok) {
-                    alert('Statut refuse avec succes');
-                    this.refuserDemande = false;
-                    this.fetchDemandes()
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        }
+      selectedService: null,
+      services: []
     }
+  },
+  async mounted() {
+    await this.fetchServices()
+    if (this.services.length > 0) {
+      this.selectedService = this.services[0].id; // Utilise le premier service comme valeur par défaut
+      this.fetchDemandes(); // Charger les employés pour le service par défaut
+    }
+    // this.fetchDemandes()
+  },
+  methods: {
+    async fetchDemandes() {
+        try {
+          const response = await get(`services/${this.selectedService}/demandes`)
+          if (response && response.ok) {
+              const data = await response.json()
+              console.log(data.visiteurs)
+              this.demandes = data.visiteurs
+          }
+        } catch (error) {
+            console.log(error)
+        }
+    },
+    showDetails(item) {
+        this.visiteur = item;
+        this.dialog = true;
+    },
+    acceptDemande(item) {
+        this.selectedRequest = item;
+        this.genererTicket = true;
+    },
+    async generateTicket() {
+      const idVisiteur = this.selectedRequest.id;
+      console.log("idVisiteur: " + idVisiteur + " idService: " + this.selectedService + " temps estime: " + this.ticket.temps_estime);
+      try {
+          const response = await post(`service/generer-ticket`, {
+              'temps_estime' : this.ticket.temps_estime,
+              'id_service' : this.selectedService,
+              'id_visiteur' : idVisiteur
+          });
+
+          if (response && response.ok) {
+              alert('Ticket generer avec succes');
+              this.selectedRequest = null
+              this.genererTicket = false;
+              this.ticket.temps_estime = '';
+              this.fetchDemandes()
+          }
+      } catch (error) {
+          console.log(error);
+      }
+    },
+    refuseDemande(item) {
+        this.selectedRequest = item;
+        this.refuserDemande = true;
+    },
+    async refus() {
+        const idService = localStorage.getItem("idService");
+        const idVisiteur = this.selectedRequest.id;
+        try {
+            const response = await post('service/refuser-demande', {
+                'id_service' : idService,
+                'id_visiteur' : idVisiteur
+            });
+
+            if (response && response.ok) {
+                alert('Statut refuse avec succes');
+                this.refuserDemande = false;
+                this.fetchDemandes()
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    },
+    async fetchServices() {
+      // const idService = localStorage.getItem("idService");
+      try {
+          // const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
+          const response = await get(`accueil/services`); // Charger les services depuis votre API
+          if (response && response.ok) {
+              this.services = await response.json(); // Adapter selon la structure de réponse
+          }
+      } catch (error) {
+          console.error("Erreur lors de la récupération des services :", error);
+      }
+    },
+  }
 }
 </script>
 

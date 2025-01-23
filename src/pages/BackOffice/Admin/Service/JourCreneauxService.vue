@@ -5,6 +5,18 @@
     </div>
 
     <v-row>
+      <v-col cols="12" md="4">
+        <v-select
+          v-model="selectedService"
+          :items="services"
+          label="Choisir un service"
+          item-title="nom"
+          item-value="id"
+          @update:model-value="getCreneaux"
+        />
+      </v-col>
+    </v-row>
+    <v-row>
       <v-col>
         <div class="disponibilites-container">
           <v-card
@@ -17,7 +29,7 @@
             <v-card-title class="jour-title py-4" style="background-color: #007BFF; color: white;">
               <h3 class="font-weight-bold">{{ jour.nom }}</h3>
               <div style="display:flex; gap: 10px;">
-              <!-- Icône pour ajouter un créneau -->
+                <!-- Icône pour ajouter un créneau -->
                 <v-btn icon color="primary" @click="ouvrirModal(jour.id)">
                   <v-icon size="25">mdi-plus</v-icon>
                 </v-btn>
@@ -62,7 +74,7 @@
       </v-col>
     </v-row>
 
-      <!-- Modal -->
+    <!-- Modal -->
     <v-dialog v-model="modalVisible" max-width="750px">
       <v-card>
         <v-card-title>
@@ -80,7 +92,7 @@
                   label="Choisir un jour"
                   item-title="nom"
                   item-value="id"
-                ></v-select>
+                />
               </v-col>
               <v-col cols="6">
                 <v-time-picker
@@ -88,7 +100,7 @@
                   format="24hr"
                   label="Heure de début"
                   class="custom-time-picker"
-                ></v-time-picker>
+                />
               </v-col>
               <v-col cols="6">
                 <v-time-picker
@@ -96,7 +108,7 @@
                   label="Heure de fin"
                   format="24hr"
                   class="custom-time-picker"
-                ></v-time-picker>
+                />
               </v-col>
             </v-row>
           </v-container>
@@ -114,7 +126,7 @@
       </v-card>
     </v-dialog>
 
-        <!-- Modal de confirmation -->
+    <!-- Modal de confirmation -->
     <v-dialog v-model="isDeleteModalOpen" max-width="500px">
       <v-card>
         <v-card-title class="text-h6">
@@ -127,12 +139,12 @@
               v-model="selectedPeriodes"
               label="Matin"
               value="matin"
-            ></v-checkbox>
+            />
             <v-checkbox
               v-model="selectedPeriodes"
               label="Apres-midi"
               value="apres-midi"
-            ></v-checkbox>
+            />
           </v-container>
         </v-card-text>
         <v-card-actions>
@@ -168,10 +180,17 @@ export default {
 
       isDeleteModalOpen: false, // Contrôle l'ouverture du modal
       selectedPeriodes: [],     // Option sélectionnée (matin, après-midi, ou les deux)
+
+      services: [],
+      selectedService: null
     };
   },
-  mounted() {
-    this.getCreneaux();
+  async mounted() {
+    await this.fetchServices()
+    if(this.services.length > 0) {
+      this.selectedService = this.services[0].id
+      this.getCreneaux();
+    }
   },
   methods: {
     matinCreneaux(jourId) {
@@ -196,15 +215,6 @@ export default {
     },
     async saveCreneaux(data) {
       try {
-        // const token = localStorage.getItem("token");
-        // const response = await fetch("http://localhost:8000/api/service/creneaux-register", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     "Authorization": `Bearer ${token}`,
-        //   },
-        //   body: JSON.stringify(data),
-        // });
         const response = await post('service/creneaux-register', {
           ...data
         })
@@ -233,7 +243,8 @@ export default {
         return;
       }
 
-      const id_service = localStorage.getItem("idService");
+      // const id_service = localStorage.getItem("idService");
+      const id_service = this.selectedService;
       this.intervalle = id_service === "3" ? 20 : id_service === "4" ? 60 : 30;
 
       const creneaux = [];
@@ -257,7 +268,6 @@ export default {
         this.getCreneaux();
 
         alert("Créneaux ajoutés avec succès !");
-        // creneaux = [];
       } catch (error) {
         console.error(error);
         alert("Une erreur est survenue lors de l'ajout des créneaux.");
@@ -267,16 +277,7 @@ export default {
     },
     async getCreneaux() {
       try {
-        // const token = localStorage.getItem("token");
-        const idService = localStorage.getItem("idService");
-        // const response = await fetch(`http://localhost:8000/api/service/creneaux/${idService}`, {
-        //   method: "GET",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     "Authorization": `Bearer ${token}`,
-        //   },
-        // });
-        const response = await get(`service/creneaux/${idService}`)
+        const response = await get(`service/creneaux/${this.selectedService}`)
 
         if (!response.ok) {
           throw new Error(`Erreur HTTP: ${response.status}`);
@@ -315,6 +316,7 @@ export default {
     async confirmDelete() {
       if (this.selectedPeriodes && this.jourSelectionne) {
         console.log("selectedPeriodes: " + this.selectedPeriodes)
+        console.log("joursSelectionne: " + this.jourSelectionne)
         // Appeler l'API pour supprimer les créneaux
         await this.deleteCreneaux(this.selectedPeriodes);
       } else {
@@ -322,20 +324,8 @@ export default {
       }
     },
     async deleteCreneaux(option) {
-      console.log("options: " + option)
-      // const token = localStorage.getItem("token");
-      const idService = localStorage.getItem("idService");
+      const idService = this.selectedService;
       try {
-        // const response = await fetch(`http://localhost:8000/api/service/${idService}/delete-creneaux/${this.jourSelectionne}`, {
-        //   method: "DELETE",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     "Authorization": `Bearer ${token}`
-        //   },
-        //   body: JSON.stringify({
-        //     periodes: option,
-        //   }),
-        // });
         const response = await del(`service/${idService}/delete-creneaux/${this.jourSelectionne}`, {
           'periodes': option
         })
@@ -350,6 +340,18 @@ export default {
         console.error("Erreur:", error);
       }
       this.cancelDelete(); // Fermer le modal après l'opération
+    },
+    async fetchServices() {
+      // const idService = localStorage.getItem("idService");
+      try {
+          // const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
+          const response = await get(`accueil/services`); // Charger les services depuis votre API
+          if (response && response.ok) {
+              this.services = await response.json(); // Adapter selon la structure de réponse
+          }
+      } catch (error) {
+          console.error("Erreur lors de la récupération des services :", error);
+      }
     },
   },
 }

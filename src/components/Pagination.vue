@@ -3,11 +3,10 @@
     <v-col cols="8">
       <v-container class="max-width">
         <v-pagination
-          :model-value="currentPage"
+          v-model="currentPageModel"
           :length="totalPages"
           class="my-4"
           rounded="circle"
-          @update:model-value="onPageChange" 
         />
       </v-container>
     </v-col>
@@ -20,21 +19,22 @@ export default {
   props: {
     totalPages: {
       type: Number,
-      required: true,
+      required: true
     },
     currentPage: {
       type: Number,
-      required: true,
+      required: true
     },
   },
-  methods: {
-    onPageChange(page) {
-      // Émettez un événement pour informer le parent
-      this.$emit('page-changed', page);
-    },
-  },
+  computed: {
+    currentPageModel: {
+      get() {
+        return this.currentPage;
+      },
+      set(value) {
+        this.$emit('page-changed', value);
+      }
+    }
+  }
 };
 </script>
-
-<style scoped>
-</style>

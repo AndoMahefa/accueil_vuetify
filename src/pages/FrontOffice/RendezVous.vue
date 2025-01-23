@@ -147,7 +147,6 @@
 
 
 <script>
-import { get } from '@/service/ApiService.js';
 import Holidays from 'date-holidays';
 
 export default {
@@ -215,14 +214,14 @@ export default {
     async findJourDispo() {
       if(this.selectedService) {
         console.log(this.selectedService)
-        const token = localStorage.getItem('token');
+        // const token = localStorage.getItem('token');
         const idService = this.selectedService;
         try {
           const response = await fetch(`http://localhost:8000/api/service/${idService}/jours-disponible`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              // 'Authorization': `Bearer ${token}`
             }
           });
 
@@ -261,12 +260,12 @@ export default {
       try {
         const idService = this.selectedService;
         const dayOfWeek = new Date(this.selectedDate).getDay();
-        const token = localStorage.getItem('token');
+        // const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:8000/api/service/${idService}/creneaux/${dayOfWeek}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            // 'Authorization': `Bearer ${token}`
           }
         });
 
@@ -281,7 +280,7 @@ export default {
           return this.allTimeSlots;
         }
       } catch (error) {
-
+        console.log("error: " + error)
       }
     },
     // Charger les créneaux disponibles pour une date et un service
@@ -397,10 +396,17 @@ export default {
     },
     async fetchServices() {
       try {
-        const response = await get('services'); // Charger les services depuis votre API
-        if (response && response.ok) {
+        const response = await fetch('http://localhost:8000/api/services/except-accueil', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        // const response = await get('services/except-accueil'); // Charger les services depuis votre API
+
+        if (response.ok) {
           const data = await response.json();
-          this.services = data.services // Adapter selon la structure de réponse
+          this.services = data // Adapter selon la structure de réponse
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des services :", error);
