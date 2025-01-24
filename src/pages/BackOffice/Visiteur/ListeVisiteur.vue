@@ -19,15 +19,30 @@
             <td>
               <!-- Boutons avec des espacements -->
               <div class="d-flex">
-                <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
-                  <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
-                </v-btn>
-                <v-btn icon @click="editVisitor(item)" color="#FF7043" rounded class="ml-10">
-                  <v-icon>mdi-pencil</v-icon> <!-- Icône pour modifier l'utilisateur -->
-                </v-btn>
-                <v-btn icon @click="openDemandeDialog(item)" color="#66BB6A" rounded class="ml-10">
-                  <v-icon>mdi-email</v-icon> <!-- Icône pour la demande de service -->
-                </v-btn>
+                <v-icon
+                  color="blue"
+                  rounded
+                  class="ml-10"
+                  @click="showDetails(item)"
+                >
+                  mdi-eye
+                </v-icon> <!-- Icône pour afficher les détails -->
+                <v-icon
+                  color="#FF7043"
+                  rounded
+                  class="ml-10"
+                  @click="editVisitor(item)"
+                >
+                  mdi-pencil
+                </v-icon>
+                <v-icon
+                  color="#66BB6A"
+                  rounded
+                  class="ml-10"
+                  @click="openDemandeDialog(item)"
+                >
+                  mdi-email
+                </v-icon> <!-- Icône pour la demande de service -->
               </div>
             </td>
           </tr>
@@ -215,6 +230,7 @@
           headers: [
               { title: 'Nom', value: 'nom' },
               { title: 'Prénom', value: 'prenom' },
+              { title: 'Actions', align: 'center', width: '250px', sortable: 'false' }
           ],
           loading: false, // Indicateur de chargement
           dialog: false, // Indicateur pour afficher le modal
