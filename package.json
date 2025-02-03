@@ -10,6 +10,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@balkangraph/orgchart.js": "^8.15.4",
     "@mdi/font": "7.4.47",
     "date-holidays": "^3.23.14",
     "roboto-fontface": "*",

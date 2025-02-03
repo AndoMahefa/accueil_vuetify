@@ -31,6 +31,7 @@ import Inscription from '@/pages/BackOffice/Admin/Inscription/Inscription.vue';
 import DeletedAppelOffre from '@/pages/BackOffice/Admin/AO/DeletedAppelOffre.vue';
 import RemiseOffre from '@/pages/BackOffice/Visiteur/RemiseOffre.vue';
 import ListeSoumissionaire from '@/pages/BackOffice/Visiteur/ListeSoumissionaire.vue';
+import Organigramme from '@/pages/BackOffice/Admin/Organigramme/Organigramme.vue';
 
 const routes = [
   {
@@ -50,6 +51,11 @@ const routes = [
       }
     },
     children: [
+      {
+        path: 'organigramme',
+        name: 'Organigramme',
+        component: Organigramme
+      },
       {
         path: 'enregistrer-visiteur',
         name: 'EnregistrerVisiteur',

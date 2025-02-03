@@ -29,37 +29,54 @@
             <td> {{ item.telephone }}</td>
             <td>
               <!-- Icônes pour les actions -->
-              <v-icon
-                color="primary"
-                class="mx-2"
-                @click="editModal(item)"
-              >
-                mdi-pencil
-              </v-icon>
-              <v-icon
-                color="red"
-                class="mx-2"
-                @click="deleteModal(item)"
-              >
-                mdi-delete
-              </v-icon>
-              <v-icon
-                color="success"
-                class="mx-2"
-                @click="assignRoleModal(item)"
-              >
-                mdi-account-cog
-              </v-icon>
+              <v-tooltip location="bottom" attach="body">
+                <template #activator="{props}">
+                  <v-icon
+                    color="primary"
+                    class="mx-2"
+                    v-bind="props"
+                    @click="editModal(item)"
+                  >
+                    mdi-pencil
+                  </v-icon>
+                </template>
+                <span>Editer</span>
+              </v-tooltip>
+              <v-tooltip location="bottom" attach="body">
+                <template #activator="{props}">
+                  <v-icon
+                    color="red"
+                    class="mx-2"
+                    v-bind="props"
+                    @click="deleteModal(item)"
+                  >
+                    mdi-delete
+                  </v-icon>
+                </template>
+                <span>Supprimer</span>
+              </v-tooltip>
+              <v-tooltip location="bottom" attach="body">
+                <template #activator="{props}">
+                  <v-icon
+                    color="success"
+                    class="mx-2"
+                    v-bind="props"
+                    @click="assignRoleModal(item)"
+                  >
+                    mdi-account-cog
+                  </v-icon>
+                </template>
+                <span>Attribuer un role</span>
+              </v-tooltip>
 
               <!-- Modification pour l'icône de création de compte -->
               <template v-if="item.utilisateur">
-                <v-tooltip bottom>
-                  <template #activator="{ on, attrs }">
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{ props }">
                     <v-icon
                       color="green"
                       class="mx-2"
-                      v-bind="attrs"
-                      v-on="on"
+                      v-bind="props"
                     >
                       mdi-check
                     </v-icon>

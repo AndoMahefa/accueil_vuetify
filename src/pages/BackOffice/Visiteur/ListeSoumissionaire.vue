@@ -47,6 +47,19 @@
         </v-icon>
       </template>
     </v-data-table>
+    <v-row justify="center">
+      <v-col cols="8">
+        <v-container class="max-width">
+          <v-pagination
+            v-model="page"
+            :length="totalPages"
+            class="my-4"
+            rounded="circle"
+            @update:model-value="fetchAppels"
+          />
+        </v-container>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -66,6 +79,8 @@ export default {
         { title: "Appel d'offre", value: "appel_offre" },
         { title: "Actions", align:'center', value: "actions", sortable: false },
       ],
+      page: null,
+      totalPages: null
     };
   },
   mounted() {
@@ -77,9 +92,14 @@ export default {
       if(this.selectedAppel) {
         url += `?id_appel_offre=${this.selectedAppel}`
       }
+      if(this.page) {
+        url += `&page=${this.page}`
+      }
       const response = await get(url);
       if (response.ok) {
         const data = await response.json();
+        this.totalPages = data.last_page;
+        this.page = data.current_page;
         this.appels = data.soumissionaires.data.map((soumissionaire) => ({
           soumissionaire: `${soumissionaire.nom} ${soumissionaire.prenom}`,
           entreprise: soumissionaire.entreprise,

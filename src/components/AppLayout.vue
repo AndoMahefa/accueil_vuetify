@@ -65,6 +65,12 @@ export default {
       ],
       itemsAdmin: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
+        // Organigramme
+        {
+          title: 'Organigramme',
+          icon: 'mdi-sitemap',
+          to: '/home/organigramme'
+        },
         // Services
         {
           title: "Services",
@@ -97,7 +103,9 @@ export default {
           icon: "mdi-file-document",
           items: [
             { title: "Ajout d'un appel d'offre", to: "/home/save-reference" },
-            { title: "Liste des appels d'offres", to: "/home/liste-appels" }
+            { title: "Liste des appels d'offres", to: "/home/liste-appels" },
+            { title: "Remise d'offre", to: "/home/remise-offre" },
+            { title: "Liste soumissionaire", to: "/home/liste-soumissionaire" }
           ]
         },
 
@@ -106,8 +114,6 @@ export default {
         { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
         { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux-service" },
         { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
-        { title: "Remise d'offre", icon: "mdi-file-document", to: "/home/remise-offre" },
-        { title: "Liste soumissionaire", icon: "mdi-format-list-bulleted", to: "/home/liste-soumissionaire" }
       ]
     };
   },
