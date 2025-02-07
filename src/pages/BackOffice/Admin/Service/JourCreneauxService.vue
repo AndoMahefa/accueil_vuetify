@@ -5,15 +5,40 @@
     </div>
 
     <v-row>
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="3">
         <v-select
-          v-model="selectedService"
-          :items="services"
-          label="Choisir un service"
+          v-model="selectedDirection"
+          :items="directions"
+          label="Sélectionner une direction"
           item-title="nom"
           item-value="id"
-          @update:model-value="getCreneaux"
+          clearable
+          @update:model-value="onDirectionChange"
         />
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="selectedService"
+          :items="filteredServices"
+          label="Sélectionner un service"
+          item-title="nom"
+          item-value="id"
+          :disabled="!selectedDirection"
+          clearable
+        />
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-btn
+          color="blue"
+          height="55px"
+          :disabled="!selectedDirection"
+          @click="getCreneaux"
+        >
+          Choisir
+        </v-btn>
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-btn color="blue" height="55px" @click="openIntervalModal">Paramétrer l'intervalle</v-btn>
       </v-col>
     </v-row>
     <v-row>
@@ -75,15 +100,39 @@
     </v-row>
 
     <!-- Modal -->
-    <v-dialog v-model="modalVisible" max-width="750px">
+    <v-dialog v-model="modalVisible" max-width="750px" width="100%">
       <v-card>
         <v-card-title>
           <span class="text-h6">
-            Ajouter des créneaux pour {{ jourSelectionne }}
+            Ajouter des créneaux pour {{ nouveauJour[0].nom }}
           </span>
         </v-card-title>
         <v-card-text>
           <v-container>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedDirection"
+                  :items="directions"
+                  label="Sélectionner une direction"
+                  item-title="nom"
+                  item-value="id"
+                  clearable
+                  @update:model-value="onDirectionChange"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-select
+                  v-model="selectedService"
+                  :items="filteredServices"
+                  label="Sélectionner un service"
+                  item-title="nom"
+                  item-value="id"
+                  :disabled="!selectedDirection"
+                  clearable
+                />
+              </v-col>
+            </v-row>
             <v-row>
               <v-col cols="12" v-if="!jourSelectionne">
                 <v-select
@@ -117,8 +166,8 @@
           <v-btn text class="btn-cancel" @click="fermerModal">Annuler</v-btn>
           <v-btn
             text class="btn-validate"
-            @click="ajouterCreneaux"
             :disabled="!heureDebut || !heureFin || (convertirEnMinutes(heureDebut) >= convertirEnMinutes(heureFin))"
+            @click="ajouterCreneaux"
           >
             Ajouter
           </v-btn>
@@ -153,6 +202,60 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Modal pour paramétrer l'intervalle -->
+    <v-dialog v-model="isIntervalModalOpen" max-width="500px" width="100%">
+      <v-card>
+        <v-card-title>
+          <span class="text-h6">Définir l'intervalle de temps</span>
+        </v-card-title>
+        <v-card-text>
+          <v-col cols="12">
+            <v-select
+              v-model="selectedDirectionIntervalle"
+              :items="directions"
+              label="Sélectionner une direction"
+              item-title="nom"
+              item-value="id"
+              clearable
+              @update:model-value="onDirectionChangeInt"
+            />
+          </v-col>
+          <v-col cols="12">
+            <v-select
+              v-model="selectedServiceIntervalle"
+              :items="filteredServices"
+              label="Sélectionner un service"
+              item-title="nom"
+              item-value="id"
+              :disabled="!selectedDirectionIntervalle"
+              clearable
+            />
+          </v-col>
+          <v-text-field
+            v-model="intervalleTemps"
+            label="Intervalle en minutes"
+            type="number"
+            min="1"
+            clearable
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="fermerIntervalModal">Annuler</v-btn>
+          <v-btn text @click="saveInterval">Enregistrer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -182,17 +285,56 @@ export default {
       selectedPeriodes: [],     // Option sélectionnée (matin, après-midi, ou les deux)
 
       services: [],
-      selectedService: null
+      filteredServices: [],
+      selectedService: null,
+
+      directions: [],
+      selectedDirection: null,
+
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
+
+      selectedDirectionIntervalle: null,
+      selectedServiceIntervalle: null,
+      isIntervalModalOpen: false,
+      intervalleTemps: null,
     };
   },
   async mounted() {
-    await this.fetchServices()
-    if(this.services.length > 0) {
-      this.selectedService = this.services[0].id
-      this.getCreneaux();
-    }
+    this.fetchDirections();
+    this.fetchServices();
   },
   methods: {
+    async fetchDirections() {
+      const response = await get('directions');
+      if(response.ok) {
+        const data = await response.json();
+        this.directions = data.directions;
+      }
+    },
+    onDirectionChange() {
+      this.selectedService = null;
+
+      if (this.selectedDirection) {
+        // Filtrer les services pour la direction sélectionnée
+        this.filteredServices = this.services.filter(
+          service => service.id_direction === this.selectedDirection
+        );
+      }
+    },
+    onDirectionChangeInt() {
+      this.selectedService = null;
+
+      if (this.selectedDirectionIntervalle) {
+        // Filtrer les services pour la direction sélectionnée
+        this.filteredServices = this.services.filter(
+          service => service.id_direction === this.selectedDirection
+        );
+      }
+    },
     matinCreneaux(jourId) {
       const response = this.creneaux.filter(cre => cre.jour == jourId && cre.heure <= '12:00:00')
 
@@ -203,12 +345,14 @@ export default {
 
       return response;
     },
-    ouvrirModal(jour) {
+    async ouvrirModal(jour) {
       this.jourSelectionne = jour;
-      this.nouveauJour = ""; // Réinitialiser pour les nouveaux jours
+      this.nouveauJour = await this.findJour();
       this.heureDebut = null;
       this.heureFin = null;
       this.modalVisible = true;
+      this.selectedDirection = null;
+      this.selectedService = null;
     },
     fermerModal() {
       this.modalVisible = false;
@@ -219,10 +363,10 @@ export default {
           ...data
         })
 
-        console.log("data: "+data)
         if (!response.ok) {
           throw new Error(`Erreur HTTP: ${response.status}`);
         }
+
 
         return await response.json();
       } catch (error) {
@@ -232,63 +376,88 @@ export default {
     },
     async ajouterCreneaux() {
       if (!this.heureDebut || !this.heureFin) {
-        alert("Veuillez sélectionner des heures valides.");
+        this.showError("Veuillez sélectionner des heures valides.");
         return;
       }
 
       const debut = this.convertirEnMinutes(this.heureDebut);
       const fin = this.convertirEnMinutes(this.heureFin);
       if (debut >= fin) {
-        alert("L'heure de début doit être avant l'heure de fin.");
+        this.showError("L'heure de début doit être avant l'heure de fin.");
         return;
       }
 
-      // const id_service = localStorage.getItem("idService");
-      const id_service = this.selectedService;
-      this.intervalle = id_service === "3" ? 20 : id_service === "4" ? 60 : 30;
+      let id_service = null;
+      if(this.selectedService) {
+        id_service = this.selectedService;
+        this.intervalle = await this.findIntervalByService();
+        // console.log("service ny ato")
+      }
+      if(this.selectedDirection && !this.selectedService) {
+        // console.log("direction no ato")
+        this.intervalle = await this.findIntervalByDirection()
+      }
 
-      const creneaux = [];
+      // this.intervalle = this.intervalleTemps || (this.selectedDirection === "1" ? 60 : this.selectedDirection === "4" ? 30 : 40);
+      if(this.intervalle == null) {
+        this.intervalle = 40;
+      }
+      console.log("intervalle utilise : "+this.intervalle)
+
+      let creneaux = [];
       let heureActuelle = debut;
       while (heureActuelle <= fin) {
         creneaux.push(this.convertirEnHeure(heureActuelle));
         heureActuelle += this.intervalle;
       }
 
+      let id_direction = this.selectedDirection;
       const jour = this.jourSelectionne || this.nouveauJour;
       const creneauData = {
         jour,
         creneaux,
+        id_direction,
         id_service,
       };
-      console.log("jour: " + creneauData.jour + " creneaux: " + creneauData.creneaux + " id_service: " + creneauData.id_service)
+      console.log("jour: " + creneauData.jour + " creneaux: " + creneauData.creneaux + " id_direction : "+ creneauData.id_direction +" id_service: " + creneauData.id_service)
 
       try {
         // Appel de la fonction saveCreneaux
         await this.saveCreneaux(creneauData);
+        this.showSuccess("Créneaux ajoutés avec succès !");
         this.getCreneaux();
-
-        alert("Créneaux ajoutés avec succès !");
+        creneaux = [];
+        this.selectedDirection = null;
+        this.selectedService = null;
       } catch (error) {
         console.error(error);
-        alert("Une erreur est survenue lors de l'ajout des créneaux.");
+        this.showError("Une erreur est survenue lors de l'ajout des créneaux.")
       }
 
       this.fermerModal();
     },
     async getCreneaux() {
       try {
-        const response = await get(`service/creneaux/${this.selectedService}`)
+        let endpoint = '';
+        if(this.selectedDirection && !this.selectedService) {
+          endpoint = `direction/${this.selectedDirection}/creneaux`;
+        } else if (this.selectedDirection && this.selectedService) {
+          endpoint = `service/${this.selectedService}/creneaux`;
+        }
+        const response = await get(endpoint)
 
         if (!response.ok) {
           throw new Error(`Erreur HTTP: ${response.status}`);
         }
 
-        const data = await response.json();
-        if(data && data.length != 0) {
-          this.creneaux = data.creneaux;
-          console.log(this.creneaux)
+        if(response.ok) {
+          const data = await response.json();
+          if(data && data.length != 0) {
+            this.creneaux = data.creneaux;
+            console.log(this.creneaux)
+          }
         }
-        // return await response.json();
+
       } catch (error) {
         console.error("Erreur d'appel API:", error);
         throw error;
@@ -353,6 +522,62 @@ export default {
           console.error("Erreur lors de la récupération des services :", error);
       }
     },
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    openIntervalModal() {
+      this.isIntervalModalOpen = true;
+    },
+    fermerIntervalModal() {
+      this.isIntervalModalOpen = false;
+    },
+    async saveInterval() {
+      const response = await post('intervalle', {
+        'intervalle': this.intervalleTemps,
+        'id_direction' : this.selectedDirectionIntervalle,
+        'id_service' : this.selectedServiceIntervalle
+      });
+      if(response.ok) {
+        this.showSuccess('Intervalle ajouté avec succes');
+        this.selectedDirectionIntervalle = null;
+        this.selectedServiceIntervalle = null;
+        this.fermerIntervalModal();
+      } else {
+        this.showError('Echec de l\'ajout');
+      }
+    },
+    async findIntervalByDirection() {
+      const response = await get(`direction/${this.selectedDirection}/intervalle`);
+      if(response.ok) {
+        const data = await response.json();
+        // this.intervalle = data.intervalle.intervalle;
+        return data.intervalle.intervalle;
+      }
+    },
+    async findIntervalByService() {
+      const response = await get(`service/${this.selectedService}/intervalle`);
+      if(response.ok) {
+        const data = await response.json();
+        // this.intervalle = data.intervalle.intervalle;
+        return data.intervalle.intervalle;
+      }
+    },
+    async findJour() {
+      const response = await get(`jour/${this.jourSelectionne}`);
+      if(response.ok) {
+        const data = await response.json();
+        console.log(data)
+
+        return data;
+      }
+    }
   },
 }
 </script>

@@ -143,6 +143,7 @@ export default {
               const data = await response.json();
 
               localStorage.setItem('token', data.token);
+              localStorage.setItem('direction', data.direction);
               localStorage.setItem('idUser', data.user.id);
               localStorage.setItem('idService', data.idService);
               localStorage.setItem('role', data.user.role)

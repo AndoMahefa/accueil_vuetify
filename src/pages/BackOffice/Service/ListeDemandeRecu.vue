@@ -1,41 +1,41 @@
 <template>
   <v-container>
     <v-card>
-        <v-card-title>Liste des demandes reçues du jour</v-card-title>
+      <v-card-title>Liste des demandes reçues du jour</v-card-title>
 
-        <v-data-table
-            :items="demandes"
-            :headers="headers"
-            item-value="id"
-            class="elevation-1"
-            loading-text="Chargement des données..."
-            :hide-default-footer="true"
-        >
-            <!-- Colonnes personnalisées -->
-            <template #item="{ item }">
-                <tr>
-                    <td> {{ item.nom }} </td>
-                    <td> {{ item.prenom }} </td>
-                    <td>
-                    <!-- Boutons avec des espacements -->
-                    <div class="d-flex">
-                        <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
-                            <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
-                        </v-btn>
-                        <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
-                            <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
-                        </v-btn>
-                        <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
-                            <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
-                        </v-btn>
-                    </div>
-                    </td>
-                </tr>
-            </template>
-        </v-data-table>
+      <v-data-table
+        :items="demandes"
+        :headers="headers"
+        item-value="id"
+        class="elevation-1"
+        loading-text="Chargement des données..."
+        :hide-default-footer="true"
+      >
+        <!-- Colonnes personnalisées -->
+        <template #item="{ item }">
+          <tr>
+            <td> {{ item.nom }} </td>
+            <td> {{ item.prenom }} </td>
+            <td>
+              <!-- Boutons avec des espacements -->
+              <div class="d-flex">
+                <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
+                  <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
+                </v-btn>
+                <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
+                  <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
+                </v-btn>
+                <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
+                  <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
+                </v-btn>
+              </div>
+            </td>
+          </tr>
+        </template>
+      </v-data-table>
 
-        <!-- Pagination -->
-        <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
+      <!-- Pagination -->
+      <!-- <Pagination :page="pagination.page" :totalPages="totalPages" @update:page="changePage" /> -->
     </v-card>
 
     <!-- Modal pour afficher les détails du visiteur -->
@@ -146,7 +146,8 @@ export default {
             demandes: [],
             headers: [
                 { title: 'Nom', value: 'nom' },
-                { title: 'Prenom', value: 'prenom' }
+                { title: 'Prenom', value: 'prenom' },
+                { title: 'Actions', align: 'center', sortable: 'false' }
             ],
             visiteur: {
                 nom: '',

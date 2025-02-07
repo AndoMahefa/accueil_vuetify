@@ -10,6 +10,7 @@
           label="Choisir un appel d'offre"
           item-title="appel_offre"
           item-value="id"
+          clearable
           @update:model-value="fetchAppels"
         />
       </v-col>

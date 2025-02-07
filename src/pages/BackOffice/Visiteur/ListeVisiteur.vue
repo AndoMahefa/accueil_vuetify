@@ -19,30 +19,50 @@
             <td>
               <!-- Boutons avec des espacements -->
               <div class="d-flex">
-                <v-icon
-                  color="blue"
-                  rounded
-                  class="ml-10"
-                  @click="showDetails(item)"
-                >
-                  mdi-eye
-                </v-icon> <!-- Icône pour afficher les détails -->
-                <v-icon
-                  color="#FF7043"
-                  rounded
-                  class="ml-10"
-                  @click="editVisitor(item)"
-                >
-                  mdi-pencil
-                </v-icon>
-                <v-icon
-                  color="#66BB6A"
-                  rounded
-                  class="ml-10"
-                  @click="openDemandeDialog(item)"
-                >
-                  mdi-email
-                </v-icon> <!-- Icône pour la demande de service -->
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="blue"
+                      rounded
+                      class="ml-10"
+                      v-bind="props"
+                      @click="showDetails(item)"
+                    >
+                      mdi-eye
+                    </v-icon>
+                  </template>
+                  <span>Details du visiteur</span>
+                </v-tooltip>
+
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="#FF7043"
+                      rounded
+                      class="ml-10"
+                      v-bind="props"
+                      @click="editVisitor(item)"
+                    >
+                      mdi-pencil
+                    </v-icon>
+                  </template>
+                  <span>Modifier un visiteur</span>
+                </v-tooltip>
+
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="#66BB6A"
+                      rounded
+                      class="ml-10"
+                      v-bind="props"
+                      @click="openDemandeDialog(item)"
+                    >
+                      mdi-email
+                    </v-icon>
+                  </template>
+                  <span>Orientation</span>
+                </v-tooltip>
               </div>
             </td>
           </tr>
@@ -155,30 +175,51 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showDemandeDialog" max-width="500px" persistent>
+    <v-dialog v-model="showDemandeDialog" max-width="700px" width="100%" persistent>
       <v-card elevation="3" class="rounded-lg" style="background-color: #F9FAFB;">
         <!-- Titre de la modal -->
         <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
           <v-icon left color="#6EC1B4">mdi-account-question</v-icon>
           Demander un service
         </v-card-title>
-
         <!-- Contenu de la modal -->
         <v-card-text class="pa-4">
           <v-form @submit.prevent="sendDemande">
+            <v-select
+              v-model="selectedDirection"
+              :items="directions"
+              item-title="nom"
+              item-value="id"
+              label="Sélectionner une direction"
+              dense
+              clearable
+              required
+              style="color: #fffff; border-color: #6EC1B4;"
+              @update:model-value="onChangeDirection"
+            />
             <!-- Sélectionner un service -->
             <v-select
               v-model="selectedService"
-              :items="services"
-              item-value="id"
+              :items="filteredServices"
               item-title="nom"
+              item-value="id"
               label="Sélectionner un service"
               outlined
               dense
+              clearable
               style="color: #fffff; border-color: #6EC1B4;"
-              required
+              @update:model-value="onServiceChange"
             />
-
+            <v-select
+              v-model="selectedFonction"
+              :items="filteredFonctions"
+              item-title="nom"
+              item-value="id"
+              label="Sélectionner une fonction"
+              outlined
+              dense
+              clearable
+            />
             <!-- Motif de la demande -->
             <v-textarea
               v-model="demandeMotif"
@@ -215,6 +256,14 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!-- Snackbar pour les messages -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -260,10 +309,21 @@
           services: [], // À remplir avec les services disponibles
           selectedService: null, // Service sélectionné
           demandeMotif: "", // Motif de la demande
-          selectedVisiteur: {}
+          selectedVisiteur: {},
+          directions: [],
+          selectedDirection: null,
+          filteredServices: [],
+          snackbar: {
+            show: false,
+            text: '',
+            color: 'success'
+          },
+          selectedFonction: null,
+          filteredFonctions: []
         };
     },
     mounted() {
+      this.fetchDirection()
       this.fetchData();
       this.fetchServices()
     },
@@ -327,42 +387,101 @@
         this.selectedService = null;
         this.selectedVisiteur = {}
       },
+      async fetchDirection() {
+        const response = await fetch('http://localhost:8000/api/directions');
+        if(response.ok) {
+          const data = await response.json();
+          this.directions = data.directions;
+        }
+      },
+      onChangeDirection() {
+        this.selectedService = null;
+        if(this.selectedDirection) {
+          this.filteredServices = this.services.filter(
+            service => service.id_direction === this.selectedDirection
+          );
+        }
+        // Si le service sélectionné n'est plus valide, réinitialisez-le
+        if (!this.filteredServices.some(service => service.id === this.selectedDirection)) {
+          this.selectedService = null;
+        }
+
+        this.fetchFonctionsByDirection(this.selectedDirection);
+      },
+      async onServiceChange() {
+        if (this.selectedDirection && this.selectedService) {
+          console.log('ato')
+          await this.fetchFonctionsByService(this.selectedService);
+        }
+        if (this.selectedService == null) {
+          await this.fetchFonctionsByDirection(this.selectedDirection);
+        }
+      },
+      async fetchFonctionsByDirection(directionId) {
+        // const response = await get(`fonctions/direction/${directionId}`);
+        const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
+        if(response.ok) {
+          const data = await response.json();
+          this.filteredFonctions = data.fonctions;
+        }
+      },
+
+      async fetchFonctionsByService(serviceId) {
+        const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
+        if(response.ok) {
+          const data = await response.json();
+          console.log(data.fonctions)
+          this.filteredFonctions = data.fonctions;
+        }
+      },
       async fetchServices() {
-        const idService = localStorage.getItem("idService");
         try {
-          const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
+          const response = await get(`accueil/services`); // Charger les services depuis votre API
           if (response && response.ok) {
-            this.services = await response.json(); // Adapter selon la structure de réponse
+            const data = await response.json();
+            this.services = data;// Adapter selon la structure de réponse
           }
         } catch (error) {
-          console.error("Erreur lors de la récupération des services :", error);
+          this.showError("Erreur lors de la récupération des services : ", error);
         }
       },
       async sendDemande() {
         // Validation des champs
-        if (!this.selectedService || !this.demandeMotif) {
+        if (!this.selectedDirection || !this.selectedFonction || !this.demandeMotif) {
           return; // Si les champs sont invalides, ne rien faire
         }
-
-        console.log(this.selectedService + " " + this.demandeMotif + " " + this.selectedVisiteur.id)
         try {
-          const response = await post("accueil/associe-visiteur-service", {
+          const response = await post('accueil/demande-service', {
+            'id_visiteur': this.selectedVisiteur.id,
+            'id_direction': this.selectedDirection,
             'id_service': this.selectedService,
-            'motif_visite': this.demandeMotif,
-            'id_visiteur': this.selectedVisiteur.id
+            'id_fonction': this.selectedFonction,
+            'motif_visite': this.demandeMotif
           });
 
           if (response && response.ok) {
             // Affichage d'un message de succès
-            alert("Demande envoyée avec succès.");
+            this.showSuccess("Demande envoyé avec succes");
+            this.selectedDirection = null;
+            this.selectedService = null;
+            this.selectedFonction = null;
+            this.demandeMotif = ''
             this.closeDemandeDialog(); // Fermer la modal après l'envoi
             this.fetchData();
-          } else {
-            alert("Erreur lors de l'envoi de la demande.");
           }
         } catch (error) {
-          console.error("Erreur lors de l'envoi de la demande:", error);
+          this.showError("Erreur lors de l'envoi de la demande:", error);
         }
+      },
+      showSuccess(message) {
+        this.snackbar.color = 'success';
+        this.snackbar.text = message;
+        this.snackbar.show = true;
+      },
+      showError(message) {
+        this.snackbar.color = 'error';
+        this.snackbar.text = message;
+        this.snackbar.show = true;
       },
     },
   };

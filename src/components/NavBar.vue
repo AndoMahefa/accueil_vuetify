@@ -10,9 +10,18 @@
     <v-app-bar-nav-icon @click="toggleSidebar" />
 
     <!-- Nom du service connecté -->
-    <v-toolbar-title class="service-title">
-      {{ serviceName }}
-    </v-toolbar-title>
+    <template v-if="serviceName=='Administrateur'">
+      <v-toolbar-title class="service-title">
+        {{ serviceName }}
+      </v-toolbar-title>
+    </template>
+    <template v-else>
+      <!-- Nom du service connecté -->
+      <v-toolbar-title class="service-title">
+        {{ directionName }} / {{ serviceName }}
+      </v-toolbar-title>
+    </template>
+
 
     <v-spacer />
 
@@ -66,10 +75,15 @@ export default {
   emits: ['toggle-sidebar'],
   data() {
     return {
+      directionName: 'Chargement...',
       serviceName: 'Chargement...' // Valeur par défaut pendant le chargement
     };
   },
   mounted() {
+    const direction = localStorage.getItem('direction');
+    if(direction) {
+      this.directionName = direction.nom;
+    }
     this.fetchServiceName();
   },
   methods: {
@@ -81,7 +95,7 @@ export default {
         return
       }
       if (!idService) {
-        this.serviceName = 'Service Inconnu';
+        this.serviceName = '';
         return;
       }
 

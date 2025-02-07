@@ -232,6 +232,22 @@ export default {
       loading: false,
     };
   },
+  computed: {
+    isStep1Valid() {
+      return this.employe.nom &&
+             this.employe.prenom &&
+             this.employe.date_de_naissance &&
+             this.employe.adresse &&
+             this.employe.cin &&
+             this.employe.telephone &&
+             this.selectedGenre;
+    },
+    isStep2Valid() {
+      return this.selectedDirection &&
+             this.selectedFonction &&
+             this.selectedObservation;
+    }
+  },
   mounted() {
     this.fetchService();
     this.fetchDirections();
@@ -357,22 +373,6 @@ export default {
       this.snackbar.text = message;
       this.snackbar.show = true;
     },
-  },
-  computed: {
-    isStep1Valid() {
-      return this.employe.nom &&
-             this.employe.prenom &&
-             this.employe.date_de_naissance &&
-             this.employe.adresse &&
-             this.employe.cin &&
-             this.employe.telephone &&
-             this.selectedGenre;
-    },
-    isStep2Valid() {
-      return this.selectedDirection &&
-             this.selectedFonction &&
-             this.selectedObservation;
-    }
   },
 };
 </script>

@@ -5,11 +5,12 @@
       <v-row>
         <v-col cols="12" md="4">
           <v-select
-            v-model="selectedService"
-            :items="services"
-            label="Choisir un service"
+            v-model="selectedDirection"
+            :items="directions"
+            label="Sélectionner une direction"
             item-title="nom"
             item-value="id"
+            clearable
             @update:model-value="fetchDemandes"
           />
         </v-col>
@@ -27,18 +28,50 @@
           <tr>
             <td> {{ item.nom }} </td>
             <td> {{ item.prenom }} </td>
+            <td> {{ item.motif_visite }} </td>
+            <td> {{ item.date_heure_arrivee }} </td>
             <td>
               <!-- Boutons avec des espacements -->
               <div class="d-flex">
-                <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
-                  <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
-                </v-btn>
-                <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
-                  <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
-                </v-btn>
-                <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
-                  <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
-                </v-btn>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="#6EC1B4"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="showDetails(item)"
+                    >
+                      mdi-eye
+                    </v-icon>
+                  </template>
+                  <span>Détails du visiteur</span>
+                </v-tooltip>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="green"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="acceptDemande(item)"
+                    >
+                      mdi-check
+                    </v-icon> <!-- Icône "Oui" en vert -->
+                  </template>
+                  <span>Accepter la demande</span>
+                </v-tooltip>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="red"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="refuseDemande(item)"
+                    >
+                      mdi-close
+                    </v-icon> <!-- Icône "Oui" en vert -->
+                  </template>
+                  <span>Refuser la demande</span>
+                </v-tooltip>
               </div>
             </td>
           </tr>
@@ -90,13 +123,13 @@
             <v-col cols="12" md="6">
               <div class="d-flex align-center">
                 <v-icon color="purple" class="mr-2">mdi-clock-time-four</v-icon>
-                <span class="visitor-detail">{{ visiteur.pivot.date_heure_arrivee }}</span>
+                <span class="visitor-detail">{{ visiteur.date_heure_arrivee }}</span>
               </div>
             </v-col>
             <v-col cols="12" md="6">
               <div class="d-flex align-center">
                 <v-icon color="pink" class="mr-2">mdi-comment-text</v-icon>
-                <span class="visitor-detail">{{ visiteur.pivot.motif_visite }}</span>
+                <span class="visitor-detail">{{ visiteur.motif_visite }}</span>
               </div>
             </v-col>
           </v-row>
@@ -109,9 +142,22 @@
     </v-dialog>
 
     <!-- Modal pour accepter un demande et generer un ticket -->
-    <v-dialog v-model="genererTicket" max-width="500px">
-      <v-card class="ticket-card">
-        <v-card-title class="card-title">Générer un ticket</v-card-title>
+    <v-dialog v-model="genererTicket" max-width="500px" width="100%">
+      <v-card elevation="3" class="rounded-lg" style="background-color: #F9FAFB;">
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4">mdi-printer</v-icon>
+          Générer un ticket
+        </v-card-title>
+        <v-card-text>
+          <span v-if="selectedRequest">
+            <div><b>Direction</b> : {{ selectedRequest.nom_direction }}</div>
+            <div><b>Visiteur</b> : {{ selectedRequest.nom }} {{ selectedRequest.prenom }}</div>
+            <div><b>Motif</b> : {{ selectedRequest.motif_visite }}</div>
+          </span>
+          <span v-else>
+            <b>Aucun visiteur sélectionné.</b>
+          </span>
+        </v-card-text>
         <v-card-text class="card-text">
           <v-form @submit.prevent="generateTicket">
             <v-text-field
@@ -142,6 +188,16 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -154,18 +210,20 @@ export default {
       demandes: [],
       headers: [
           { title: 'Nom', value: 'nom' },
-          { title: 'Prenom', value: 'prenom' }
+          { title: 'Prenom', value: 'prenom' },
+          { title: 'Motif', value: 'motif_visite' },
+          { title: 'Date et heure arrivée', value: 'date_heure_arrivee' },
+          { title: 'Actions', width: '250px', align: 'center', sortable: 'false' }
       ],
       visiteur: {
           nom: '',
           prenom: '',
-          pivot: {
-              motif_visite: '',
-              date_heure_arrivee: ''
-          },
+          motif_visite: '',
+          date_heure_arrivee: '',
           cin: '',
           telephone: '',
-          email: ''
+          email: '',
+          nom_direction: ''
       },
       dialog: false,
       genererTicket: false,
@@ -175,30 +233,42 @@ export default {
       },
       refuserDemande: false,
 
-      selectedService: null,
-      services: []
+      directions: [],
+      selectedDirection: null,
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
     }
   },
   async mounted() {
-    await this.fetchServices()
-    if (this.services.length > 0) {
-      this.selectedService = this.services[0].id; // Utilise le premier service comme valeur par défaut
-      this.fetchDemandes(); // Charger les employés pour le service par défaut
-    }
-    // this.fetchDemandes()
+    this.fetchDirection();
+    this.fetchDemandes();
   },
   methods: {
     async fetchDemandes() {
         try {
-          const response = await get(`services/${this.selectedService}/demandes`)
+          let endpoint = 'directions/demandes';
+          if(this.selectedDirection) {
+            endpoint = `directions/${this.selectedDirection}/demandes`;
+          }
+          const response = await get(endpoint)
           if (response && response.ok) {
               const data = await response.json()
-              console.log(data.visiteurs)
               this.demandes = data.visiteurs
           }
         } catch (error) {
             console.log(error)
         }
+    },
+    async fetchDirection() {
+      const response = await get('directions');
+      if(response.ok) {
+        const data = await response.json();
+        console.log("directions : " + data)
+        this.directions = data.directions;
+      }
     },
     showDetails(item) {
         this.visiteur = item;
@@ -210,23 +280,28 @@ export default {
     },
     async generateTicket() {
       const idVisiteur = this.selectedRequest.id;
-      console.log("idVisiteur: " + idVisiteur + " idService: " + this.selectedService + " temps estime: " + this.ticket.temps_estime);
+      let idDirection = this.selectedRequest.id_direction;
+      if(this.selectedDirection) {
+        idDirection = this.selectedDirection;
+      }
+      // console.log("idVisiteur: " + idVisiteur + " idDirection: " + idDirection + " temps estime: " + this.ticket.temps_estime);
       try {
           const response = await post(`service/generer-ticket`, {
               'temps_estime' : this.ticket.temps_estime,
-              'id_service' : this.selectedService,
+              'id_direction': idDirection,
+              // 'id_service' : this.selectedService,
               'id_visiteur' : idVisiteur
           });
 
-          if (response && response.ok) {
-              alert('Ticket generer avec succes');
-              this.selectedRequest = null
-              this.genererTicket = false;
-              this.ticket.temps_estime = '';
-              this.fetchDemandes()
+          if (response.ok) {
+            this.showSuccess('Ticket generer avec succes');
+            this.selectedRequest = null;
+            this.ticket.temps_estime = '';
+            this.genererTicket = false;
+            this.fetchDemandes()
           }
       } catch (error) {
-          console.log(error);
+        this.showError('Une erreur est survenue : ', error);
       }
     },
     refuseDemande(item) {
@@ -251,17 +326,15 @@ export default {
             console.log(error)
         }
     },
-    async fetchServices() {
-      // const idService = localStorage.getItem("idService");
-      try {
-          // const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
-          const response = await get(`accueil/services`); // Charger les services depuis votre API
-          if (response && response.ok) {
-              this.services = await response.json(); // Adapter selon la structure de réponse
-          }
-      } catch (error) {
-          console.error("Erreur lors de la récupération des services :", error);
-      }
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
     },
   }
 }
