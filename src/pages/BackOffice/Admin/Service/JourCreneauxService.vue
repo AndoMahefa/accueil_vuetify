@@ -493,20 +493,26 @@ export default {
       }
     },
     async deleteCreneaux(option) {
-      const idService = this.selectedService;
       try {
-        const response = await del(`service/${idService}/delete-creneaux/${this.jourSelectionne}`, {
+        let url = '';
+        if(this.selectedDirection && !this.selectedService) {
+          url = `direction/${this.selectedDirection}/delete-creneaux/${this.jourSelectionne}`;
+        } else if(this.selectedService) {
+          url = `service/${this.selectedService}/delete-creneaux/${this.jourSelectionne}`;
+        }
+        console.log(url);
+        const response = await del(url, {
           'periodes': option
         })
 
         if (response.ok) {
-          alert("Les créneaux ont été supprimés !");
+          this.showSuccess("Les créneaux ont été supprimés !");
           this.getCreneaux();
         } else {
-          alert("Erreur lors de la suppression !");
+          this.showError("Erreur lors de la suppression !");
         }
       } catch (error) {
-        console.error("Erreur:", error);
+        this.showError("Erreur:", error);
       }
       this.cancelDelete(); // Fermer le modal après l'opération
     },

@@ -3,23 +3,40 @@
     <v-container>
       <h1 class="text-center mt-15">Prise de Rendez-vous</h1>
 
-      <v-stepper :items="['Etape 1', 'Etape 2', 'Etape 3']">
+      <v-stepper
+        v-model="currentStep"
+        :items="['Etape 1', 'Etape 2', 'Etape 3']"
+        @update:model-value="handleStepChange"
+      >
         <template v-slot:item.1>
           <v-card-text>
             <v-form>
+              <v-select
+                v-model="selectedDirection"
+                :items="directions"
+                item-title="nom"
+                item-value="id"
+                label="Sélectionner une direction"
+                dense
+                clearable
+                required
+                style="color: #fffff; border-color: #6EC1B4;"
+                @update:model-value="onChangeDirection"
+              />
               <!-- Sélectionner un service -->
               <v-select
                 v-model="selectedService"
-                :items="services"
-                item-value="id"
+                :items="filteredServices"
                 item-title="nom"
+                item-value="id"
                 label="Sélectionner un service"
                 outlined
                 dense
+                clearable
                 style="color: #fffff; border-color: #6EC1B4;"
-                required
+                :disabled="!selectedDirection"
                 @update:model-value="findJourDispo"
-              ></v-select>
+              />
 
               <!-- Motif de la demande -->
               <v-textarea
@@ -30,7 +47,7 @@
                 style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;"
                 rows="4"
                 required
-              ></v-textarea>
+              />
             </v-form>
           </v-card-text>
         </template>
@@ -47,7 +64,7 @@
                 locale="fr"
                 style="max-width: 400px; width: 100%"
                 @update:model-value="fetchAvailableSlots"
-              ></v-date-picker>
+              />
             </v-col>
 
             <!-- Colonne: Créneaux horaires -->
@@ -73,80 +90,89 @@
         <template v-slot:item.3>
           <v-card title="Information sur vous"   flat>
             <v-form ref="form" v-model="valid">
-            <v-row>
-              <!-- Recherche de visiteur -->
-              <v-col cols="12">
-                <v-text-field
-                  v-model="searchKey"
-                  label="Rechercher par email ou cin"
-                  @blur="searchVisitor"
-                  :rules="[rules.required]"
-                  clearable
-                ></v-text-field>
-              </v-col>
+              <v-row>
+                <!-- Recherche de visiteur -->
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="searchKey"
+                    label="Rechercher par email ou cin"
+                    @blur="searchVisitor"
+                    :rules="[rules.required]"
+                    clearable
+                  />
+                </v-col>
 
-              <!-- Informations sur le visiteur -->
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="visitor.nom"
-                  label="Nom"
-                  :rules="[rules.required]"
-                  :disabled="visitorExists"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="visitor.prenom"
-                  label="Prenom"
-                  :rules="[rules.required]"
-                  :disabled="visitorExists"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="visitor.cin"
-                  label="Numero CIN"
-                  :rules="[rules.required]"
-                  :disabled="visitorExists"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="visitor.email"
-                  label="Email"
-                  :rules="[rules.required, rules.email]"
-                  :disabled="visitorExists"
-                ></v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="visitor.telephone"
-                  label="Téléphone"
-                  :rules="[rules.required]"
-                  :disabled="visitorExists"
-                ></v-text-field>
-              </v-col>
-            </v-row>
+                <!-- Informations sur le visiteur -->
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.nom"
+                    label="Nom"
+                    :rules="[rules.required]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.prenom"
+                    label="Prenom"
+                    :rules="[rules.required]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.cin"
+                    label="Numero CIN"
+                    :rules="[rules.required]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.email"
+                    label="Email"
+                    :rules="[rules.required, rules.email]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.telephone"
+                    label="Téléphone"
+                    :rules="[rules.required]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+              </v-row>
 
-            <v-btn
-              color="primary"
-              class="mt-4"
-              :disabled="!valid"
-              @click="confirmRdv"
-            >
-              Confirmer
-            </v-btn>
-            <v-btn color="secondary" class="mt-4" @click="step = 1">Retour</v-btn>
-          </v-form>
+              <v-btn
+                color="primary"
+                class="mt-4"
+                :disabled="!valid"
+                @click="confirmRdv"
+              >
+                Confirmer
+              </v-btn>
+              <v-btn color="secondary" class="mt-4" @click="step = 1">Retour</v-btn>
+            </v-form>
           </v-card>
         </template>
       </v-stepper>
     </v-container>
+    <!-- Snackbar pour les messages -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-app>
 </template>
 
 
 <script>
+import { get } from '@/service/ApiService';
 import Holidays from 'date-holidays';
 
 export default {
@@ -183,13 +209,78 @@ export default {
       services: [], // À remplir avec les services disponibles
       selectedService: null, // Service sélectionné
       demandeMotif: "", // Motif de la demande
+      directions: [],
+      selectedDirection: null,
+      filteredServices: [],
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
+
+      currentStep: 1,
+      step1Valid: false
     };
+  },
+  watch: {
+    // Watch for changes in direction and service selection
+    selectedDirection(newVal) {
+      this.step1Valid = newVal !== null;
+      this.onChangeDirection();
+    },
+    selectedService(newVal) {
+      if (newVal !== null) {
+        this.step1Valid = true;
+      } else {
+        // If service is cleared, validity depends on direction
+        this.step1Valid = this.selectedDirection !== null;
+      }
+    }
   },
   mounted() {
     this.fetchServices()
+    this.fetchDirection()
     this.getHolidays()
   },
   methods: {
+    async handleStepChange(newStep) {
+      console.log("Changing to step:", newStep);
+      console.log("Direction:", this.selectedDirection);
+      console.log("Service:", this.selectedService);
+
+      // Moving from step 1 to step 2
+      if(newStep === 2) {
+        if (!this.selectedDirection) {
+          this.showError("Veuillez sélectionner une direction");
+          this.currentStep = 1;
+          return;
+        }
+
+        if(this.selectedDirection && !this.selectedService) {
+          console.log("tonga ato ve?");
+          await this.findJourDispo();
+        }
+      }
+    },
+    async fetchDirection() {
+      const response = await fetch('http://localhost:8000/api/directions');
+      if(response.ok) {
+        const data = await response.json();
+        this.directions = data.directions;
+      }
+    },
+    onChangeDirection() {
+      this.selectedService = null;
+      if(this.selectedDirection) {
+        this.filteredServices = this.services.filter(
+          service => service.id_direction === this.selectedDirection
+        );
+      }
+      // Si le service sélectionné n'est plus valide, réinitialisez-le
+      if (!this.filteredServices.some(service => service.id === this.selectedDirection)) {
+        this.selectedService = null;
+      }
+    },
     getHolidays(country = 'MG') {
       const hd = new Holidays();
       hd.init(country); // Charger les jours fériés du pays
@@ -212,30 +303,28 @@ export default {
       // console.log(this.holidays);
     },
     async findJourDispo() {
-      if(this.selectedService) {
-        console.log(this.selectedService)
-        // const token = localStorage.getItem('token');
-        const idService = this.selectedService;
-        try {
-          const response = await fetch(`http://localhost:8000/api/service/${idService}/jours-disponible`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              // 'Authorization': `Bearer ${token}`
-            }
-          });
-
-          if(response.ok) {
-            const data = await response.json();
-            const jourDispo = data.joursDispo;
-            jourDispo.forEach(jour => {
-              this.joursDispo.push(jour.jour);
-            });
-          }
-        } catch (error) {
-          console.log("error: " + error)
+      const idService = this.selectedService;
+      try {
+        let url = 'http://localhost:8000/api/';
+        if(this.selectedDirection && !this.selectedService) {
+          url += `direction/${this.selectedDirection}/jours-disponible`;
+        } else if(this.selectedService) {
+          url += `service/${idService}/jours-disponible`;
         }
+        console.log("url findJourDipo : " + url);
+        const response = await fetch(url);
+
+        if(response.ok) {
+          const data = await response.json();
+          const jourDispo = data.joursDispo;
+          jourDispo.forEach(jour => {
+            this.joursDispo.push(jour.jour);
+          });
+        }
+      } catch (error) {
+        console.log("error: " + error)
       }
+
     },
     toISODate(date) {
       const local = new Date(date);
@@ -260,14 +349,14 @@ export default {
       try {
         const idService = this.selectedService;
         const dayOfWeek = new Date(this.selectedDate).getDay();
-        // const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/service/${idService}/creneaux/${dayOfWeek}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'Authorization': `Bearer ${token}`
-          }
-        });
+        let url = 'http://localhost:8000/api';
+        if(this.selectedDirection && !this.selectedService) {
+          url += `/direction/${this.selectedDirection}/creneaux/${dayOfWeek}`;
+        } else if(this.selectedService) {
+          url += `/service/${idService}/creneaux/${dayOfWeek}`;
+        }
+        console.log("url fetchCreneauxJour : " + url);
+        const response = await fetch(url);
 
         if(response.ok) {
           const data = await response.json();
@@ -285,18 +374,19 @@ export default {
     },
     // Charger les créneaux disponibles pour une date et un service
     async loadAvailableSlots() {
-      if (!this.selectedDate || !this.selectedService) return;
+      if (!this.selectedDate || !this.selectedDirection) return;
 
       try {
         const date = this.toISODate(this.selectedDate);
         console.log("selectedDate: " + date + " selectedService: " + this.selectedService)
-        const response = await fetch(`http://localhost:8000/api/rdv/heure-indisponible?date=${date}&id_service=${this.selectedService}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-        });
+        let url = 'http://localhost:8000/api/rdv/heure-indisponible/';
+        if(this.selectedDirection && !this.selectedService) {
+          url += `direction/?date=${date}&id_direction=${this.selectedDirection}`;
+        } else if(this.selectedService) {
+          url += `service?date=${date}&id_service=${this.selectedService}`;
+        }
+        console.log("url avalaible slots : " + url);
+        const response = await fetch(url);
         if (!response.ok) throw new Error("Erreur lors du chargement des indisponibilités.");
 
         // console.log("heure indispo: " + await response.json())
@@ -396,24 +486,17 @@ export default {
     },
     async fetchServices() {
       try {
-        const response = await fetch('http://localhost:8000/api/services/except-accueil', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-        // const response = await get('services/except-accueil'); // Charger les services depuis votre API
-
-        if (response.ok) {
+        const response = await get(`services`); // Charger les services depuis votre API
+        if (response && response.ok) {
           const data = await response.json();
-          this.services = data // Adapter selon la structure de réponse
+          this.services = data.services;// Adapter selon la structure de réponse
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des services :", error);
+        this.showError("Erreur lors de la récupération des services : ", error);
       }
     },
     async confirmRdv() {
-      if (!this.selectedDate || !this.selectedSlot || !this.selectedService || !this.visitor.nom || !this.visitor.prenom || !this.visitor.cin || !this.visitor.email || !this.visitor.telephone || !this.demandeMotif) {
+      if (!this.selectedDate || !this.selectedSlot || !this.selectedDirection || !this.visitor.nom || !this.visitor.prenom || !this.visitor.cin || !this.visitor.email || !this.visitor.telephone || !this.demandeMotif) {
           alert("Veuillez remplir tous les champs requis.");
           return;
       }
@@ -429,11 +512,12 @@ export default {
           }
           const payload = {
               date_heure: dateHeure,
+              id_direction: this.selectedDirection,
               id_service: this.selectedService,
               id_visiteur: idVisiteur, // Si le visiteur existe, utilisez son ID
               motif: this.demandeMotif,
           };
-          console.log("date_heure: " + payload.date_heure + " id_service: " + payload.id_service + " id_visiteur: " + payload.id_visiteur + " motif: " + payload.motif)
+          console.log("date_heure: " + payload.date_heure + " id_direction: " + payload.id_direction + " id_service: " + payload.id_service + " id_visiteur: " + payload.id_visiteur + " motif: " + payload.motif)
 
           const response = await fetch("http://localhost:8000/api/rendez-vous/register", {
               method: "POST",
@@ -446,19 +530,18 @@ export default {
           if (!response.ok) {
               const errorData = await response.json();
               console.error("Erreur lors de l'enregistrement :", errorData);
-              alert("Une erreur s'est produite lors de l'enregistrement du rendez-vous.");
+              this.showError("Une erreur s'est produite lors de l'enregistrement du rendez-vous.");
               return;
           }
 
           const data = await response.json();
-          alert("Rendez-vous enregistré avec succès !");
+          this.showSuccess("Rendez-vous enregistré avec succès !");
           console.log("Rendez-vous :", data.rdv);
 
           // Réinitialisez le formulaire si nécessaire
           this.resetForm();
       } catch (error) {
-          console.error("Erreur réseau :", error);
-          alert("Une erreur réseau s'est produite.");
+          this.showError("Erreur réseau :", error.message);
       }
     },
     resetForm() {
@@ -476,6 +559,16 @@ export default {
       this.visitorExists = false;
       this.idVisiteurExistant = null;
     },
+    showSuccess(message) {
+        this.snackbar.color = 'success';
+        this.snackbar.text = message;
+        this.snackbar.show = true;
+      },
+      showError(message) {
+        this.snackbar.color = 'error';
+        this.snackbar.text = message;
+        this.snackbar.show = true;
+      },
   },
 };
 </script>
