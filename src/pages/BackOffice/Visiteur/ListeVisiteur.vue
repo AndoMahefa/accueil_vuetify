@@ -86,7 +86,7 @@
 
     <!-- Modal pour afficher les détails du visiteur -->
     <v-dialog v-model="dialog" max-width="500px">
-      <v-card class="digital-id-card">
+      <v-card :class="cardClass">
         <v-card-title class="d-flex align-center justify-space-between">
           <div class="headline">Identité du Visiteur</div>
           <v-icon color="grey darken-2">mdi-account-circle</v-icon>
@@ -123,6 +123,14 @@
               <div class="d-flex align-center">
                 <v-icon color="orange" class="mr-2">mdi-phone</v-icon>
                 <span>{{ visiteur.telephone }}</span>
+              </div>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <div class="d-flex align-center">
+                <v-icon v-if="visiteur.genre == 'Homme'" color="orange" class="mr-2">mdi-gender-male</v-icon>
+                <v-icon v-if="visiteur.genre == 'Femme'" color="orange" class="mr-2">mdi-gender-female</v-icon>
+                <span>{{ visiteur.genre }}</span>
               </div>
             </v-col>
             <!-- Ajoutez d'autres détails si nécessaire -->
@@ -267,225 +275,235 @@
   </v-container>
 </template>
 
-  <script>
-  import { get, put, post } from '@/service/ApiService.js';
+<script>
+import { get, put, post } from '@/service/ApiService.js';
 
-  export default {
-    data() {
-        return {
-          page: null, // Page actuelle
-          totalPages: null,
-          items: [], // Liste des items
-          headers: [
-              { title: 'Nom', value: 'nom' },
-              { title: 'Prénom', value: 'prenom' },
-              { title: 'Actions', align: 'center', width: '250px', sortable: 'false' }
-          ],
-          loading: false, // Indicateur de chargement
-          dialog: false, // Indicateur pour afficher le modal
-          visiteur: {
-              nom: '',
-              prenom: '',
-              cin: '',
-              email: '',
-              telephone: ''
-          },
-          editDialog: false, // Indicateur pour la modal d'édition
-          editVisiteur: {
-            nom: '',
-            prenom: '',
-            email: '',
-            telephone: '',
-            cin: '',
-          },
-          formValid: false, // Validation du formulaire
-          rules: {
-            required: (value) => !!value || 'Ce champ est requis',
-            email: (value) =>
-              /.+@.+\..+/.test(value) || 'Veuillez entrer une adresse email valide',
-          },
-          showDemandeDialog: false,
+export default {
+  data() {
+    return {
+      page: null, // Page actuelle
+      totalPages: null,
+      items: [], // Liste des items
+      headers: [
+        { title: 'Nom', value: 'nom' },
+        { title: 'Prénom', value: 'prenom' },
+        { title: 'Actions', align: 'center', width: '250px', sortable: 'false' }
+      ],
+      loading: false, // Indicateur de chargement
+      dialog: false, // Indicateur pour afficher le modal
+      visiteur: {
+        nom: '',
+        prenom: '',
+        cin: '',
+        email: '',
+        telephone: '',
+        genre: ''
+      },
+      editDialog: false, // Indicateur pour la modal d'édition
+      editVisiteur: {
+        nom: '',
+        prenom: '',
+        email: '',
+        telephone: '',
+        cin: '',
+      },
+      formValid: false, // Validation du formulaire
+      rules: {
+        required: (value) => !!value || 'Ce champ est requis',
+        email: (value) =>
+          /.+@.+\..+/.test(value) || 'Veuillez entrer une adresse email valide',
+      },
+      showDemandeDialog: false,
 
-          services: [], // À remplir avec les services disponibles
-          selectedService: null, // Service sélectionné
-          demandeMotif: "", // Motif de la demande
-          selectedVisiteur: {},
-          directions: [],
-          selectedDirection: null,
-          filteredServices: [],
-          snackbar: {
-            show: false,
-            text: '',
-            color: 'success'
-          },
-          selectedFonction: null,
-          filteredFonctions: []
-        };
+      services: [], // À remplir avec les services disponibles
+      selectedService: null, // Service sélectionné
+      demandeMotif: "", // Motif de la demande
+      selectedVisiteur: {},
+      directions: [],
+      selectedDirection: null,
+      filteredServices: [],
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
+      selectedFonction: null,
+      filteredFonctions: []
+    };
+  },
+  computed: {
+    cardClass() {
+      if (this.visiteur.genre === 'Femme') {
+        return 'digital-id-card digital-id-card--femme';
+      } else if (this.visiteur.genre === 'Homme') {
+        return 'digital-id-card digital-id-card--homme';
+      }
+      return 'digital-id-card';
+    }
+  },
+  mounted() {
+    this.fetchDirection()
+    this.fetchData();
+    this.fetchServices()
+  },
+  methods: {
+    async fetchData() {
+      this.loading = true;
+      try {
+        let url = 'accueil/visiteurs'
+        if(this.page) {
+          url += `?page=${this.page}`
+        }
+        const data = await get(url);
+        if (data && data.ok) {
+          const response = await data.json();
+          this.items = response.data;
+          this.page = response.current_page;
+          this.totalPages = response.last_page;
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des données :", error);
+      } finally {
+        this.loading = false;
+      }
     },
-    mounted() {
-      this.fetchDirection()
-      this.fetchData();
-      this.fetchServices()
+    showDetails(item) {
+      // Affecter les détails du visiteur au visiteur sélectionné
+      this.visiteur = item;
+      // Ouvrir le modal
+      this.dialog = true;
     },
-    methods: {
-      async fetchData() {
-        this.loading = true;
+    editVisitor(item) {
+      // Ouvrir la modal d'édition avec les données de l'utilisateur sélectionné
+      this.editVisiteur = { ...item };
+      this.editDialog = true;
+    },
+    async saveChanges() {
+      if (this.$refs.editForm.validate()) { // Validation du formulaire
         try {
-          let url = 'accueil/visiteurs'
-          if(this.page) {
-            url += `?page=${this.page}`
-          }
-          const data = await get(url);
-          if (data && data.ok) {
-            const response = await data.json();
-            this.items = response.data;
-            this.page = response.current_page;
-            this.totalPages = response.last_page;
+          const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
+          if (response && response.ok) {
+            console.log(this.editVisiteur)
+            this.editDialog = false;
+            this.fetchData()
           }
         } catch (error) {
-          console.error("Erreur lors de la récupération des données :", error);
-        } finally {
-          this.loading = false;
+          console.error("erreur lors de la maj du visiteur : ", error);
         }
-      },
-      showDetails(item) {
-        // Affecter les détails du visiteur au visiteur sélectionné
-        this.visiteur = item;
-        // Ouvrir le modal
-        this.dialog = true;
-      },
-      editVisitor(item) {
-        // Ouvrir la modal d'édition avec les données de l'utilisateur sélectionné
-        this.editVisiteur = { ...item };
-        this.editDialog = true;
-      },
-      async saveChanges() {
-        if (this.$refs.editForm.validate()) { // Validation du formulaire
-          try {
-            const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
-            if (response && response.ok) {
-              console.log(this.editVisiteur)
-              this.editDialog = false;
-              this.fetchData()
-            }
-          } catch (error) {
-            console.error("erreur lors de la maj du visiteur : ", error);
-          }
-        }
-      } ,   // Ouvrir la modal
-      openDemandeDialog(item) {
-        this.selectedVisiteur = item;
+      }
+    } ,   // Ouvrir la modal
+    openDemandeDialog(item) {
+      this.selectedVisiteur = item;
+      this.selectedService = null;
+      this.demandeMotif = '';
+      this.showDemandeDialog = true;
+    },
+    // Fermer la modal
+    closeDemandeDialog() {
+      this.showDemandeDialog = false;
+      this.demandeMotif = ""; // Réinitialiser les champs
+      this.selectedService = null;
+      this.selectedVisiteur = {}
+    },
+    async fetchDirection() {
+      const response = await fetch('http://localhost:8000/api/directions');
+      if(response.ok) {
+        const data = await response.json();
+        this.directions = data.directions;
+      }
+    },
+    onChangeDirection() {
+      this.selectedService = null;
+      if(this.selectedDirection) {
+        this.filteredServices = this.services.filter(
+          service => service.id_direction === this.selectedDirection
+        );
+      }
+      // Si le service sélectionné n'est plus valide, réinitialisez-le
+      if (!this.filteredServices.some(service => service.id === this.selectedDirection)) {
         this.selectedService = null;
-        this.demandeMotif = '';
-        this.showDemandeDialog = true;
-      },
+      }
 
-      // Fermer la modal
-      closeDemandeDialog() {
-        this.showDemandeDialog = false;
-        this.demandeMotif = ""; // Réinitialiser les champs
-        this.selectedService = null;
-        this.selectedVisiteur = {}
-      },
-      async fetchDirection() {
-        const response = await fetch('http://localhost:8000/api/directions');
-        if(response.ok) {
+      this.fetchFonctionsByDirection(this.selectedDirection);
+    },
+    async onServiceChange() {
+      if (this.selectedDirection && this.selectedService) {
+        console.log('ato')
+        await this.fetchFonctionsByService(this.selectedService);
+      }
+      if (this.selectedService == null) {
+        await this.fetchFonctionsByDirection(this.selectedDirection);
+      }
+    },
+    async fetchFonctionsByDirection(directionId) {
+      // const response = await get(`fonctions/direction/${directionId}`);
+      const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
+      if(response.ok) {
+        const data = await response.json();
+        this.filteredFonctions = data.fonctions;
+      }
+    },
+
+    async fetchFonctionsByService(serviceId) {
+      const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
+      if(response.ok) {
+        const data = await response.json();
+        console.log(data.fonctions)
+        this.filteredFonctions = data.fonctions;
+      }
+    },
+    async fetchServices() {
+      try {
+        const response = await get(`accueil/services`); // Charger les services depuis votre API
+        if (response && response.ok) {
           const data = await response.json();
-          this.directions = data.directions;
+          this.services = data;// Adapter selon la structure de réponse
         }
-      },
-      onChangeDirection() {
-        this.selectedService = null;
-        if(this.selectedDirection) {
-          this.filteredServices = this.services.filter(
-            service => service.id_direction === this.selectedDirection
-          );
-        }
-        // Si le service sélectionné n'est plus valide, réinitialisez-le
-        if (!this.filteredServices.some(service => service.id === this.selectedDirection)) {
+      } catch (error) {
+        this.showError("Erreur lors de la récupération des services : ", error);
+      }
+    },
+    async sendDemande() {
+      // Validation des champs
+      if (!this.selectedDirection || !this.selectedFonction || !this.demandeMotif) {
+        return; // Si les champs sont invalides, ne rien faire
+      }
+      try {
+        const response = await post('accueil/demande-service', {
+          'id_visiteur': this.selectedVisiteur.id,
+          'id_direction': this.selectedDirection,
+          'id_service': this.selectedService,
+          'id_fonction': this.selectedFonction,
+          'motif_visite': this.demandeMotif
+        });
+
+        if (response && response.ok) {
+          // Affichage d'un message de succès
+          this.showSuccess("Demande envoyé avec succes");
+          this.selectedDirection = null;
           this.selectedService = null;
+          this.selectedFonction = null;
+          this.demandeMotif = ''
+          this.closeDemandeDialog(); // Fermer la modal après l'envoi
+          this.fetchData();
         }
-
-        this.fetchFonctionsByDirection(this.selectedDirection);
-      },
-      async onServiceChange() {
-        if (this.selectedDirection && this.selectedService) {
-          console.log('ato')
-          await this.fetchFonctionsByService(this.selectedService);
-        }
-        if (this.selectedService == null) {
-          await this.fetchFonctionsByDirection(this.selectedDirection);
-        }
-      },
-      async fetchFonctionsByDirection(directionId) {
-        // const response = await get(`fonctions/direction/${directionId}`);
-        const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
-        if(response.ok) {
-          const data = await response.json();
-          this.filteredFonctions = data.fonctions;
-        }
-      },
-
-      async fetchFonctionsByService(serviceId) {
-        const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
-        if(response.ok) {
-          const data = await response.json();
-          console.log(data.fonctions)
-          this.filteredFonctions = data.fonctions;
-        }
-      },
-      async fetchServices() {
-        try {
-          const response = await get(`accueil/services`); // Charger les services depuis votre API
-          if (response && response.ok) {
-            const data = await response.json();
-            this.services = data;// Adapter selon la structure de réponse
-          }
-        } catch (error) {
-          this.showError("Erreur lors de la récupération des services : ", error);
-        }
-      },
-      async sendDemande() {
-        // Validation des champs
-        if (!this.selectedDirection || !this.selectedFonction || !this.demandeMotif) {
-          return; // Si les champs sont invalides, ne rien faire
-        }
-        try {
-          const response = await post('accueil/demande-service', {
-            'id_visiteur': this.selectedVisiteur.id,
-            'id_direction': this.selectedDirection,
-            'id_service': this.selectedService,
-            'id_fonction': this.selectedFonction,
-            'motif_visite': this.demandeMotif
-          });
-
-          if (response && response.ok) {
-            // Affichage d'un message de succès
-            this.showSuccess("Demande envoyé avec succes");
-            this.selectedDirection = null;
-            this.selectedService = null;
-            this.selectedFonction = null;
-            this.demandeMotif = ''
-            this.closeDemandeDialog(); // Fermer la modal après l'envoi
-            this.fetchData();
-          }
-        } catch (error) {
-          this.showError("Erreur lors de l'envoi de la demande:", error);
-        }
-      },
-      showSuccess(message) {
-        this.snackbar.color = 'success';
-        this.snackbar.text = message;
-        this.snackbar.show = true;
-      },
-      showError(message) {
-        this.snackbar.color = 'error';
-        this.snackbar.text = message;
-        this.snackbar.show = true;
-      },
+      } catch (error) {
+        this.showError("Erreur lors de l'envoi de la demande:", error);
+      }
     },
-  };
-  </script>
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+  },
+};
+</script>
 
 <style scoped>
   .v-btn--active {
@@ -497,6 +515,15 @@
     background: linear-gradient(to right, #e3f2fd, #bbdefb);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     padding: 16px;
+  }
+  /* Carte pour un homme (bleue) */
+  .digital-id-card--homme {
+    background: linear-gradient(to right, #e3f2fd, #bbdefb);
+  }
+
+  /* Carte pour une femme (rose) */
+  .digital-id-card--femme {
+    background: linear-gradient(to right, #fce4ec, #f8bbd0);
   }
   .digital-id-card h3 {
     font-weight: bold;

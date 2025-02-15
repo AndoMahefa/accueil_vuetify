@@ -21,6 +21,12 @@
 
         required
       />
+      <v-select
+        v-model="selectedGenre"
+        :items="genres"
+        item-value="value"
+        label="Sélectionner votre genre"
+      />
       <v-text-field
         v-model="visiteur.cin"
         label="CIN"
@@ -43,67 +49,105 @@
 
       <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
     </v-form>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-sheet>
 </template>
 
-  <script>
+<script>
 import { post } from '@/service/ApiService';
 
-  export default {
-    data() {
-      return {
-        valid: false,
-        visiteur: {
-            nom: '',
-            prenom: '',
-            email: '',
-            cin: '',
-            telephone: ''
-        },
-        rules: {
-          required: value => !!value || 'Ce champ est requis',
-          email: value => /.+@.+\..+/.test(value) || 'L\'email doit être valide'
-        }
-      };
-    },
-    methods: {
-        async submitForm(e) {
-          e.preventDefault()
-          try {
-            const response = await post('accueil/visiteurs', {
-              ...this.visiteur
-            })
+export default {
+  data() {
+    return {
+      valid: false,
+      visiteur: {
+          nom: '',
+          prenom: '',
+          email: '',
+          cin: '',
+          telephone: ''
+      },
+      genres: [
+        { title: 'Homme', value: 'Homme' },
+        { title: 'Femme', value: 'Femme' },
+      ],
+      selectedGenre: null,
+      rules: {
+        required: value => !!value || 'Ce champ est requis',
+        email: value => /.+@.+\..+/.test(value) || 'L\'email doit être valide'
+      },
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
+    };
+  },
+  methods: {
+    async submitForm(e) {
+      e.preventDefault()
+      try {
+        const response = await post('accueil/visiteur', {
+          'nom' : this.visiteur.nom,
+          'prenom' : this.visiteur.prenom,
+          'email' : this.visiteur.email,
+          'cin' : this.visiteur.cin,
+          'telephone' : this.visiteur.telephone,
+          'genre' : this.selectedGenre
+        })
 
-            if(response.ok) {
-              this.visiteur = {}
-            }
-          } catch (error) {
-            console.log(error)
-          }
+        if(response.ok) {
+          this.showSuccess("Visiteur ajouté avec succès");
+          this.visiteur = {};
+          this.selectedGenre = null;
         }
-    }
-  };
+      } catch (error) {
+        console.log(error)
+        this.showError("Une erreur est survenue lors de l'ajout");
+      }
+    },
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+  }
+};
 </script>
 
 <style scoped>
-    .form-title {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-        font-size: 1.25rem; /* Taille de texte */
-        font-weight: 400; /* Poids de texte par défaut */
-        color: #333; /* Couleur de texte */
-    }
+  .form-title {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      font-size: 1.25rem; /* Taille de texte */
+      font-weight: 400; /* Poids de texte par défaut */
+      color: #333; /* Couleur de texte */
+  }
 
-    .bold-text {
-        font-weight: 700; /* Texte en gras */
-        margin-right: 4px; /* Espacement entre Visiteur et / */
-    }
-    .v-sheet {
-        max-width: 600px;  /* Maximum width */
-    }
+  .bold-text {
+      font-weight: 700; /* Texte en gras */
+      margin-right: 4px; /* Espacement entre Visiteur et / */
+  }
+  .v-sheet {
+      max-width: 600px;  /* Maximum width */
+  }
 
-    .v-btn {
-        margin-top: 15px;
-    }
+  .v-btn {
+      margin-top: 15px;
+  }
 </style>

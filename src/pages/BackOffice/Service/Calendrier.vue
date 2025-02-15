@@ -1,114 +1,185 @@
 <template>
   <v-container>
-    <v-card class="mb-4">
-      <v-card-title class="title-card">
-        Liste de tous les rendez-vous
-      </v-card-title>
-      <v-row>
-        <v-col cols="12" md="4">
-          <v-text-field
-            label="Veuillez choisir une date"
-            v-model="selectedDate"
-            :min="minDate"
-            type="date"
-            @change="fetchRdv"
-          >
-          </v-text-field>
-        </v-col>
-      </v-row>
+    <v-card>
+      <FullCalendar
+        ref="fullCalendar"
+        :options="calendarOptions"
+      />
     </v-card>
 
-    <!-- Tableau stylisé -->
-    <v-card>
-      <v-data-table
-        :headers="headers"
-        :items="rdv"
-        item-key="id"
-        :loading="loading"
-        :hide-default-footer="true"
-      >
-        <template #item="{ item }">
-          <tr>
-            <td> {{ item.visiteur.nom }} {{ item.visiteur.prenom }}</td>
-            <td> {{ item.motif }} </td>
-            <td> {{ formatTime(item.date_heure) }} </td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-card>
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
-import { get } from '@/service/ApiService';
+import { get } from '@/service/ApiService'
+import FullCalendar from '@fullcalendar/vue3'
+import timeGridPlugin from '@fullcalendar/timegrid'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import frLocale from '@fullcalendar/core/locales/fr'
 
 export default {
+  components: {
+    FullCalendar
+  },
   data() {
     return {
-      rdv: [], // Liste des rendez-vous
-      minDate: new Date().toISOString().substr(0, 10), // Date minimale (aujourd'hui)
+      rdv: [],
+      minDate: new Date().toISOString().substr(0, 10),
       loading: false,
-      headers: [
-        {title:'Visiteur', value: 'visiteur'},
-        { title: 'Motif', value: 'motif' },
-        { title: 'Heure', value: 'date_heure' }
-      ],
-      selectedDate: null,
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
+      calendarOptions: {
+        plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+        initialView: 'timeGridWeek',
+        locale: frLocale,
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [],
+        editable: false,
+        selectable: true,
+        selectMirror: true,
+        weekends: false,
+        height: 'auto',
+        slotMinTime: '08:00:00',
+        slotMaxTime: '19:00:00',
+        eventTimeFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        },
+        allDaySlot: false,
+        slotDuration: '00:30:00',
+        expandRows: true,
+        stickyHeaderDates: true,
+        dayHeaderFormat: { weekday: 'long', day: 'numeric', month: 'numeric' }
+      }
     }
   },
-  mounted() {
-    this.fetchRdv();
+  async mounted() {
+    await this.fetchRdv()
   },
   methods: {
+    formatTime(dateTime) {
+      const date = new Date(dateTime)
+      return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    },
     async fetchRdv() {
-      this.loading = true;
+      this.loading = true
       try {
-        // const token = localStorage.getItem('token');
-        const idService = localStorage.getItem('idService');
-
-        // let url = `http://localhost:8000/api/service/${idService}/rendez-vous`;
-        let url = `service/${idService}/rendez-vous`;
-        if(this.selectedDate) {
-          url += `?date=${this.selectedDate}`;
-        }
-
-        // const response = await fetch(url, {
-        //   method: 'GET',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //     'Authorization': `Bearer ${token}`
-        //   }
-        // });
+        let url = `rendez-vous`
         const response = await get(url)
-
         if (response.ok) {
-          const data = await response.json();
-          this.rdv = data.rdv;
-          // console.log(this.rdv);
+          const data = await response.json()
+          this.rdv = data.rdv
+          this.updateCalendarEvents()
         } else {
-          console.error('Erreur lors de la récupération des rendez-vous');
+          console.error('Erreur lors de la récupération des rendez-vous')
+          this.showError("Erreur lors de la récupération des rendez-vous")
         }
       } catch (error) {
-        console.error(error);
+        this.showError("Une erreur est survenue lors du chargement des rendez-vous")
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
-    formatTime(dateTime) {
-      // Convertir la chaîne datetime en objet Date
-      const date = new Date(dateTime);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    updateCalendarEvents() {
+      const events = this.rdv.map(item => {
+        const start = new Date(item.date_heure)
+        const end = new Date(item.heure_fin)
+        return {
+          title: `${item.visiteur.nom} ${item.visiteur.prenom} - ${item.motif}`,
+          start: start,
+          end: end,
+          backgroundColor: '#1976D2',
+          borderColor: '#1976D2'
+        }
+      })
+      this.calendarOptions.events = events
     },
-  },
+    showSuccess(message) {
+      this.snackbar.color = 'success'
+      this.snackbar.text = message
+      this.snackbar.show = true
+    },
+    showError(message) {
+      this.snackbar.color = 'error'
+      this.snackbar.text = message
+      this.snackbar.show = true
+    }
+  }
 }
 </script>
 
-<style scoped>
-  .title-card {
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-align: center;
-    text-transform: uppercase;
-    margin-bottom: 0;
-  }
+<style>
+.fc {
+  font-family: "Roboto", sans-serif;
+  color: #000;
+  background-color: #fff;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  text-transform: capitalize;
+  color: #000;
+}
+
+.fc-event {
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.fc-day-today {
+  background-color: rgba(25, 118, 210, 0.05) !important;
+}
+
+.fc-timegrid-slot {
+  height: 40px !important;
+}
+
+.fc .fc-timegrid-slot-label {
+  color: #000;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #000;
+  text-transform: capitalize;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th,
+.fc-theme-standard .fc-scrollgrid {
+  border-color: #ddd;
+}
+
+.fc .fc-button-primary {
+  background-color: #1976D2;
+  border-color: #1976D2;
+}
+
+.fc .fc-button-primary:not(:disabled):hover {
+  background-color: #1565C0;
+  border-color: #1565C0;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #0D47A1;
+  border-color: #0D47A1;
+}
 </style>

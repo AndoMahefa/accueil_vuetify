@@ -74,7 +74,7 @@
                     :key="'matin-' + cre.id"
                   >
                     <v-list-item-content>
-                      <v-list-item-title>{{ cre.heure }}</v-list-item-title>
+                      <v-list-item-title>{{ cre.heure }} - {{ cre.heure_fin }}</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -88,7 +88,7 @@
                     :key="'apres-midi-' + cre.id"
                   >
                     <v-list-item-content>
-                      <v-list-item-title>{{ cre.heure }}</v-list-item-title>
+                      <v-list-item-title>{{ cre.heure }} - {{ cre.heure_fin }}</v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
                 </v-list>
@@ -400,14 +400,18 @@ export default {
 
       // this.intervalle = this.intervalleTemps || (this.selectedDirection === "1" ? 60 : this.selectedDirection === "4" ? 30 : 40);
       if(this.intervalle == null) {
-        this.intervalle = 40;
+        this.intervalle = 30;
       }
-      console.log("intervalle utilise : "+this.intervalle)
 
       let creneaux = [];
       let heureActuelle = debut;
-      while (heureActuelle <= fin) {
-        creneaux.push(this.convertirEnHeure(heureActuelle));
+      while (heureActuelle < fin) {
+        // creneaux.push(this.convertirEnHeure(heureActuelle));
+        const heureFin = Math.min(heureActuelle + this.intervalle, fin);
+        creneaux.push({
+          heure: this.convertirEnHeure(heureActuelle),
+          heure_fin: this.convertirEnHeure(heureFin)
+        });
         heureActuelle += this.intervalle;
       }
 
@@ -427,6 +431,7 @@ export default {
         this.showSuccess("Créneaux ajoutés avec succès !");
         this.getCreneaux();
         creneaux = [];
+        console.log("creneaux : ", creneaux);
         this.selectedDirection = null;
         this.selectedService = null;
       } catch (error) {
@@ -517,13 +522,11 @@ export default {
       this.cancelDelete(); // Fermer le modal après l'opération
     },
     async fetchServices() {
-      // const idService = localStorage.getItem("idService");
       try {
-          // const response = await get(`accueil/services/${idService}`); // Charger les services depuis votre API
-          const response = await get(`accueil/services`); // Charger les services depuis votre API
-          if (response && response.ok) {
-              this.services = await response.json(); // Adapter selon la structure de réponse
-          }
+        const response = await get(`accueil/services`); // Charger les services depuis votre API
+        if (response && response.ok) {
+            this.services = await response.json(); // Adapter selon la structure de réponse
+        }
       } catch (error) {
           console.error("Erreur lors de la récupération des services :", error);
       }

@@ -75,18 +75,17 @@
                   <v-btn
                     block
                     outlined
-                    :color="selectedSlot === slot ? 'primary' : ''"
+                    :color="selectedSlot === slot.heure ? 'primary' : ''"
                     class="mb-2"
                     @click="selectSlot(slot)"
                   >
-                    {{ slot }}
+                    {{ slot.heure }} - {{ slot.heure_fin }}
                   </v-btn>
                 </v-col>
               </v-row>
             </v-col>
           </v-row>
         </template>
-
         <template v-slot:item.3>
           <v-card title="Information sur vous"   flat>
             <v-form ref="form" v-model="valid">
@@ -172,7 +171,6 @@
 
 
 <script>
-import { get } from '@/service/ApiService';
 import Holidays from 'date-holidays';
 
 export default {
@@ -360,10 +358,14 @@ export default {
 
         if(response.ok) {
           const data = await response.json();
-          const creneaux = data.creneaux;
-          creneaux.forEach(creneau => {
-            this.allTimeSlots.push(this.formatTime(creneau.heure));
-          });
+          // const creneaux = data.creneaux;
+          // creneaux.forEach(creneau => {
+          //   this.allTimeSlots.push(this.formatTime(creneau.heure));
+          // });
+          this.allTimeSlots = data.creneaux.map(creneau => ({
+            heure: this.formatTime(creneau.heure),
+            heure_fin: this.formatTime(creneau.heure_fin)
+          }));
 
           console.log(this.allTimeSlots)
           return this.allTimeSlots;
@@ -396,7 +398,7 @@ export default {
         const allSlots = await this.fetchCreneauxJour(); // Liste complète des créneaux
         this.allTimeSlots = [];
 
-        return allSlots.filter(slot => !unavailableSlots.includes(slot));
+        return allSlots.filter(slot => !unavailableSlots.includes(slot.heure));
       } catch (error) {
           console.error(error);
           alert("Une erreur s'est produite lors du chargement des créneaux.");
@@ -415,7 +417,7 @@ export default {
     },
     // Sélection d'un créneau horaire
     selectSlot(slot) {
-      this.selectedSlot = slot;
+      this.selectedSlot = slot.heure;
     },
     // Formate une date
     formatDate(date) {
@@ -486,7 +488,8 @@ export default {
     },
     async fetchServices() {
       try {
-        const response = await get(`services`); // Charger les services depuis votre API
+        // const response = await get(`services`); // Charger les services depuis votre API
+        const response = await fetch('http://localhost:8000/api/services'); // Charger les services depuis votre API
         if (response && response.ok) {
           const data = await response.json();
           this.services = data.services;// Adapter selon la structure de réponse
@@ -494,6 +497,28 @@ export default {
       } catch (error) {
         this.showError("Erreur lors de la récupération des services : ", error);
       }
+    },
+    async fetchIntervalleDirection(idDir) {
+      const response = await fetch(`http://localhost:8000/api/direction/${idDir}/intervalle`);
+
+      let intervalle = null;
+      if(response.ok) {
+        const data = await response.json();
+        intervalle = data.intervalle.intervalle;
+      }
+
+      return intervalle;
+    },
+    async fetchIntervalleService(idSer) {
+      const response = await fetch(`http://localhost:8000/api/service/${idSer}/intervalle`);
+
+      let intervalle = null;
+      if(response.ok) {
+        const data = await response.json();
+        intervalle = data.intervalle.intervalle;
+      }
+
+      return intervalle;
     },
     async confirmRdv() {
       if (!this.selectedDate || !this.selectedSlot || !this.selectedDirection || !this.visitor.nom || !this.visitor.prenom || !this.visitor.cin || !this.visitor.email || !this.visitor.telephone || !this.demandeMotif) {
@@ -504,14 +529,40 @@ export default {
       try {
           const date = this.toISODate(this.selectedDate);
           const dateHeure = `${date} ${this.selectedSlot}`;
+
+          let [hours, minutes] = this.selectedSlot.split(":").map(Number);
+          let selectedDateTime = new Date(date); // Créer un objet Date basé sur la date sélectionnée
+          selectedDateTime.setHours(hours, minutes, 0); // Ajouter l'heure et les minutes
+
+
           let idVisiteur = null;
           if(!this.visitorExists) {
             idVisiteur = await this.createVisitor();
           } else {
             idVisiteur = this.idVisiteurExistant;
           }
+
+          let intervalle = null;
+          let heure_fin = null;
+          if(this.selectedDirection && !this.selectedService) {
+            intervalle = await this.fetchIntervalleDirection(this.selectedDirection);
+          } else if(this.selectedService) {
+            intervalle = await this.fetchIntervalleService(this.selectedService);
+          }
+
+          if(intervalle == null) {
+            intervalle = 30;
+          }
+
+          selectedDateTime.setMinutes(selectedDateTime.getMinutes() + intervalle);
+
+          console.log("heure debut : ", this.selectedSlot)
+          console.log("intervalle : ", intervalle);
+          heure_fin = selectedDateTime.toTimeString().substring(0, 5);
+          console.log("heure fin : ", heure_fin)
           const payload = {
               date_heure: dateHeure,
+              heure_fin: heure_fin,
               id_direction: this.selectedDirection,
               id_service: this.selectedService,
               id_visiteur: idVisiteur, // Si le visiteur existe, utilisez son ID
@@ -536,15 +587,17 @@ export default {
 
           const data = await response.json();
           this.showSuccess("Rendez-vous enregistré avec succès !");
-          console.log("Rendez-vous :", data.rdv);
+          // console.log("Rendez-vous :", data.rdv);
 
-          // Réinitialisez le formulaire si nécessaire
+          // // Réinitialisez le formulaire si nécessaire
           this.resetForm();
+          this.currentStep = 1;
       } catch (error) {
           this.showError("Erreur réseau :", error.message);
       }
     },
     resetForm() {
+      this.selectedDirection = null;
       this.selectedDate = null;
       this.selectedSlot = null;
       this.selectedService = null;
@@ -563,12 +616,12 @@ export default {
         this.snackbar.color = 'success';
         this.snackbar.text = message;
         this.snackbar.show = true;
-      },
-      showError(message) {
-        this.snackbar.color = 'error';
-        this.snackbar.text = message;
-        this.snackbar.show = true;
-      },
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
   },
 };
 </script>

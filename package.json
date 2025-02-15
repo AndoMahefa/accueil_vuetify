@@ -11,7 +11,13 @@
   },
   "dependencies": {
     "@balkangraph/orgchart.js": "^8.15.4",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/vue3": "^6.1.15",
     "@mdi/font": "7.4.47",
+    "date-fns": "^4.1.0",
     "date-holidays": "^3.23.14",
     "roboto-fontface": "*",
     "vue": "^3.4.31",
