@@ -16,11 +16,20 @@
       </v-toolbar-title>
     </template>
     <template v-else>
-      <!-- Nom du service connecté -->
-      <v-toolbar-title class="service-title">
-        {{ directionName }} / {{ serviceName }}
-      </v-toolbar-title>
+      <template v-if="serviceName && serviceName != 'Administrateur'">
+        <!-- Nom du service connecté -->
+        <v-toolbar-title class="service-title">
+          {{ directionName }} / {{ serviceName }}
+        </v-toolbar-title>
+      </template>
+      <template v-if="!serviceName">
+        <!-- Nom du service connecté -->
+        <v-toolbar-title class="service-title">
+          {{ directionName }}
+        </v-toolbar-title>
+      </template>
     </template>
+
 
 
     <v-spacer />
@@ -80,7 +89,7 @@ export default {
     };
   },
   mounted() {
-    const direction = localStorage.getItem('direction');
+    const direction = JSON.parse(localStorage.getItem('direction'));
     if(direction) {
       this.directionName = direction.nom;
     }

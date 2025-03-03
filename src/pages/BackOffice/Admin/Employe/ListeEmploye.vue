@@ -59,6 +59,7 @@
                 </template>
                 <span>Editer</span>
               </v-tooltip>
+
               <v-tooltip location="bottom" attach="body">
                 <template #activator="{props}">
                   <v-icon
@@ -72,19 +73,36 @@
                 </template>
                 <span>Supprimer</span>
               </v-tooltip>
-              <v-tooltip location="bottom" attach="body">
-                <template #activator="{props}">
-                  <v-icon
-                    color="success"
-                    class="mx-2"
-                    v-bind="props"
-                    @click="assignRoleModal(item)"
-                  >
-                    mdi-account-cog
-                  </v-icon>
-                </template>
-                <span>Attribuer un role</span>
-              </v-tooltip>
+
+              <template v-if="item.utilisateur">
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="success"
+                      class="mx-2"
+                      v-bind="props"
+                      @click="assignRoleModal(item)"
+                    >
+                      mdi-account-cog
+                    </v-icon>
+                  </template>
+                  <span>Attribuer un role</span>
+                </v-tooltip>
+              </template>
+              <template v-else>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="success"
+                      class="mx-2"
+                      v-bind="props"
+                    >
+                      mdi-account-off
+                    </v-icon>
+                  </template>
+                  <span>L'employé n'a pas encore de compte</span>
+                </v-tooltip>
+              </template>
 
               <!-- Modification pour l'icône de création de compte -->
               <template v-if="item.utilisateur">
@@ -482,7 +500,6 @@ export default {
         this.onEditDirectionChange();
       }
     },
-
     async fetchFonctions() {
       const response = await get('fonctions');
       if(response.ok) {
@@ -490,7 +507,6 @@ export default {
         this.fonctions = data.fonctions;
       }
     },
-
     async fetchObservations() {
       const response = await get('observations');
       if(response.ok) {
@@ -498,7 +514,6 @@ export default {
         this.observations = data;
       }
     },
-
     onEditDirectionChange() {
       this.filteredServices = this.services.filter(
         service => service.id_direction === this.editedEmployee.id_direction
@@ -510,7 +525,6 @@ export default {
       // Vous pouvez également appeler une méthode pour charger les fonctions si nécessaire
       this.fetchFonctionsByDirection(this.editedEmployee.id_direction);
     },
-
     onEditServiceChange() {
       if (this.editedEmployee.id_service) {
         this.fetchFonctionsByService(this.editedEmployee.id_service);
@@ -518,7 +532,6 @@ export default {
         this.fetchFonctionsByDirection(this.editedEmployee.id_direction);
       }
     },
-
     async fetchFonctionsByDirection(directionId) {
       // const response = await get(`fonctions/direction/${directionId}`);
       const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
@@ -528,7 +541,6 @@ export default {
         this.filteredFonctions = data.fonctions;
       }
     },
-
     async fetchFonctionsByService(serviceId) {
       const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
       console.log(`http://localhost:8000/api/fonctions/service/${serviceId}`)
@@ -537,12 +549,10 @@ export default {
         this.filteredFonctions = data.fonctions;
       }
     },
-
     // Ferme la modal d'édition
     closeEditEmployeeModal() {
       this.editEmployeeDialog = false;
     },
-
     // Envoie la requête pour mettre à jour les informations de l'employé
     async updateEmployee() {
       const response = await put(`employe/${this.editedEmployee.id}/update`, {
@@ -579,7 +589,7 @@ export default {
         path: '/home/role-employe',
         query: {
           employe: JSON.stringify(employe),
-          service: this.selectedService
+          // service: this.selectedService
         }
       })
     },
@@ -627,51 +637,51 @@ export default {
 </script>
 
 <style scoped>
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem;
-}
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+  }
 
-.form-field {
-  width: 100%;
-}
+  .form-field {
+    width: 100%;
+  }
 
-.stepper-item {
-  display: flex;
-  align-items: center;
-}
+  .stepper-item {
+    display: flex;
+    align-items: center;
+  }
 
-.gap-4 {
-  gap: 1rem;
-}
+  .gap-4 {
+    gap: 1rem;
+  }
 
-.d-flex {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .d-flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.mb-4 {
-  margin-bottom: 16px;
-}
+  .mb-4 {
+    margin-bottom: 16px;
+  }
 
-.v-card {
-  border-radius: 8px;
-  overflow: hidden;
-}
+  .v-card {
+    border-radius: 8px;
+    overflow: hidden;
+  }
 
-.v-card-title {
-  padding: 16px;
-}
+  .v-card-title {
+    padding: 16px;
+  }
 
-.v-divider {
-  margin: 16px 0;
-}
+  .v-divider {
+    margin: 16px 0;
+  }
 
-.v-pagination {
-  justify-content: center;
-  margin-top: 20px;
-}
+  .v-pagination {
+    justify-content: center;
+    margin-top: 20px;
+  }
 </style>

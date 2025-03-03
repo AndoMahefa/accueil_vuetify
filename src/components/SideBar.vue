@@ -28,7 +28,7 @@
       <template v-for="(item, index) in items" :key="item.title">
         <!-- Menu avec sous-menus -->
         <v-list-group
-          v-if="item.items"
+          v-if="item.items && item.items.length"
           :value="openGroups[index]"
           @click="toggleGroup(index)"
         >

@@ -37,32 +37,8 @@ export default {
       userName: 'Rakshith Bellare',
       idService : null,
       role: null,
-      itemsAccueil: [
-        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
-        { title: "Enregistrer un visiteur", icon: "mdi-account-plus", to: "/home/enregistrer-visiteur" },
-        { title: "Liste des visiteurs", icon: "mdi-format-list-bulleted", to: "/home/liste-visiteurs" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente"},
-        { title: "Remise d'offre", icon: "mdi-file-document", to: "/home/remise-offre" }
-      ],
-      autreService: [
-        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
-        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
-        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
-        { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" }
-      ],
-      prmp: [
-        { title: "Demande Recu", icon: "mdi-inbox", to: "/home/demande-recu" },
-        { title: "File d'attente", icon: "mdi-clock-outline", to: "/home/file-attente-service"},
-        { title: "Disponibilités", icon: "mdi-calendar-clock", to: "/home/jour-creneaux" },
-        { title: "Calendrier des rdv", icon: "mdi-calendar", to: "/home/rendez-vous" },
-        // { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/appel-offre" },
-        // { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appel-offre" },
+      itemsMenuUser: [],
 
-        // Appel d'offre personalise
-        { title: "Ajout d'un appel d'offre", icon: "mdi-plus", to: "/home/save-reference" },
-        { title: "Liste des appels d'offres", icon: "mdi-format-list-bulleted", to: "/home/liste-appels" }
-      ],
       itemsAdmin: [
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
         // Organigramme
@@ -81,7 +57,9 @@ export default {
           icon: "mdi-account-group",
           items: [
             { title: "Ajouter un employé", to: "/home/ajouter-employe" },
-            { title: "Liste des employés", to: "/home/liste-employes" }
+            { title: "Liste des employés", to: "/home/liste-employes" },
+            { title: "Pointage", to: "/home/pointage" },
+            { title: "Liste des pointages", to: "/home/liste-pointages" }
           ]
         },
         {
@@ -115,33 +93,42 @@ export default {
   computed: {
     // Renvoie les items du SideBar selon le service actuel
     sidebarItems() {
-      console.log(this.idService)
       if(this.role === 'admin') {
         return this.itemsAdmin;
       } else {
         this.fetchServiceName()
-        if(this.serviceName === "Accueil") {
-          return this.itemsAccueil;
-        } else if(this.idService === "PRMP") {
-          return this.prmp;
-        } else {
-          return this.autreService;
-        }
+
+        return this.transformRolesToMenu(this.itemsMenuUser);
       }
     }
   },
   mounted() {
     this.idService = localStorage.getItem("idService");
     this.role = localStorage.getItem("role");
+    if(this.role == 'user') {
+      const roles =  localStorage.getItem("roles_utilisateur")
+      this.itemsMenuUser = JSON.parse(roles);
+      console.log(this.itemsMenuUser)
+    }
   },
   methods: {
+    transformRolesToMenu(roles) {
+      return roles.map(role => ({
+        title: role.title,
+        icon: role.icon,
+        to: role.to || null, // Assure une valeur null si pas de route
+        items: role.enfants?.length
+          ? this.transformRolesToMenu(role.enfants)
+          : []
+      }));
+    },
     toggleSidebar() {
       this.drawer = !this.drawer;
     },
     async fetchServiceName() {
       const idService = localStorage.getItem('idService'); // Récupère l'idService
       if (!idService) {
-        this.serviceName = 'Service Inconnu';
+        this.serviceName = '';
         return;
       }
 
@@ -158,7 +145,7 @@ export default {
           const data = await response.json();
           this.serviceName = data.nom || 'Service Inconnu'; // Assurez-vous que l'API retourne un champ `name`
         } else {
-          this.serviceName = 'Service Inaccessible';
+          this.serviceName = '';
         }
       } catch (error) {
         console.error('Erreur lors de la récupération du nom du service:', error);

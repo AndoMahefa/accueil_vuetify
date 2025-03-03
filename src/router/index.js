@@ -32,6 +32,9 @@ import DeletedAppelOffre from '@/pages/BackOffice/Admin/AO/DeletedAppelOffre.vue
 import RemiseOffre from '@/pages/BackOffice/Visiteur/RemiseOffre.vue';
 import ListeSoumissionaire from '@/pages/BackOffice/Visiteur/ListeSoumissionaire.vue';
 import Organigramme from '@/pages/BackOffice/Admin/Organigramme/Organigramme.vue';
+import Pointage from '@/pages/BackOffice/Admin/Employe/Pointage.vue';
+import ListePointage from '@/pages/BackOffice/Admin/Employe/ListePointage.vue';
+import CalendrierService from '@/pages/BackOffice/Service/CalendrierService.vue';
 
 const routes = [
   {
@@ -103,6 +106,11 @@ const routes = [
         path: 'rendez-vous',
         name: 'Calendrier',
         component: Calendrier
+      },
+      {
+        path: 'rendez-vous-service',
+        name: 'Calendrier',
+        component: CalendrierService
       },
       {
         path: 'appel-offre',
@@ -184,6 +192,16 @@ const routes = [
         path: 'liste-soumissionaire',
         name: 'ListeSoumissionaire',
         component: ListeSoumissionaire
+      },
+      {
+        path: 'pointage',
+        name: 'Pointage',
+        component: Pointage
+      },
+      {
+        path: 'liste-pointages',
+        name: 'ListePointage',
+        component: ListePointage
       }
     ]
   },

@@ -142,12 +142,20 @@ export default {
 
               const data = await response.json();
 
+              console.log(data);
               localStorage.setItem('token', data.token);
-              localStorage.setItem('direction', data.direction);
+              localStorage.setItem('direction', JSON.stringify(data.direction));
               localStorage.setItem('idUser', data.user.id);
-              localStorage.setItem('idService', data.idService);
-              localStorage.setItem('role', data.user.role)
+              if(data.idService) {
+                localStorage.setItem('idService', data.idService);
+              }
+              localStorage.setItem('role', data.user.role);
+              if(data.user.role == 'user') {
+                localStorage.setItem('roles_utilisateur', JSON.stringify(data.user.employe_info.roles));
+              }
 
+              // console.log(JSON.parse(localStorage.getItem('roles_utilisateur')));
+              // console.log(localStorage.getItem('direction', data.direction))
               this.$router.push('/home');
 
             } catch (error) {
