@@ -22,6 +22,7 @@
         class="elevation-1"
         loading-text="Chargement des données..."
         :hide-default-footer="true"
+        :no-data-text="'Aucune donnée'"
       >
         <!-- Colonnes personnalisées -->
         <template #item="{ item }">

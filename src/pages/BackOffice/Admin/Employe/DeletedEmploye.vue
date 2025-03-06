@@ -22,6 +22,8 @@
         item-key="id"
         :loading="loading"
         :hide-default-footer="true"
+        :no-data-text="'Aucun employé supprimé'"
+        :loading-text="'Chargement des données...'"
       >
         <template #item="{ item }">
           <tr>

@@ -159,7 +159,7 @@
             />
           </div>
         </v-card-text>
-        <v-divider></v-divider>
+        <v-divider />
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn color="grey darken-1" text @click="showArriveeModal = false" class="px-4">
@@ -209,7 +209,7 @@
             />
           </div>
         </v-card-text>
-        <v-divider></v-divider>
+        <v-divider />
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn color="grey darken-1" text @click="showDepartModal = false" class="px-4">

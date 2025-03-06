@@ -12,6 +12,8 @@
             item-title="nom"
             item-value="id"
             clearable
+            :no-data-text="'Aucune donnée'"
+            :loading-text="'Chargement des données...'"
             @update:model-value="fetchTickets"
           />
         </v-col>

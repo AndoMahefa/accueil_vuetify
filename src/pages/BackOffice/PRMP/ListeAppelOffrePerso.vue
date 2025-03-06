@@ -27,6 +27,8 @@
       class="elevation-1"
       outlined
       :hide-default-footer="true"
+      :no-data-text="'Aucune donnée'"
+      :loading-text="'Chargement des données...'"
     >
       <template v-slot:item.actions="{ item }">
         <v-icon

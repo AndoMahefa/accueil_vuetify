@@ -34,6 +34,8 @@
         :items="employes.data"
         :loading="loading"
         :hide-default-footer="true"
+        :no-data-text="'Aucun employé'"
+        :loading-text="'Chargement des employés...'"
         class="elevation-1"
       >
         <template #item="{ item }">

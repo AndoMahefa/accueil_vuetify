@@ -7,7 +7,6 @@ import FileAttente from '@/pages/BackOffice/Visiteur/FileAttente.vue';
 import ListeDemandeRecu from '@/pages/BackOffice/Service/ListeDemandeRecu.vue';
 import FileAttenteService from '@/pages/BackOffice/Service/FileAttenteService.vue';
 import JourCreneaux from '@/pages/BackOffice/Service/JourCreneaux.vue';
-import Calendrier from '@/pages/BackOffice/Service/Calendrier.vue';
 import AppelOffrePrmp from '@/pages/BackOffice/PRMP/AppelOffrePrmp.vue';
 import ListeAppelOffre from '@/pages/BackOffice/PRMP/ListeAppelOffre.vue';
 import AjouterAppel from '@/pages/BackOffice/PRMP/AjouterAppel.vue'
@@ -34,7 +33,9 @@ import ListeSoumissionaire from '@/pages/BackOffice/Visiteur/ListeSoumissionaire
 import Organigramme from '@/pages/BackOffice/Admin/Organigramme/Organigramme.vue';
 import Pointage from '@/pages/BackOffice/Admin/Employe/Pointage.vue';
 import ListePointage from '@/pages/BackOffice/Admin/Employe/ListePointage.vue';
+import Calendrier from '@/pages/BackOffice/Service/Calendrier.vue';
 import CalendrierService from '@/pages/BackOffice/Service/CalendrierService.vue';
+
 
 const routes = [
   {
@@ -109,7 +110,7 @@ const routes = [
       },
       {
         path: 'rendez-vous-service',
-        name: 'Calendrier',
+        name: 'CalendrierService',
         component: CalendrierService
       },
       {

@@ -21,6 +21,8 @@
         item-key="id"
         :loading="loading"
         :hide-default-footer="true"
+        :no-data-text="'Pas de données pour l\'instant'"
+        :loading-text="'Chargement des données...'"
       >
         <template #item="{ item }">
           <tr>
@@ -48,7 +50,7 @@
       <v-card>
         <v-card-title>Confirmer la restauration</v-card-title>
         <v-card-text>
-          Êtes-vous sûr de vouloir restaurer l'appel d'offre : 
+          Êtes-vous sûr de vouloir restaurer l'appel d'offre :
           <strong>{{ appelOffre?.objet }}</strong> ?
         </v-card-text>
         <v-card-actions>

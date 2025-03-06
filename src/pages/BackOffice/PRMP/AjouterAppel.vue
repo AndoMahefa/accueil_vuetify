@@ -35,7 +35,12 @@
               <v-btn icon small color="primary" @click="editChamp(champ)">
                 <v-icon style="font-size: 20px;">mdi-pencil</v-icon>
               </v-btn>
-              <v-btn icon small color="error" @click="deleteChamp(champ.id)">
+              <v-btn
+                icon
+                small
+                color="error"
+                @click="openDeleteDialog(champ.id)"
+              >
                 <v-icon style="font-size: 20px;">mdi-delete</v-icon>
               </v-btn>
             </div>
@@ -207,11 +212,34 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="isDeleteDialogOpen" width="100%" max-width="500px">
+      <v-card>
+        <v-card-title class="headline">Confirmer la suppression</v-card-title>
+        <v-card-text>
+          Êtes-vous sûr de vouloir supprimer définitivement ce champ ?
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="error" @click="confirmDelete">Confirmer</v-btn>
+          <v-btn text @click="closeDeleteDialog">Annuler</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
-import { get, post, put } from '@/service/ApiService';
+import { del, get, post, put } from '@/service/ApiService';
 
 export default {
   data() {
@@ -242,7 +270,16 @@ export default {
         options: ""
       },
       isEditFormValid: false,
-      reference_ppm: null
+      reference_ppm: null,
+
+      isDeleteDialogOpen: false,
+      champToDeleteId: null,
+
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
     };
   },
   mounted() {
@@ -265,6 +302,34 @@ export default {
         }
       } catch (error) {
         console.error("Erreur lors de la récupération des champs :", error);
+      }
+    },
+    openDeleteDialog(champId) {
+      this.champToDeleteId = champId;
+      this.isDeleteDialogOpen = true;
+    },
+
+    closeDeleteDialog() {
+      this.isDeleteDialogOpen = false;
+      this.champToDeleteId = null;
+    },
+    async confirmDelete() {
+      if (!this.champToDeleteId) return;
+
+      try {
+        const response = await del(`prmp/delete-champ/${this.champToDeleteId}`)
+
+        if(response.ok) {
+          const data = await response.json()
+          await this.fetchChamps();
+          this.showSuccess(data.message);
+        } else {
+          this.showError('Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error("Erreur lors de la suppression :", error);
+      } finally {
+        this.closeDeleteDialog();
       }
     },
     // Ouvrir la boîte de dialogue pour ajouter un champ
@@ -328,16 +393,6 @@ export default {
       }));
 
       console.log(formDataArray)
-      // Envoyer les données à l'API
-      // const token = localStorage.getItem("token");
-      // const response = await fetch('http://localhost:8000/api/prmp/appel-offre-donnees', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify({ data: formDataArray, id_reference: this.reference_ppm.id }),
-      // })
       const response = await post('prmp/appel-offre-donnees', {
         'data': formDataArray,
         'id_reference': this.reference_ppm.id
@@ -381,15 +436,6 @@ export default {
         };
 
         console.log(payload)
-        // const token = localStorage.getItem("token");
-        // const response = await fetch(`http://localhost:8000/api/prmp/modif-champ-appel/${this.editedChamp.id}`, {
-        //   method: 'PUT',
-        //   headers: {
-        //     'Content-type': 'application/json',
-        //     'Authorization': `Bearer ${token}`,
-        //   },
-        //   body: JSON.stringify(payload),
-        // });
         const response = await put(`prmp/modif-champ-appel/${this.editedChamp.id}`, {
           ...payload
         })
@@ -404,7 +450,17 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la modification du champ :", error);
       }
-    }
+    },
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
   }
 };
 </script>

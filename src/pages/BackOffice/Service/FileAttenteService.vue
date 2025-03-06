@@ -15,6 +15,8 @@
         item-key="id"
         :loading="loading"
         :hide-default-footer="true"
+        :no-data-text="'Aucune donnée'"
+        :loading-text="'Chargement des données...'"
       >
         <template #item="{ item, index }">
           <tr>

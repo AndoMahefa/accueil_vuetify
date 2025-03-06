@@ -9,6 +9,7 @@
         item-value="id"
         class="elevation-1"
         loading-text="Chargement des données..."
+        :no-data-text="'Aucune donnée'"
         :hide-default-footer="true"
       >
         <!-- Colonnes personnalisées -->

@@ -126,60 +126,60 @@ export default {
 </script>
 
 <style>
-.fc {
-  font-family: "Roboto", sans-serif;
-  color: #000;
-  background-color: #fff;
-}
+  .fc {
+    font-family: "Roboto", sans-serif;
+    color: #000;
+    background-color: #fff;
+  }
 
-.fc-toolbar-title {
-  font-size: 1.5rem !important;
-  font-weight: bold !important;
-  text-transform: capitalize;
-  color: #000;
-}
+  .fc-toolbar-title {
+    font-size: 1.5rem !important;
+    font-weight: bold !important;
+    text-transform: capitalize;
+    color: #000;
+  }
 
-.fc-event {
-  cursor: pointer;
-  padding: 2px 4px;
-}
+  .fc-event {
+    cursor: pointer;
+    padding: 2px 4px;
+  }
 
-.fc-day-today {
-  background-color: rgba(25, 118, 210, 0.05) !important;
-}
+  .fc-day-today {
+    background-color: rgba(25, 118, 210, 0.05) !important;
+  }
 
-.fc-timegrid-slot {
-  height: 40px !important;
-}
+  .fc-timegrid-slot {
+    height: 40px !important;
+  }
 
-.fc .fc-timegrid-slot-label {
-  color: #000;
-}
+  .fc .fc-timegrid-slot-label {
+    color: #000;
+  }
 
-.fc .fc-col-header-cell-cushion {
-  color: #000;
-  text-transform: capitalize;
-}
+  .fc .fc-col-header-cell-cushion {
+    color: #000;
+    text-transform: capitalize;
+  }
 
-.fc-theme-standard td,
-.fc-theme-standard th,
-.fc-theme-standard .fc-scrollgrid {
-  border-color: #ddd;
-}
+  .fc-theme-standard td,
+  .fc-theme-standard th,
+  .fc-theme-standard .fc-scrollgrid {
+    border-color: #ddd;
+  }
 
-.fc .fc-button-primary {
-  background-color: #1976D2;
-  border-color: #1976D2;
-}
+  .fc .fc-button-primary {
+    background-color: #1976D2;
+    border-color: #1976D2;
+  }
 
-.fc .fc-button-primary:not(:disabled):hover {
-  background-color: #1565C0;
-  border-color: #1565C0;
-}
+  .fc .fc-button-primary:not(:disabled):hover {
+    background-color: #1565C0;
+    border-color: #1565C0;
+  }
 
-.fc .fc-button-primary:not(:disabled).fc-button-active,
-.fc .fc-button-primary:not(:disabled):active {
-  background-color: #0D47A1;
-  border-color: #0D47A1;
-}
+  .fc .fc-button-primary:not(:disabled).fc-button-active,
+  .fc .fc-button-primary:not(:disabled):active {
+    background-color: #0D47A1;
+    border-color: #0D47A1;
+  }
 </style>

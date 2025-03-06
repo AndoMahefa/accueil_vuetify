@@ -8,7 +8,8 @@
         :headers="headers"
         item-value="id"
         class="elevation-1"
-        loading-text="Chargement des données..."
+        :no-data-text="'Aucun visiteur'"
+        :loading-text="'Chargement des visiteurs...'"
         :hide-default-footer="true"
       >
         <!-- Colonnes personnalisées -->
