@@ -70,8 +70,97 @@
     </v-btn>
 
 
+    <!-- Dialog Ajouter un Champ (version stylisée) -->
+    <v-dialog v-model="isDialogOpen" max-width="600px">
+      <v-card class="rounded-lg">
+        <!-- En-tête coloré -->
+        <v-card-title class="primary white--text pa-4">
+          <span class="headline font-weight-bold">Nouveau Champ Personnalisé</span>
+          <v-spacer />
+        </v-card-title>
+
+        <v-card-text class="pa-6">
+          <v-form ref="addChampForm" v-model="isFormValid">
+            <v-text-field
+              label="Nom du champ*"
+              v-model="newChamp.nom_champ"
+              :rules="[rules.required]"
+              outlined
+              dense
+              class="mb-4"
+              prepend-inner-icon="mdi-form-textbox"
+            />
+
+            <v-select
+              label="Type de champ*"
+              :items="typesChamps"
+              v-model="newChamp.type_champ"
+              :rules="[rules.required]"
+              outlined
+              dense
+              class="mb-4"
+              prepend-inner-icon="mdi-form-dropdown"
+              item-title="text"
+              item-value="value"
+            />
+
+            <!-- Remplacer le textarea par ce v-combobox dans les deux modals -->
+            <v-combobox
+              v-if="newChamp.type_champ === 'select' || newChamp.type_champ === 'radio'"
+              v-model="newChamp.options"
+              label="Options disponibles"
+              multiple
+              chips
+              outlined
+              dense
+              hint="Appuyez sur Entrée ou tapez une virgule pour ajouter une option"
+              persistent-hint
+              append-icon=""
+              class="mb-4"
+              prepend-inner-icon="mdi-format-list-bulleted"
+              @keydown.enter.prevent
+            >
+              <template v-slot:selection="{ item, index }">
+                <v-chip
+                  close
+                  @click:close="removeOption(index)"
+                  class="ma-1"
+                  color="primary"
+                  small
+                >
+                  {{ item }}
+                </v-chip>
+              </template>
+            </v-combobox>
+          </v-form>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions class="pa-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            text
+            @click="closeAddChampDialog"
+            class="mr-2"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            color="primary"
+            depressed
+            @click="addChamp"
+            :disabled="!isFormValid"
+            class="px-6"
+          >
+            <v-icon left>mdi-check</v-icon>
+            Créer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <!-- Dialog Ajouter un Champ -->
-    <v-dialog v-model="isDialogOpen" width="100%" max-width="600px">
+    <!-- <v-dialog v-model="isDialogOpen" width="100%" max-width="600px">
       <v-card>
         <v-card-title>
           <span class="headline">Ajouter un Nouveau Champ</span>
@@ -107,7 +196,7 @@
           <v-btn text @click="closeAddChampDialog">Annuler</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <!-- Dialog Modifier un Champ -->
     <v-dialog v-model="isEditDialogOpen" width="100%" max-width="600px">
@@ -131,11 +220,34 @@
               :rules="[rules.required]"
               required
             />
-            <v-textarea
+            <!-- Dans le modal d'édition -->
+            <v-combobox
               v-if="editedChamp.type_champ === 'select' || editedChamp.type_champ === 'radio'"
-              label="Options (séparées par une virgule)"
               v-model="editedChamp.options"
-            />
+              label="Options disponibles"
+              multiple
+              chips
+              outlined
+              dense
+              hint="Appuyez sur Entrée ou tapez une virgule pour ajouter une option"
+              persistent-hint
+              append-icon=""
+              class="mb-4"
+              prepend-inner-icon="mdi-format-list-bulleted"
+              @keydown.enter.prevent
+            >
+              <template v-slot:selection="{ item, index }">
+                <v-chip
+                  close
+                  @click:close="removeEditedOption(index)"
+                  class="ma-1"
+                  color="primary"
+                  small
+                >
+                  {{ item }}
+                </v-chip>
+              </template>
+            </v-combobox>
           </v-form>
         </v-card-text>
 
@@ -255,25 +367,67 @@ export default {
       newChamp: {
         nom_champ: "",
         type_champ: "",
-        options: "",
-      }, // Données du nouveau champ
-      typesChamps: ["text", "textarea", "date", "select", "checkbox", "radio", "file"], // Types possibles de champs
+        options: [], // Changer en tableau
+      },
+      editedChamp: {
+        nom_champ: "",
+        type_champ: "",
+        options: [] // Changer en tableau
+      },
       isFormValid: false,
       rules: {
         required: (value) => !!value || "Ce champ est obligatoire",
       },
 
       isEditDialogOpen: false,
-      editedChamp: {
-        nom_champ: "",
-        type_champ: "",
-        options: ""
-      },
+      // editedChamp: {
+      //   nom_champ: "",
+      //   type_champ: "",
+      //   options: ""
+      // },
       isEditFormValid: false,
       reference_ppm: null,
 
       isDeleteDialogOpen: false,
       champToDeleteId: null,
+
+      typesChamps: [
+        {
+          text: "Texte court",
+          value: "text",
+          icon: "mdi-form-textbox"
+        },
+        {
+          text: "Texte long",
+          value: "textarea",
+          icon: "mdi-text-box"
+        },
+        {
+          text: "Date",
+          value: "date",
+          icon: "mdi-calendar"
+        },
+        {
+          text: "Liste déroulante",
+          value: "select",
+          icon: "mdi-menu-down"
+        },
+        {
+          text: "Case à cocher",
+          value: "checkbox",
+          icon: "mdi-checkbox-marked"
+        },
+        {
+          text: "Boutons radio",
+          value: "radio",
+          icon: "mdi-radiobox-marked"
+        },
+        {
+          text: "Fichier",
+          value: "file",
+          icon: "mdi-file-upload"
+        }
+      ],
 
       snackbar: {
         show: false,
@@ -291,6 +445,12 @@ export default {
     }
   },
   methods: {
+    removeOption(index) {
+      this.newChamp.options.splice(index, 1);
+    },
+    removeEditedOption(index) {
+      this.editedChamp.options.splice(index, 1);
+    },
     // Récupérer les champs depuis l'API
     async fetchChamps() {
       try {
@@ -352,13 +512,11 @@ export default {
     // Ajouter un nouveau champ via l'API
     async addChamp() {
       try {
-        const options = this.newChamp.options
-          ? this.newChamp.options.split(",").map((opt) => opt.trim())
-          : [];
+
         const payload = {
           nom_champ: this.newChamp.nom_champ,
           type_champ: this.newChamp.type_champ,
-          options: options,
+          options: this.newChamp.options // Envoi direct du tableau
         };
 
 
@@ -367,11 +525,12 @@ export default {
         })
 
         if(response.ok) {
-          alert('Champ ajouter avec succes')
+          this.showSuccess('Champ ajouté avec succès');
           this.closeAddChampDialog();
           this.fetchChamps(); // Recharger la liste des champs
         }
       } catch (error) {
+        this.showError('Erreur lors de l\'ajout du champ');
         console.error("Erreur lors de l'ajout du champ :", error);
       }
     },
@@ -426,13 +585,10 @@ export default {
     // Sauvegarder les modifications du champ
     async saveEditedChamp() {
       try {
-        const options = typeof this.editedChamp.options === 'string'
-          ? this.editedChamp.options.split(",").map((opt) => opt.trim())
-          : [];
         const payload = {
           nom_champ: this.editedChamp.nom_champ,
           type_champ: this.editedChamp.type_champ,
-          options: options,
+          options: this.editChamp.options
         };
 
         console.log(payload)
