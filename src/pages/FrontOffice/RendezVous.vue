@@ -504,7 +504,11 @@ export default {
       let intervalle = null;
       if(response.ok) {
         const data = await response.json();
-        intervalle = data.intervalle.intervalle;
+        if(data.intervalle) {
+          intervalle = data.intervalle.intervalle;
+        }
+
+        intervalle = 30;
       }
 
       return intervalle;
@@ -515,7 +519,11 @@ export default {
       let intervalle = null;
       if(response.ok) {
         const data = await response.json();
-        intervalle = data.intervalle.intervalle;
+        if(data.intervalle) {
+          intervalle = data.intervalle.intervalle;
+        }
+
+        intervalle = 30;
       }
 
       return intervalle;
@@ -580,7 +588,6 @@ export default {
 
           if (!response.ok) {
               const errorData = await response.json();
-              console.error("Erreur lors de l'enregistrement :", errorData);
               this.showError("Une erreur s'est produite lors de l'enregistrement du rendez-vous.");
               return;
           }
@@ -593,7 +600,8 @@ export default {
           this.resetForm();
           this.currentStep = 1;
       } catch (error) {
-          this.showError("Erreur réseau :", error.message);
+        console.log(error)
+          this.showError("Erreur réseau :", error);
       }
     },
     resetForm() {
