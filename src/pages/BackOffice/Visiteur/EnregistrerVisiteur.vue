@@ -106,7 +106,7 @@ export default {
         })
 
         if(response.ok) {
-          this.showSuccess("Visiteur ajouté avec succès");
+          this.showSuccess("Visiteur ajouté avec succès");// console.log(this.selectedGenre)
           this.visiteur = {};
           this.selectedGenre = null;
         }
