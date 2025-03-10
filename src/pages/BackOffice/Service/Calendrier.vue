@@ -32,6 +32,13 @@ export default {
   },
   data() {
     return {
+      directionColors: {
+        1: '#4CAF50', // Vert pour direction 1
+        2: '#2196F3', // Bleu pour direction 2
+        3: '#9C27B0', // Violet pour direction 3
+        4: '#FF9800', // Orange pour direction 4
+        // Ajoutez d'autres IDs et couleurs au besoin
+      },
       rdv: [],
       minDate: new Date().toISOString().substr(0, 10),
       loading: false,
@@ -98,15 +105,29 @@ export default {
       }
     },
     updateCalendarEvents() {
+      console.log(this.rdv)
       const events = this.rdv.map(item => {
         const start = new Date(item.date_heure)
-        const end = new Date(item.heure_fin)
+        const [hours, minutes, seconds] = item.heure_fin.split(':').map(Number);
+        // Cloner la date de début et appliquer l'heure de fin
+        const end = new Date(start);
+        end.setHours(hours);
+        end.setMinutes(minutes);
+        end.setSeconds(seconds || 0);
+
+        // Récupérer la couleur selon id_direction
+        const directionId = item.direction.id; // Adaptez selon votre structure de données
+        const eventColor = this.directionColors[directionId] || '#1976D2'; // Couleur par défaut
+
         return {
           title: `${item.visiteur.nom} ${item.visiteur.prenom} - ${item.motif}`,
           start: start,
           end: end,
-          backgroundColor: '#1976D2',
-          borderColor: '#1976D2'
+          backgroundColor: eventColor,
+          borderColor: eventColor,
+          extendedProps: {
+            directionId: directionId // Stockez l'ID pour utilisation ultérieure si besoin
+          }
         }
       })
       this.calendarOptions.events = events
