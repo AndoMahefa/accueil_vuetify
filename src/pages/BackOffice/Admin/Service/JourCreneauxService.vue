@@ -130,9 +130,23 @@
                   item-value="id"
                   :disabled="!selectedDirection"
                   clearable
+                  @update:model-value="onServiceChange"
                 />
               </v-col>
             </v-row>
+
+            <!-- Nouveau champ pour l'intervalle -->
+            <v-row>
+              <v-col cols="12">
+                <v-text-field
+                  :model-value="intervalle"
+                  label="Intervalle utilisé (minutes)"
+                  readonly
+                  outlined
+                />
+              </v-col>
+            </v-row>
+
             <v-row>
               <v-col cols="12" v-if="!jourSelectionne">
                 <v-select
@@ -204,7 +218,7 @@
     </v-dialog>
 
     <!-- Modal pour paramétrer l'intervalle -->
-    <v-dialog v-model="isIntervalModalOpen" max-width="500px" width="100%">
+    <!-- <v-dialog v-model="isIntervalModalOpen" max-width="500px" width="100%">
       <v-card>
         <v-card-title>
           <span class="text-h6">Définir l'intervalle de temps</span>
@@ -245,6 +259,99 @@
           <v-btn text @click="saveInterval">Enregistrer</v-btn>
         </v-card-actions>
       </v-card>
+    </v-dialog> -->
+
+    <!-- Modal pour paramétrer l'intervalle -->
+    <v-dialog v-model="isIntervalModalOpen" max-width="800px" width="100%">
+      <v-card>
+        <v-card-title>
+          <span class="text-h6">Définir l'intervalle de temps</span>
+        </v-card-title>
+        <v-card-text>
+          <!-- Formulaire pour ajouter un intervalle -->
+          <v-row>
+            <v-col cols="12" md="3">
+              <v-select
+                v-model="selectedDirectionIntervalle"
+                :items="directions"
+                label="Sélectionner une direction"
+                item-title="nom"
+                item-value="id"
+                clearable
+                @update:model-value="onDirectionChangeInt"
+              />
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-select
+                v-model="selectedServiceIntervalle"
+                :items="filteredServices"
+                label="Sélectionner un service"
+                item-title="nom"
+                item-value="id"
+                :disabled="!selectedDirectionIntervalle"
+                clearable
+              />
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-text-field
+                v-model="intervalleTemps"
+                label="Intervalle en minutes"
+                type="number"
+                min="1"
+                clearable
+              />
+            </v-col>
+            <v-col cols="12" align="end" md="3">
+              <!-- Bouton pour ajouter un intervalle -->
+              <v-btn height="55px" color="blue" @click="saveInterval">Ajouter</v-btn>
+            </v-col>
+          </v-row>
+
+
+          <!-- Tableau des intervalles existants -->
+          <v-data-table
+            :headers="intervalHeaders"
+            :items="intervals"
+            :hide-default-footer="true"
+            :no-data-text="'Pas de données pour l\'instant'"
+            :loading-text="'Chargement des données...'"
+            class="elevation-1 mt-4"
+          >
+            <template v-slot:item.actions="{ item }">
+              <v-icon
+                color="primary"
+                class="me-2"
+                @click="editInterval(item)"
+              >
+                mdi-pencil
+              </v-icon>
+              <v-icon
+                color="error"
+                @click="deleteInterval(item)"
+              >
+                mdi-delete
+              </v-icon>
+            </template>
+          </v-data-table>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="fermerIntervalModal">Fermer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Ajouter ce modal dans le template -->
+    <v-dialog v-model="isDeleteIntervalModalOpen" max-width="500px">
+      <v-card>
+        <v-card-title class="text-h6">Confirmer la suppression</v-card-title>
+        <v-card-text>
+          Êtes-vous sûr de vouloir supprimer cet intervalle ?
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="isDeleteIntervalModalOpen = false">Annuler</v-btn>
+          <v-btn color="error" @click="confirmDeleteInterval">Supprimer</v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
 
     <!-- Snackbar -->
@@ -261,7 +368,7 @@
 
 
 <script>
-import { del, get, post } from '@/service/ApiService';
+import { del, get, post, put } from '@/service/ApiService';
 
 export default {
   data() {
@@ -301,13 +408,117 @@ export default {
       selectedServiceIntervalle: null,
       isIntervalModalOpen: false,
       intervalleTemps: null,
+
+      isDeleteIntervalModalOpen: false,
+      intervalToDelete: null,
+      intervals: [], // Liste des intervalles existants
+      intervalHeaders: [
+        { title: 'Direction', key: 'direction' },
+        { title: 'Service', key: 'service' },
+        { title: 'Intervalle (minutes)', key: 'intervalle' },
+        { title: 'Actions', key: 'actions', sortable: false }
+      ],
+      selectedInterval: null,
+
+      isEditingInterval: false,
+      currentIntervalId: null,
     };
   },
   async mounted() {
     this.fetchDirections();
     this.fetchServices();
+    await this.fetchIntervals();
   },
   methods: {
+    async fetchIntervals() {
+      try {
+        const response = await get('intervalles'); // Remplacez par votre endpoint API
+        if (response.ok) {
+          const data = await response.json();
+          this.intervals = data.intervalles.map(interval => ({
+            ...interval,
+            direction: this.directions.find(dir => dir.id === interval.id_direction)?.nom || 'N/A',
+            service: this.services.find(serv => serv.id === interval.id_service)?.nom || 'N/A',
+          }));
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des intervalles :", error);
+      }
+    },
+    async saveInterval() {
+      try {
+        if (!this.selectedDirectionIntervalle || !this.intervalleTemps) {
+          this.showError('Veuillez remplir tous les champs obligatoires');
+          return;
+        }
+
+        const payload = {
+          intervalle: this.intervalleTemps,
+          id_direction: this.selectedDirectionIntervalle,
+          id_service: this.selectedServiceIntervalle,
+        };
+
+        let response;
+        if (this.isEditingInterval) {
+          response = await put(`intervalle/${this.currentIntervalId}`, payload);
+        } else {
+          response = await post('intervalle', payload);
+        }
+
+        if (response.ok) {
+          this.showSuccess(this.isEditingInterval
+            ? 'Intervalle modifié avec succès !'
+            : 'Intervalle ajouté avec succès !');
+          await this.fetchIntervals();
+          this.resetIntervalForm();
+        } else {
+          this.showError(this.isEditingInterval
+            ? 'Échec de la modification'
+            : 'Échec de l\'ajout');
+        }
+      } catch (error) {
+        console.error("Erreur :", error);
+        this.showError('Une erreur est survenue');
+      }
+    },
+    editInterval(item) {
+      this.isEditingInterval = true;
+      this.currentIntervalId = item.id;
+      this.selectedDirectionIntervalle = item.id_direction;
+      this.selectedServiceIntervalle = item.id_service;
+      this.intervalleTemps = item.intervalle;
+    },
+    deleteInterval(item) {
+      this.intervalToDelete = item;
+      this.isDeleteIntervalModalOpen = true;
+    },
+
+    // Confirmer la suppression
+    async confirmDeleteInterval() {
+      try {
+        console.log(this.intervalToDelete)
+        const response = await del(`intervalle/${this.intervalToDelete.id}`);
+        if (response.ok) {
+          this.showSuccess('Intervalle supprimé avec succès !');
+          await this.fetchIntervals();
+        } else {
+          this.showError('Échec de la suppression de l\'intervalle.');
+        }
+      } catch (error) {
+        console.error("Erreur lors de la suppression de l'intervalle :", error);
+        this.showError('Une erreur est survenue.');
+      } finally {
+        this.isDeleteIntervalModalOpen = false;
+        this.intervalToDelete = null;
+      }
+    },
+    resetIntervalForm() {
+      this.isEditingInterval = false;
+      this.currentIntervalId = null;
+      this.selectedDirectionIntervalle = null;
+      this.selectedServiceIntervalle = null;
+      this.intervalleTemps = null;
+    },
     async fetchDirections() {
       const response = await get('directions');
       if(response.ok) {
@@ -315,7 +526,7 @@ export default {
         this.directions = data.directions;
       }
     },
-    onDirectionChange() {
+    async onDirectionChange() {
       this.selectedService = null;
 
       if (this.selectedDirection) {
@@ -323,7 +534,10 @@ export default {
         this.filteredServices = this.services.filter(
           service => service.id_direction === this.selectedDirection
         );
+
+        this.intervalle = await this.findIntervalByDirection();
       }
+
     },
     onDirectionChangeInt() {
       this.selectedService = null;
@@ -333,6 +547,11 @@ export default {
         this.filteredServices = this.services.filter(
           service => service.id_direction === this.selectedDirection
         );
+      }
+    },
+    async onServiceChange() {
+      if(this.selectedDirection && this.selectedService) {
+        this.intervalle = await this.findIntervalByService();
       }
     },
     matinCreneaux(jourId) {
@@ -388,20 +607,21 @@ export default {
       }
 
       let id_service = null;
+      // Récupérer l'intervalle AVANT de générer les créneaux
       if(this.selectedService) {
-        id_service = this.selectedService;
+        id_service = this.selectedService
         this.intervalle = await this.findIntervalByService();
-        // console.log("service ny ato")
-      }
-      if(this.selectedDirection && !this.selectedService) {
-        // console.log("direction no ato")
-        this.intervalle = await this.findIntervalByDirection()
+      } else if(this.selectedDirection) {
+        this.intervalle = await this.findIntervalByDirection();
       }
 
-      // this.intervalle = this.intervalleTemps || (this.selectedDirection === "1" ? 60 : this.selectedDirection === "4" ? 30 : 40);
       if(this.intervalle == null) {
         this.intervalle = 30;
       }
+
+      // this.intervalle = this.intervalleTemps || (this.selectedDirection === "1" ? 60 : this.selectedDirection === "4" ? 30 : 40);
+
+      console.log("Intervalle : " + this.intervalle);
 
       let creneaux = [];
       let heureActuelle = debut;
@@ -423,7 +643,8 @@ export default {
         id_direction,
         id_service,
       };
-      console.log("jour: " + creneauData.jour + " creneaux: " + creneauData.creneaux + " id_direction : "+ creneauData.id_direction +" id_service: " + creneauData.id_service)
+      console.log(" creneaux: ", creneauData.creneaux)
+      console.log("jour: " + creneauData.jour + " id_direction : "+ creneauData.id_direction +" id_service: " + creneauData.id_service)
 
       try {
         // Appel de la fonction saveCreneaux
@@ -547,27 +768,31 @@ export default {
     fermerIntervalModal() {
       this.isIntervalModalOpen = false;
     },
-    async saveInterval() {
-      const response = await post('intervalle', {
-        'intervalle': this.intervalleTemps,
-        'id_direction' : this.selectedDirectionIntervalle,
-        'id_service' : this.selectedServiceIntervalle
-      });
-      if(response.ok) {
-        this.showSuccess('Intervalle ajouté avec succes');
-        this.selectedDirectionIntervalle = null;
-        this.selectedServiceIntervalle = null;
-        this.fermerIntervalModal();
-      } else {
-        this.showError('Echec de l\'ajout');
-      }
-    },
+    // async saveInterval() {
+    //   const response = await post('intervalle', {
+    //     'intervalle': this.intervalleTemps,
+    //     'id_direction' : this.selectedDirectionIntervalle,
+    //     'id_service' : this.selectedServiceIntervalle
+    //   });
+    //   if(response.ok) {
+    //     this.showSuccess('Intervalle ajouté avec succes');
+    //     this.selectedDirectionIntervalle = null;
+    //     this.selectedServiceIntervalle = null;
+    //     this.fermerIntervalModal();
+    //   } else {
+    //     this.showError('Echec de l\'ajout');
+    //   }
+    // },
     async findIntervalByDirection() {
       const response = await get(`direction/${this.selectedDirection}/intervalle`);
       if(response.ok) {
         const data = await response.json();
-        // this.intervalle = data.intervalle.intervalle;
-        return data.intervalle.intervalle;
+
+        if(data.intervalle !== null) {
+          return data.intervalle.intervalle;
+        }
+
+        return 30;
       }
     },
     async findIntervalByService() {
@@ -738,5 +963,17 @@ export default {
   .v-btn--icon.v-btn--density-default {
     width: calc(var(--v-btn-height)) !important;
     height: calc(var(--v-btn-height)) !important;
+  }
+
+  .v-data-table {
+    margin-top: 20px;
+  }
+
+  .v-data-table .v-icon {
+    cursor: pointer;
+  }
+
+  .v-data-table .v-icon:hover {
+    opacity: 0.8;
   }
 </style>
