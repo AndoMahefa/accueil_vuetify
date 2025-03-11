@@ -98,6 +98,17 @@
               </v-icon>
 
               <v-icon
+                color="warning"
+                class="mx-3"
+                @click="openPermissionModal(item)"
+              >
+                <v-icon>mdi-calendar-account</v-icon>
+                <v-tooltip activator="parent" location="bottom">
+                  Demande de permission/congé
+                </v-tooltip>
+              </v-icon>
+
+              <v-icon
                 color="success"
                 class="mx-3"
                 @click="fichePointage(item)"
@@ -376,6 +387,93 @@
       </v-card>
     </v-dialog>
 
+    <!-- Ajouter cette nouvelle modal après les autres modals -->
+    <v-dialog v-model="showPermissionModal" max-width="600px" class="custom-modal" transition="dialog-bottom-transition">
+      <v-card class="modal-card">
+        <v-card-title class="warning-gradient white--text pa-4">
+          <v-icon left color="white">mdi-calendar-account</v-icon>
+          Demande de permission/congé
+        </v-card-title>
+        <v-card-text class="modal-text pt-4">
+          <v-row>
+            <v-col cols="12">
+              <v-radio-group v-model="selectedType" inline>
+                <v-radio label="Permission" value="permission" color="primary"></v-radio>
+                <v-radio label="Congé" value="conge" color="secondary"></v-radio>
+              </v-radio-group>
+            </v-col>
+
+            <!-- Champs spécifiques à la permission -->
+            <template v-if="selectedType === 'permission'">
+              <!-- Champs communs -->
+              <v-col cols="12">
+                <v-text-field
+                  v-model="datePermission"
+                  type="date"
+                  label="Date"
+                  :min="new Date().toISOString().split('T')[0]"
+                  required
+                  outlined
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="heureArriveePermission"
+                  type="time"
+                  label="Heure de début"
+                  required
+                  outlined
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="heureDepartPermission"
+                  type="time"
+                  label="Heure de fin"
+                  required
+                  outlined
+                />
+              </v-col>
+            </template>
+
+            <!-- Champs spécifiques au congé -->
+            <template v-if="selectedType === 'conge'">
+              <v-col cols="6">
+                <v-text-field
+                  v-model="dateDebutConge"
+                  type="date"
+                  label="Date de début"
+                  :min="new Date().toISOString().split('T')[0]"
+                  required
+                  outlined
+                />
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="dateFinConge"
+                  type="date"
+                  label="Date de fin"
+                  :min="dateDebutConge"
+                  required
+                  outlined
+                />
+              </v-col>
+            </template>
+          </v-row>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn color="grey darken-1" text @click="showPermissionModal = false" class="px-4">
+            <v-icon left>mdi-close</v-icon>Annuler
+          </v-btn>
+          <v-btn color="warning" elevation="2" @click="submitPermission" class="px-4" rounded>
+            <v-icon left>mdi-send</v-icon>Soumettre
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Snackbar -->
     <v-snackbar
       v-model="snackbar.show"
@@ -441,7 +539,15 @@ export default {
         day: 'numeric'
       }), // Date formatée en français
       heureArriveeSelected: null,
-      heureDepartSelected: null
+      heureDepartSelected: null,
+
+      showPermissionModal: false,
+      selectedType: 'permission',
+      datePermission: new Date().toISOString().split('T')[0],
+      heureArriveePermission: null,
+      heureDepartPermission: null,
+      dateDebutConge: new Date().toISOString().split('T')[0],
+      dateFinConge: new Date().toISOString().split('T')[0],
     }
   },
   watch: {
@@ -684,7 +790,56 @@ export default {
       setTimeout(() => {
         this.showSuccess("Fiche de pointage exportée avec succès");
       }, 1000);
-    }
+    },
+    openPermissionModal(item) {
+      this.selectedEmploye = item;
+      this.showPermissionModal = true;
+      this.resetPermissionForm();
+    },
+
+    resetPermissionForm() {
+      this.selectedType = 'permission';
+      this.datePermission = new Date().toISOString().split('T')[0];
+      this.heureArriveePermission = null;
+      this.heureDepartPermission = null;
+      this.dateDebutConge = new Date().toISOString().split('T')[0];
+      this.dateFinConge = new Date().toISOString().split('T')[0];
+    },
+
+    async submitPermission() {
+      try {
+        const payload = {
+          id_employe: this.selectedEmploye.id,
+          type: this.selectedType
+        };
+
+        let url;
+        if (this.selectedType === 'permission') {
+          payload.date = this.datePermission;
+          payload.heure_arrivee = this.heureArriveePermission;
+          payload.heure_depart = this.heureDepartPermission;
+
+          url = 'pointer/permission'
+        } else {
+          payload.date_debut = this.dateDebutConge;
+          payload.date_fin = this.dateFinConge;
+
+          url = 'pointer/conge'
+        }
+
+        const response = await post(url, payload);
+
+        if (response.ok) {
+          this.showSuccess('Demande enregistrée avec succès');
+          this.showPermissionModal = false;
+        } else {
+          const error = await response.json();
+          this.showError(error.message || 'Erreur lors de la soumission');
+        }
+      } catch (error) {
+        this.showError('Erreur de connexion au serveur');
+      }
+    },
   },
 }
 </script>
@@ -801,5 +956,9 @@ export default {
   /* Augmenter la taille des puces pour une meilleure lisibilité */
   .attendance-table .v-chip {
     height: 28px !important;
+  }
+
+  .warning-gradient {
+    background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
   }
 </style>
