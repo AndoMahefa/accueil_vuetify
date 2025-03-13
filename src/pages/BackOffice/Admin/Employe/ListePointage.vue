@@ -40,7 +40,7 @@
             </td>
             <td>{{ formatDate(pointage.date) }}</td>
             <td class="text-center">
-              <span>{{ pointage.session }}</span>
+              <span class="session-badge">{{ pointage.session }}</span>
             </td>
             <td>{{ formatTime(pointage.heure_arrivee) }}</td>
             <td>{{ pointage.heure_depart ? formatTime(pointage.heure_depart) : '—' }}</td>

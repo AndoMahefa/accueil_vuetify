@@ -53,13 +53,6 @@ export default {
   methods: {
     async fetchReferences() {
       try {
-        // const token = localStorage.getItem("token");
-        // const response = await fetch("http://localhost:8000/api/prmp/references", {
-        //   method: "GET",
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //   },
-        // });
         const response = await get('prmp/references')
 
         if (response.ok) {

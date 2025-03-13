@@ -60,15 +60,67 @@
     </v-btn>
 
     <v-btn
-      fab
       color="primary"
-      @click="openAddChampDialog"
-      rounded
-      large
-      style="position: fixed; bottom: 100px; right: 100px; width: 60px; height: 60px; font-size: 30px;">
-      <v-icon>mdi-plus</v-icon>
+      @click="exportToExcel"
+      :disabled="selectedChamps.length === 0"
+      style="left: 25px;"
+    >
+      Exporter en Excel
     </v-btn>
 
+    <v-tooltip>
+      <template #activator="{props}">
+        <v-btn
+          fab
+          color="success"
+          @click="openImportDialog"
+          rounded
+          v-bind="props"
+          large
+          style="position: fixed; bottom: 135px; right: 50px; width: 60px; height: 60px; font-size: 30px;"
+        >
+          <v-icon>mdi-upload</v-icon>
+        </v-btn>
+      </template>
+      <span>Importer des données</span>
+    </v-tooltip>
+
+    <v-tooltip>
+      <template #activator="{props}">
+        <v-btn
+          fab
+          color="primary"
+          @click="openAddChampDialog"
+          rounded
+          v-bind="props"
+          large
+          style="position: fixed; bottom: 70px; right: 50px; width: 60px; height: 60px; font-size: 30px;">
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+      </template>
+      <span>Ajouter un nouveau champ</span>
+    </v-tooltip>
+
+    <v-dialog v-model="isImportDialogOpen" max-width="600px">
+      <v-card>
+        <v-card-title>Importer un fichier Excel</v-card-title>
+        <v-card-text>
+          <v-file-input
+            label="Sélectionnez un fichier Excel"
+            v-model="importFile"
+            accept=".xlsx"
+            outlined
+            dense
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="importExcel" :disabled="!importFile">
+            Importer
+          </v-btn>
+          <v-btn text @click="closeImportDialog">Annuler</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Dialog Ajouter un Champ (version stylisée) -->
     <v-dialog v-model="isDialogOpen" max-width="600px">
@@ -159,44 +211,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <!-- Dialog Ajouter un Champ -->
-    <!-- <v-dialog v-model="isDialogOpen" width="100%" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">Ajouter un Nouveau Champ</span>
-        </v-card-title>
-
-        <v-card-text>
-          <v-form ref="addChampForm" v-model="isFormValid">
-            <v-text-field
-              label="Nom du Champ"
-              v-model="newChamp.nom_champ"
-              :rules="[rules.required]"
-              required
-            />
-            <v-select
-              label="Type de Champ"
-              :items="typesChamps"
-              v-model="newChamp.type_champ"
-              :rules="[rules.required]"
-              required
-            />
-            <v-textarea
-              v-if="newChamp.type_champ === 'select' || newChamp.type_champ === 'radio'"
-              label="Options (séparées par une virgule)"
-              v-model="newChamp.options"
-            />
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-btn color="primary" @click="addChamp" :disabled="!isFormValid">
-            Ajouter
-          </v-btn>
-          <v-btn text @click="closeAddChampDialog">Annuler</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> -->
 
     <!-- Dialog Modifier un Champ -->
     <v-dialog v-model="isEditDialogOpen" width="100%" max-width="600px">
@@ -217,6 +231,7 @@
               label="Type de Champ"
               :items="typesChamps"
               v-model="editedChamp.type_champ"
+              item-title="text"
               :rules="[rules.required]"
               required
             />
@@ -351,7 +366,8 @@
 </template>
 
 <script>
-import { del, get, post, put } from '@/service/ApiService';
+import { del, get, post, postFormData, put } from '@/service/ApiService';
+import * as XLSX from 'xlsx';
 
 export default {
   data() {
@@ -380,11 +396,6 @@ export default {
       },
 
       isEditDialogOpen: false,
-      // editedChamp: {
-      //   nom_champ: "",
-      //   type_champ: "",
-      //   options: ""
-      // },
       isEditFormValid: false,
       reference_ppm: null,
 
@@ -428,6 +439,9 @@ export default {
           icon: "mdi-file-upload"
         }
       ],
+
+      isImportDialogOpen: false,
+      importFile: null, // Fichier sélectionné
 
       snackbar: {
         show: false,
@@ -607,6 +621,71 @@ export default {
         console.error("Erreur lors de la modification du champ :", error);
       }
     },
+    exportToExcel() {
+      try {
+        // 1. Filtrer les champs sélectionnés
+        const selectedFields = this.champs.filter(champ =>
+          this.selectedChamps.includes(champ.id)
+        );
+
+        // 2. Créer un tableau avec les en-têtes
+        const headers = selectedFields.map(field => field.nom_champ);
+        const data = [headers]; // Première ligne = en-têtes
+
+        // 3. Créer la feuille Excel
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Champs");
+
+        // 4. Télécharger le fichier
+        const excelBuffer = XLSX.write(workbook, { type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Appel d'offre.xlsx";
+        link.click();
+        URL.revokeObjectURL(link.href);
+
+      } catch (error) {
+        console.error("Erreur lors de l'export :", error);
+        this.showError("Échec de l'exportation");
+      }
+    },
+
+    openImportDialog() {
+      this.isImportDialogOpen = true;
+    },
+
+    // Fermer le dialogue d'importation
+    closeImportDialog() {
+      this.isImportDialogOpen = false;
+      this.importFile = null;
+    },
+
+    async importExcel() {
+      if (!this.importFile) return;
+
+      const formData = new FormData();
+      formData.append('file', this.importFile);
+      formData.append('id_reference', this.reference_ppm.id);
+
+      try {
+        const response = await postFormData('prmp/appel-offre/import', formData);
+
+        const result = await response.json();
+
+        if (response.ok) {
+          this.showSuccess(result.message);
+          this.closeImportDialog();
+        } else {
+          this.showError(result.message || 'Erreur lors de l\'importation');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        this.showError('Erreur de connexion');
+      }
+    },
+
     showSuccess(message) {
       this.snackbar.color = 'success';
       this.snackbar.text = message;

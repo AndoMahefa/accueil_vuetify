@@ -129,4 +129,31 @@ async function del(endpoint, body = null) {
   }
 }
 
-export { get, post, put, del };
+// Fonction pour les requêtes POST avec FormData
+async function postFormData(endpoint, formData) {
+  const token = getAuthToken();
+  const role = getRole();
+  const url = `${BASE_URL}/${role === 'admin' ? 'admin' : 'user'}/${endpoint}`;
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('idService');
+      window.location.href = '/';
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Erreur d\'envoi des données:', error);
+    throw error;
+  }
+}
+
+export { get, post, put, del, postFormData };
