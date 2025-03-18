@@ -3,6 +3,25 @@
     <v-card>
       <v-card-title>Liste des visiteurs</v-card-title>
 
+      <div class="d-flex justify-center align-center mb-4 mt-4">
+        <v-text-field
+          v-model="search"
+          append-icon="search"
+          label="Recherche par nom/email/cin"
+          clearable
+          style="margin-left: 10px;"
+        />
+        <v-btn
+          height="55px"
+          color="primary"
+          style="margin-bottom: 20px; margin-right: 10px;"
+          type="submit"
+          @click="fetchData"
+        >
+          Rechercher
+        </v-btn>
+      </div>
+
       <v-data-table
         :items="items"
         :headers="headers"
@@ -134,6 +153,12 @@
                 <span>{{ visiteur.genre }}</span>
               </div>
             </v-col>
+            <v-col cols="12" md="6">
+              <div class="d-flex align-center">
+                <v-icon color="orange" class="mr-2">mdi-domain</v-icon>
+                <span>{{ visiteur.entreprise }}</span>
+              </div>
+            </v-col>
             <!-- Ajoutez d'autres détails si nécessaire -->
           </v-row>
         </v-card-text>
@@ -217,9 +242,9 @@
               dense
               clearable
               style="color: #fffff; border-color: #6EC1B4;"
-              @update:model-value="onServiceChange"
+              :disabled="filteredServices.length == 0"
             />
-            <v-select
+            <!-- <v-select
               v-model="selectedFonction"
               :items="filteredFonctions"
               item-title="nom"
@@ -228,14 +253,14 @@
               outlined
               dense
               clearable
-            />
+            /> -->
             <!-- Motif de la demande -->
             <v-textarea
               v-model="demandeMotif"
               label="Motif de la demande"
-              outlined
               dense
               style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;"
+              outlined
               rows="4"
               required
             />
@@ -328,8 +353,9 @@ export default {
         text: '',
         color: 'success'
       },
-      selectedFonction: null,
-      filteredFonctions: []
+      // selectedFonction: null,
+      // filteredFonctions: [],
+      search: null
     };
   },
   computed: {
@@ -351,10 +377,18 @@ export default {
     async fetchData() {
       this.loading = true;
       try {
+        console.log(this.search)
         let url = 'accueil/visiteurs'
-        if(this.page) {
+        if(this.page && this.search) {
+          url += `?page=${this.page}&search=${this.search}`
+        } else if(this.page) {
           url += `?page=${this.page}`
+        } else if(this.search) {
+          url += `?search=${this.search}`
         }
+
+
+        console.log(url)
         const data = await get(url);
         if (data && data.ok) {
           const response = await data.json();
@@ -425,34 +459,34 @@ export default {
         this.selectedService = null;
       }
 
-      this.fetchFonctionsByDirection(this.selectedDirection);
+      // this.fetchFonctionsByDirection(this.selectedDirection);
     },
-    async onServiceChange() {
-      if (this.selectedDirection && this.selectedService) {
-        console.log('ato')
-        await this.fetchFonctionsByService(this.selectedService);
-      }
-      if (this.selectedService == null) {
-        await this.fetchFonctionsByDirection(this.selectedDirection);
-      }
-    },
-    async fetchFonctionsByDirection(directionId) {
-      // const response = await get(`fonctions/direction/${directionId}`);
-      const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
-      if(response.ok) {
-        const data = await response.json();
-        this.filteredFonctions = data.fonctions;
-      }
-    },
+    // async onServiceChange() {
+    //   if (this.selectedDirection && this.selectedService) {
+    //     console.log('ato')
+    //     await this.fetchFonctionsByService(this.selectedService);
+    //   }
+    //   if (this.selectedService == null) {
+    //     await this.fetchFonctionsByDirection(this.selectedDirection);
+    //   }
+    // },
+    // async fetchFonctionsByDirection(directionId) {
+    //   // const response = await get(`fonctions/direction/${directionId}`);
+    //   const response = await fetch(`http://localhost:8000/api/fonctions/direction/${directionId}`)
+    //   if(response.ok) {
+    //     const data = await response.json();
+    //     this.filteredFonctions = data.fonctions;
+    //   }
+    // },
 
-    async fetchFonctionsByService(serviceId) {
-      const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
-      if(response.ok) {
-        const data = await response.json();
-        console.log(data.fonctions)
-        this.filteredFonctions = data.fonctions;
-      }
-    },
+    // async fetchFonctionsByService(serviceId) {
+    //   const response = await fetch(`http://localhost:8000/api/fonctions/service/${serviceId}`)
+    //   if(response.ok) {
+    //     const data = await response.json();
+    //     console.log(data.fonctions)
+    //     this.filteredFonctions = data.fonctions;
+    //   }
+    // },
     async fetchServices() {
       try {
         const response = await get(`accueil/services`); // Charger les services depuis votre API
@@ -466,15 +500,16 @@ export default {
     },
     async sendDemande() {
       // Validation des champs
-      if (!this.selectedDirection || !this.selectedFonction || !this.demandeMotif) {
+      if (!this.selectedDirection || !this.demandeMotif) {
         return; // Si les champs sont invalides, ne rien faire
       }
       try {
+        console.log(this.selectedService);
         const response = await post('accueil/demande-service', {
           'id_visiteur': this.selectedVisiteur.id,
           'id_direction': this.selectedDirection,
           'id_service': this.selectedService,
-          'id_fonction': this.selectedFonction,
+          // 'id_fonction': this.selectedFonction,
           'motif_visite': this.demandeMotif
         });
 
@@ -483,7 +518,7 @@ export default {
           this.showSuccess("Demande envoyé avec succes");
           this.selectedDirection = null;
           this.selectedService = null;
-          this.selectedFonction = null;
+          // this.selectedFonction = null;
           this.demandeMotif = ''
           this.closeDemandeDialog(); // Fermer la modal après l'envoi
           this.fetchData();
