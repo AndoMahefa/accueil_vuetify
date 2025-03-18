@@ -1,10 +1,71 @@
 <template>
   <v-container fluid>
     <v-card>
-      <v-card-title class="headline text-center">Liste des Employés</v-card-title>
+      <v-card-title class="headline text-center">
+        Liste des Employés
+        <v-tooltip>
+          <template #activator="{props}">
+            <v-icon
+              fab
+              color="success"
+              @click="genererTemplateExcel"
+              rounded
+              v-bind="props"
+              large
+              style="position: fixed; top: 120px; right: 150px; font-size: 30px;"
+            >
+              mdi-file-excel
+            </v-icon>
+          </template>
+          <span>Generer un template excel</span>
+        </v-tooltip>
+
+        <v-tooltip>
+          <template #activator="{props}">
+            <v-icon
+              fab
+              color="success"
+              @click="openImportDialog"
+              rounded
+              v-bind="props"
+              large
+              style="position: fixed; top: 120px; right: 100px; font-size: 30px;"
+            >
+              mdi-database-import
+            </v-icon>
+          </template>
+          <span>Importer des données</span>
+        </v-tooltip>
+
+        <v-tooltip>
+          <template #activator="{props}">
+            <v-icon
+              fab
+              color="primary"
+              @click="exportExcel"
+              rounded
+              v-bind="props"
+              large
+              style="position: fixed; top: 120px; right: 50px; font-size: 30px;"
+            >
+              mdi-file-export
+            </v-icon>
+          </template>
+          <span>Exporter un fichier excel</span>
+        </v-tooltip>
+      </v-card-title>
+
 
       <!-- <v-card-text> -->
-      <div class="d-flex justify-center align-center mb-4">
+      <div class="d-flex justify-center align-center mb-4 mt-4">
+        <v-text-field
+          v-model="search"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo"
+          label="Recherche par nom/cin"
+          clearable
+          class="mx-2"
+        />
         <v-select
           v-model="selectedDirection"
           :items="directions"
@@ -40,12 +101,18 @@
       >
         <template #item="{ item }">
           <tr>
-            <td> {{ item.nom }}</td>
-            <td> {{ item.prenom }}</td>
-            <td> {{ item.genre }}</td>
-            <td> {{ item.adresse }}</td>
-            <td> {{ item.cin }}</td>
-            <td> {{ item.telephone }}</td>
+            <td>{{ item.nom }}</td>
+            <td>{{ item.prenom }}</td>
+            <td>
+              <v-chip small color="primary" text-color="white" class="px-2">
+                {{ item.direction.nom }}
+              </v-chip>
+            </td>
+            <td v-if="item.service != null">
+              <v-chip small color="secondary" outlined class="px-2">
+                {{ item.service.nom }}
+              </v-chip>
+            </td>
             <td>
               <!-- Icônes pour les actions -->
               <v-tooltip location="bottom" attach="body">
@@ -150,12 +217,38 @@
       />
     </v-card>
 
+    <v-dialog v-model="isImportDialogOpen" max-width="600px">
+      <v-card>
+        <v-card-title>Importer un fichier Excel</v-card-title>
+        <v-card-text>
+          <v-file-input
+            label="Sélectionnez un fichier Excel"
+            v-model="importFile"
+            accept=".xlsx"
+            outlined
+            dense
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="primary" @click="importExcel" :disabled="!importFile">
+            Importer
+          </v-btn>
+          <v-btn text @click="closeImportDialog">Annuler</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Modal d'édition pour un employé -->
     <v-dialog v-model="editEmployeeDialog" max-width="800px">
       <v-card>
         <v-card-title>Modifier les informations de l'employé</v-card-title>
         <v-card-text>
-          <v-stepper v-model="editCurrentStep" class="elevation-0">
+          <v-stepper
+            v-model="editCurrentStep"
+            class="elevation-0"
+            prev-text="Précédent"
+            next-text="Suivant"
+          >
             <!-- Stepper Header -->
             <v-stepper-header class="mb-6">
               <v-stepper-item value="1" class="stepper-item">
@@ -371,11 +464,21 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      :timeout="3000"
+      location="top"
+    >
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
-import { del, get, post, put } from '@/service/ApiService';
+import { del, exportExcel, get, post, postFormData, put } from '@/service/ApiService';
 
 export default {
   data() {
@@ -384,16 +487,22 @@ export default {
       loading: false,
       services: [],
       selectedService: null,
+      // headers: [
+      //   { title: 'Nom', value: 'nom' },
+      //   { title: 'Prenom', value: 'prenom' },
+      //   { title: 'Genre', value: 'genre' },
+      //   { title: 'Adresse', value: 'adresse' },
+      //   { title: 'CIN', value: 'cin' },
+      //   { title: 'telephone', value: 'nom' },
+      //   { title: 'Actions', align: 'center', width: '190px', sortable: 'false' },
+      // ],
       headers: [
-        { title: 'Nom', value: 'nom' },
-        { title: 'Prenom', value: 'prenom' },
-        { title: 'Genre', value: 'genre' },
-        { title: 'Adresse', value: 'adresse' },
-        { title: 'CIN', value: 'cin' },
-        { title: 'telephone', value: 'nom' },
-        { title: 'Actions', align: 'center', width: '190px', sortable: 'false' },
+        { title: 'Nom', value: 'nom', align: 'start' },
+        { title: 'Prénom', value: 'prenom', align: 'start' },
+        { title: 'Direction', value: 'direction', align: 'start' },
+        { title: 'Service', align: 'center', value: 'service'},
+        { title: 'Actions', align: 'center', width: '250px', sortable: false },
       ],
-
       editEmployeeDialog: false,
       editedEmployee: {
         id: null,
@@ -428,6 +537,16 @@ export default {
       selectedDirection: null,
       currentPage: 1,
       totalPages: 0,
+
+      isImportDialogOpen: false,
+      importFile: null, // Fichier sélectionné
+      search: null,
+
+      snackbar: {
+        show: false,
+        text: '',
+        color: 'success'
+      },
     }
   },
   computed: {
@@ -461,10 +580,20 @@ export default {
       this.loading = true;
       let endpoint = `employes?page=${page}`;  // endpoint par défaut
 
-      if (this.selectedService) {
-        endpoint = `service/${this.selectedService}/employes?page=${page}`;
+      if(this.search && !this.selectedService && !this.selectedDirection) {
+        endpoint += `&search=${this.search}`;
+      } else if (this.selectedService) {
+        if(this.search) {
+          endpoint = `service/${this.selectedService}/employes?page=${page}&search=${this.search}`;
+        } else {
+          endpoint = `service/${this.selectedService}/employes?page=${page}`;
+        }
       } else if (this.selectedDirection) {
-        endpoint = `direction/${this.selectedDirection}/employes?page=${page}`;
+        if(this.search) {
+          endpoint = `direction/${this.selectedDirection}/employes?page=${page}&search=${this.search}`;
+        } else {
+          endpoint = `direction/${this.selectedDirection}/employes?page=${page}`;
+        }
       }
 
       const response = await get(endpoint);
@@ -632,7 +761,77 @@ export default {
       } else {
         this.filteredServices = []; // Réinitialiser si aucune direction n'est sélectionnée
       }
-    }
+    },
+    openImportDialog() {
+      this.isImportDialogOpen = true;
+    },
+
+    // Fermer le dialogue d'importation
+    closeImportDialog() {
+      this.isImportDialogOpen = false;
+      this.importFile = null;
+    },
+    async importExcel() {
+      if (!this.importFile) return;
+
+      const formData = new FormData();
+      formData.append('file', this.importFile);
+
+      try {
+        const response = await postFormData('employe/import', formData);
+
+        const result = await response.json();
+
+        if (response.ok) {
+          this.showSuccess(result.message);
+          this.fetchEmployes();
+          this.closeImportDialog();
+        } else {
+          this.showError(result.message || 'Erreur lors de l\'importation');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        this.showError('Erreur de connexion');
+      }
+    },
+    async genererTemplateExcel() {
+      try {
+        await exportExcel('employes/export-template', 'template_excel.xlsx');
+        this.showSuccess('Template Excel généré avec succès');
+      } catch (error) {
+        console.error('Erreur:', error);
+        this.showError('Une erreur est survenue lors de la génération du template');
+      }
+    },
+    async exportExcel() {
+      try {
+        const params = new URLSearchParams();
+
+        if (this.selectedDirection) {
+          params.append('direction_id', this.selectedDirection);
+        }
+        if (this.selectedService) {
+          params.append('service_id', this.selectedService);
+        }
+
+        const endpoint = `employes/export?${params.toString()}`;
+        await exportExcel(endpoint, 'employes.xlsx');
+        this.showSuccess('Exportation réussie');
+      } catch (error) {
+        console.error('Erreur:', error);
+        this.showError('Une erreur est survenue lors de l\'exportation');
+      }
+    },
+    showSuccess(message) {
+      this.snackbar.color = 'success';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
+    showError(message) {
+      this.snackbar.color = 'error';
+      this.snackbar.text = message;
+      this.snackbar.show = true;
+    },
   },
 
 }
