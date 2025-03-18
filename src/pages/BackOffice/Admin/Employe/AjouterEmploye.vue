@@ -9,7 +9,12 @@
       </div>
     </div>
 
-    <v-stepper v-model="currentStep" class="elevation-0">
+    <v-stepper
+      v-model="currentStep"
+      class="elevation-0"
+      prev-text="Précédent"
+      next-text="Suivant"
+    >
       <!-- Stepper Header -->
       <v-stepper-header class="mb-6">
         <v-stepper-item value="1" class="stepper-item">
