@@ -37,6 +37,52 @@ async function get(endpoint) {
   }
 }
 
+async function exportExcel(endpoint, filename = 'export.xlsx') {
+  const token = getAuthToken();
+  const role = getRole(); // Supposons que cette fonction existe pour récupérer le rôle
+
+  const url = `${BASE_URL}/${role === 'admin' ? 'admin' : 'user'}/${endpoint}`;
+  console.log(url)
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('idService');
+      window.location.href = '/';
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de l\'export');
+    }
+
+    // Création du blob et téléchargement
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+    return response; // Retourne la réponse pour vérification
+
+  } catch (error) {
+    console.error('Erreur d\'export:', error);
+    throw error;
+  }
+}
+
 // Fonction générique pour effectuer une requête POST
 async function post(endpoint, body) {
   const token = getAuthToken();
@@ -156,4 +202,4 @@ async function postFormData(endpoint, formData) {
   }
 }
 
-export { get, post, put, del, postFormData };
+export { get, post, put, del, postFormData, exportExcel };
