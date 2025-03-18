@@ -47,6 +47,10 @@
         label="Numéro de téléphone"
       />
 
+      <v-text-field
+        label="Entreprise / Organisme"
+      />
+
       <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
     </v-form>
 
