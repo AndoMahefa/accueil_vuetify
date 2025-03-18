@@ -2,7 +2,7 @@
   <v-container>
     <v-card>
       <v-card-title>Liste des demandes reçues du jour</v-card-title>
-      <v-row>
+      <!-- <v-row>
         <v-col cols="12" md="4">
           <v-select
             v-model="selectedDirection"
@@ -14,7 +14,47 @@
             @update:model-value="fetchDemandes"
           />
         </v-col>
-      </v-row>
+      </v-row> -->
+
+      <div class="d-flex justify-center align-center my-4 px-4">
+        <v-select
+          v-model="selectedDirection"
+          :items="directions"
+          item-title="nom"
+          item-value="id"
+          label="Sélectionnez une direction"
+          clearable
+          class="mx-2"
+          outlined
+          dense
+          prepend-inner-icon="mdi-office-building"
+          @update:model-value="onFilterDirectionChange"
+        />
+        <v-select
+          v-model="selectedService"
+          :items="filteredServices"
+          item-title="nom"
+          item-value="id"
+          label="Sélectionnez un service"
+          clearable
+          outlined
+          dense
+          prepend-inner-icon="mdi-domain"
+          :disabled="!selectedDirection"
+          class="mx-2"
+        />
+        <v-btn
+          color="primary"
+          class="filter-btn"
+          elevation="2"
+          rounded
+          @click="applyFilters"
+        >
+          <v-icon left>mdi-filter</v-icon>
+          Filtrer
+        </v-btn>
+      </div>
+
       <v-data-table
         :items="demandes"
         :headers="headers"
@@ -29,6 +69,9 @@
           <tr>
             <td> {{ item.nom }} </td>
             <td> {{ item.prenom }} </td>
+            <td> {{ item.nom_direction }} </td>
+            <td v-if="item.nom_service"> {{ item.nom_service }} </td>
+            <td v-else> Pas de service </td>
             <td> {{ item.motif_visite }} </td>
             <td> {{ item.date_heure_arrivee }} </td>
             <td>
@@ -152,6 +195,7 @@
         <v-card-text>
           <span v-if="selectedRequest">
             <div><b>Direction</b> : {{ selectedRequest.nom_direction }}</div>
+            <div><b>Service</b> : {{ selectedRequest.nom_service }}</div>
             <div><b>Visiteur</b> : {{ selectedRequest.nom }} {{ selectedRequest.prenom }}</div>
             <div><b>Motif</b> : {{ selectedRequest.motif_visite }}</div>
           </span>
@@ -212,6 +256,8 @@ export default {
       headers: [
           { title: 'Nom', value: 'nom' },
           { title: 'Prenom', value: 'prenom' },
+          { title: 'Direction', value: 'nom_direction' },
+          { title: 'Service', value: 'nom_service' },
           { title: 'Motif', value: 'motif_visite' },
           { title: 'Date et heure arrivée', value: 'date_heure_arrivee' },
           { title: 'Actions', width: '250px', align: 'center', sortable: 'false' }
@@ -236,6 +282,9 @@ export default {
 
       directions: [],
       selectedDirection: null,
+      services: [],
+      filteredServices: [],
+      selectedService: null,
       snackbar: {
         show: false,
         text: '',
@@ -246,14 +295,26 @@ export default {
   async mounted() {
     this.fetchDirection();
     this.fetchDemandes();
+    this.fetchServices();
   },
   methods: {
+    async fetchServices() {
+      const response = await get('services');
+
+      if(response.ok) {
+        const data = await response.json();
+        this.services = data.services;
+      }
+    },
     async fetchDemandes() {
         try {
-          let endpoint = 'directions/demandes';
-          if(this.selectedDirection) {
+          let endpoint = 'demandes';
+          if(this.selectedDirection && !this.selectedService) {
             endpoint = `directions/${this.selectedDirection}/demandes`;
+          } else if(this.selectedDirection && this.selectedService) {
+            endpoint = `services/${this.selectedService}/demandes`
           }
+
           const response = await get(endpoint)
           if (response && response.ok) {
               const data = await response.json()
@@ -263,11 +324,13 @@ export default {
             console.log(error)
         }
     },
+    applyFilters() {
+      this.fetchDemandes();
+    },
     async fetchDirection() {
       const response = await get('directions');
       if(response.ok) {
         const data = await response.json();
-        console.log("directions : " + data)
         this.directions = data.directions;
       }
     },
@@ -279,9 +342,21 @@ export default {
         this.selectedRequest = item;
         this.genererTicket = true;
     },
+    onFilterDirectionChange() {
+      this.selectedService = null; // Réinitialiser le service sélectionné
+      if (this.selectedDirection) {
+        // Filtrer les services pour la direction sélectionnée
+        this.filteredServices = this.services.filter(
+          service => service.id_direction === this.selectedDirection
+        );
+      } else {
+        this.filteredServices = []; // Réinitialiser si aucune direction n'est sélectionnée
+      }
+    },
     async generateTicket() {
       const idVisiteur = this.selectedRequest.id;
       let idDirection = this.selectedRequest.id_direction;
+      let idService = this.selectedRequest.id_service;
       if(this.selectedDirection) {
         idDirection = this.selectedDirection;
       }
@@ -290,7 +365,7 @@ export default {
           const response = await post(`service/generer-ticket`, {
               'temps_estime' : this.ticket.temps_estime,
               'id_direction': idDirection,
-              // 'id_service' : this.selectedService,
+              'id_service' : idService,
               'id_visiteur' : idVisiteur
           });
 
@@ -422,5 +497,10 @@ export default {
         color: white;
     }
 
-
+    .filter-btn {
+      height: 55px;
+      min-width: 120px;
+      margin-bottom: 20px;
+      text-transform: none;
+    }
 </style>
