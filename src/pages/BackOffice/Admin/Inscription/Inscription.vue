@@ -6,7 +6,11 @@
       </h1>
       <br>
       <br>
-      <v-stepper :items="['Direction, Service, Fonction', 'Création Employe', 'Compte']">
+      <v-stepper
+        :items="['Direction, Service, Fonction', 'Création Employe', 'Compte']"
+        prev-text="Précédent"
+        next-text="Suivant"
+      >
         <template v-slot:item.1>
           <v-card
             flat

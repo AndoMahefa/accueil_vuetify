@@ -6,7 +6,11 @@
       </h1>
       <br>
       <br>
-      <v-stepper :items="['Soumissionaire', 'Entreprise', 'Appel d\'offre']">
+      <v-stepper
+        :items="['Soumissionaire', 'Entreprise', 'Appel d\'offre']"
+        prev-text="Précédent"
+        next-text="Suivant"
+      >
         <template v-slot:item.1>
           <v-card
             title="Information du soumissionnaire"

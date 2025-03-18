@@ -6,6 +6,8 @@
       <v-stepper
         v-model="currentStep"
         :items="['Etape 1', 'Etape 2', 'Etape 3']"
+        prev-text="Précédent"
+        next-text="Suivant"
         @update:model-value="handleStepChange"
       >
         <template v-slot:item.1>
@@ -217,7 +219,7 @@ export default {
       },
 
       currentStep: 1,
-      step1Valid: false
+      step1Valid: false,
     };
   },
   watch: {
