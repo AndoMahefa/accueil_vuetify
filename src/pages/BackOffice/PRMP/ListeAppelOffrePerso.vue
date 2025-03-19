@@ -11,6 +11,7 @@
         <v-select
           v-model="selectedRef"
           :items="references"
+          clearable
           label="Choisir un reference"
           item-title="reference"
           item-value="reference"
@@ -106,8 +107,8 @@
               {{ key.replace(/_/g, ' ').toUpperCase() }}
             </v-col>
             <v-col cols="7">
-              <span v-if="key === 'Montant estimatif initial' || key === 'Montant estimatif par beneficiaire'">{{ formatBudget(value) }}</span>
-              <span v-else-if="key === 'Date previsionneloe de lancement' || key==='Date previsionnelle ouverture des plis' || key==='Date previsionnelle d\'attribution'">{{ formatDate(value) }}</span>
+              <span v-if="key === 'Montant estimatif initial' || key === 'Montant estimatif par beneficiaire'">{{ value }} Ar</span>
+              <span v-if="key === 'Date previsionnelle de lancement' || key==='Date previsionnelle ouverture des plis' || key==='Date previsionnelle d\'attribution'">{{ formatDate(value) }}</span>
               <span v-else>{{ value || 'Non spécifié' }}</span>
             </v-col>
             <v-col cols="12">
@@ -126,6 +127,86 @@
       </v-card>
     </v-dialog>
 
+    <!-- Modal d'édition des appels d'offres -->
+    <v-dialog v-model="isEditMode" width="100%" max-width="800px">
+      <v-card>
+        <!-- Titre du modal -->
+        <v-card-title class="orange darken-1 white--text">
+          <v-icon class="mr-2">mdi-pencil</v-icon>
+          Modifier l'Appel d'Offre
+        </v-card-title>
+
+        <!-- Contenu du formulaire d'édition -->
+        <v-card-text>
+          <v-form ref="editForm">
+            <v-row v-for="(value, key) in editableDetails" :key="key" class="align-center">
+              <v-col cols="5" class="font-weight-bold text-uppercase">
+                {{ key.replace(/_/g, ' ').toUpperCase() }}
+              </v-col>
+              <v-col cols="7">
+                <!-- Champ select si le type est "select" -->
+                <v-select
+                  v-if="originalDetails[key] && originalDetails[key].type === 'select'"
+                  v-model="editableDetails[key]"
+                  :items="originalDetails[key].options"
+                  outlined
+                  dense
+                />
+
+                <!-- Textarea pour les descriptions longues -->
+                <v-textarea
+                  v-else-if="originalDetails[key] && originalDetails[key].type === 'textarea'"
+                  v-model="editableDetails[key]"
+                  outlined
+                  dense
+                  auto-grow
+                  rows="3"
+                />
+
+                <!-- Champ date pour les dates -->
+                <v-text-field
+                  v-else-if="key.toLowerCase().includes('date')"
+                  v-model="editableDetails[key]"
+                  type="date"
+                  outlined
+                  dense
+                />
+
+                <v-text-field
+                  v-else-if="key.toLowerCase().includes('number')"
+                  v-model="editableDetails[key]"
+                  type="number"
+                  outlined
+                  dense
+                />
+
+                <!-- Champ par défaut pour les autres types -->
+                <v-text-field
+                  v-else
+                  v-model="editableDetails[key]"
+                  outlined
+                  dense
+                />
+              </v-col>
+              <v-col cols="12">
+                <v-divider></v-divider>
+              </v-col>
+            </v-row>
+          </v-form>
+        </v-card-text>
+
+        <!-- Actions -->
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="grey darken-1" text @click="cancelEdit">
+            <v-icon left>mdi-close</v-icon> Annuler
+          </v-btn>
+          <v-btn color="orange darken-1" text @click="saveChanges">
+            <v-icon left>mdi-content-save</v-icon> Enregistrer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Modal de confirmation de suppression -->
     <v-dialog v-model="isDeleteDialogOpen" width="100%" max-width="800px">
@@ -212,6 +293,12 @@ export default {
         heureLimite: null,
       },
       selectedAppel: null,
+
+      // Pour l'édition
+      isEditMode: false,
+      editableDetails: {},
+      originalDetails: {},
+      currentItemId: null, //
     };
   },
   mounted() {
@@ -247,11 +334,23 @@ export default {
     },
     async viewDetails(item) {
       try {
-        const response = await get(`prmp/appels-offres/${item.id}`)
+        const response = await get(`prmp/appel-offre/${item.id}/details`)
 
         if (response.ok) {
           const data = await response.json();
-          this.selectedAppelDetails = data.details;
+
+           // Parser la chaîne JSON dans data.details[0].details
+          const detailsString = data.details[0].details;
+          const parsedDetails = JSON.parse(detailsString);
+
+          console.log(detailsString)
+          const formattedDetails = {};
+          parsedDetails.forEach(detail => {
+            formattedDetails[detail.nom_champ] = detail.valeur;
+          });
+
+          // console.log(data.details[0].details)
+          this.selectedAppelDetails = formattedDetails;
           this.isDetailsOpen = true; // Ouvre le modal
         } else {
           console.error("Erreur lors de la récupération des détails :", response.statusText);
@@ -269,9 +368,78 @@ export default {
       const options = { year: 'numeric', month: 'long', day: 'numeric' };
       return new Date(value).toLocaleDateString('fr-FR', options);
     },
-    // Fonction pour éditer un appel d'offre
-    editAppelOffre(item) {
-      this.$router.push({ name: 'appelOffreEdit', params: { id: item.id } });
+    async editAppelOffre(item) {
+      try {
+        const response = await get(`prmp/appel-offre/${item.id}/details`);
+
+        if (response.ok) {
+          const data = await response.json();
+
+          // Parser la chaîne JSON dans data.details[0].details
+          const detailsString = data.details[0].details;
+          const parsedDetails = JSON.parse(detailsString);
+
+          // Créer un objet pour l'édition
+          const formattedDetails = {};
+          const originalDetailsWithIds = {};
+          parsedDetails.forEach(detail => {
+            formattedDetails[detail.nom_champ] = detail.valeur;
+            // Stocker les détails originaux avec IDs pour l'API update
+            originalDetailsWithIds[detail.nom_champ] = {
+              id: detail.id_appel_offre_donnees,
+              valeur: detail.valeur,
+              type: detail.type_champ,
+              options: Array.isArray(detail.options) ? detail.options :
+                      (typeof detail.options === 'string' && detail.options ? JSON.parse(detail.options) : [])
+            };
+          });
+
+          // Affecter les valeurs pour l'édition
+          this.editableDetails = { ...formattedDetails };
+          this.originalDetails = originalDetailsWithIds;
+          this.currentItemId = item.id;
+          this.isEditMode = true;
+        } else {
+          console.error("Erreur lors de la récupération des détails :", response.statusText);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des détails :", error);
+      }
+    },
+    // Ajouter une méthode pour sauvegarder les modifications
+    async saveChanges() {
+      try {
+        // Préparer les données pour l'API
+        const updatedValues = [];
+
+        for (const [champ, valeur] of Object.entries(this.editableDetails)) {
+          if (this.originalDetails[champ]) {
+            updatedValues.push({
+              id: this.originalDetails[champ].id,
+              valeur: valeur
+            });
+          }
+        }
+
+        const response = await put(`prmp/appel-offre/${this.currentItemId}/update`, {
+          donnees: updatedValues
+        });
+
+        if (response.ok) {
+          this.isEditMode = false;
+          this.fetchAppelsOffres(); // Recharger la liste avec les données mises à jour
+        } else {
+          console.error("Erreur lors de la mise à jour des détails :", response.statusText);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour des détails :", error);
+      }
+    },
+
+    // Ajouter une méthode pour annuler l'édition
+    cancelEdit() {
+      this.isEditMode = false;
+      this.editableDetails = {};
     },
     confirmDelete(item) {
       this.appelToDelete = item; // Sauvegarder l'appel d'offre à supprimer

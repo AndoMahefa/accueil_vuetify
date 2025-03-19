@@ -329,6 +329,12 @@
                 :label="field.nom_champ"
                 v-model="formData[field.nom_champ]"
               />
+              <v-text-field
+                v-else-if="field.type_champ === 'number'"
+                type="number"
+                :label="field.nom_champ"
+                v-model="formData[field.nom_champ]"
+              />
             </div>
           </v-form>
         </v-card-text>
@@ -437,7 +443,12 @@ export default {
           text: "Fichier",
           value: "file",
           icon: "mdi-file-upload"
-        }
+        },
+        {
+          text: "Nombre",
+          value: "number",
+          icon: "mdi-numeric",
+        },
       ],
 
       isImportDialogOpen: false,
@@ -532,7 +543,6 @@ export default {
           type_champ: this.newChamp.type_champ,
           options: this.newChamp.options // Envoi direct du tableau
         };
-
 
         const response = await post('prmp/ajout-champ', {
           ...payload
