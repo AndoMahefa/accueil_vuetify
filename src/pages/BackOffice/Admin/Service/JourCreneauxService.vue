@@ -218,50 +218,6 @@
     </v-dialog>
 
     <!-- Modal pour paramétrer l'intervalle -->
-    <!-- <v-dialog v-model="isIntervalModalOpen" max-width="500px" width="100%">
-      <v-card>
-        <v-card-title>
-          <span class="text-h6">Définir l'intervalle de temps</span>
-        </v-card-title>
-        <v-card-text>
-          <v-col cols="12">
-            <v-select
-              v-model="selectedDirectionIntervalle"
-              :items="directions"
-              label="Sélectionner une direction"
-              item-title="nom"
-              item-value="id"
-              clearable
-              @update:model-value="onDirectionChangeInt"
-            />
-          </v-col>
-          <v-col cols="12">
-            <v-select
-              v-model="selectedServiceIntervalle"
-              :items="filteredServices"
-              label="Sélectionner un service"
-              item-title="nom"
-              item-value="id"
-              :disabled="!selectedDirectionIntervalle"
-              clearable
-            />
-          </v-col>
-          <v-text-field
-            v-model="intervalleTemps"
-            label="Intervalle en minutes"
-            type="number"
-            min="1"
-            clearable
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="fermerIntervalModal">Annuler</v-btn>
-          <v-btn text @click="saveInterval">Enregistrer</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog> -->
-
-    <!-- Modal pour paramétrer l'intervalle -->
     <v-dialog v-model="isIntervalModalOpen" max-width="800px" width="100%">
       <v-card>
         <v-card-title>
@@ -611,8 +567,9 @@ export default {
       if(this.selectedService) {
         id_service = this.selectedService
         this.intervalle = await this.findIntervalByService();
-      } else if(this.selectedDirection) {
+      } else if (this.selectedDirection && !this.selectedService) {
         this.intervalle = await this.findIntervalByDirection();
+        console.log(this.intervalle)
       }
 
       if(this.intervalle == null) {
@@ -768,21 +725,6 @@ export default {
     fermerIntervalModal() {
       this.isIntervalModalOpen = false;
     },
-    // async saveInterval() {
-    //   const response = await post('intervalle', {
-    //     'intervalle': this.intervalleTemps,
-    //     'id_direction' : this.selectedDirectionIntervalle,
-    //     'id_service' : this.selectedServiceIntervalle
-    //   });
-    //   if(response.ok) {
-    //     this.showSuccess('Intervalle ajouté avec succes');
-    //     this.selectedDirectionIntervalle = null;
-    //     this.selectedServiceIntervalle = null;
-    //     this.fermerIntervalModal();
-    //   } else {
-    //     this.showError('Echec de l\'ajout');
-    //   }
-    // },
     async findIntervalByDirection() {
       const response = await get(`direction/${this.selectedDirection}/intervalle`);
       if(response.ok) {
@@ -800,7 +742,11 @@ export default {
       if(response.ok) {
         const data = await response.json();
         // this.intervalle = data.intervalle.intervalle;
-        return data.intervalle.intervalle;
+        if(data.intervalle !== null) {
+          return data.intervalle.intervalle;
+        }
+
+        return 30;
       }
     },
     async findJour() {

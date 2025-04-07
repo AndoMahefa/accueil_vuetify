@@ -55,7 +55,6 @@
         </v-tooltip>
       </v-card-title>
 
-
       <!-- <v-card-text> -->
       <div class="d-flex justify-center align-center mb-4 mt-4">
         <v-text-field
@@ -113,6 +112,7 @@
                 {{ item.service.nom }}
               </v-chip>
             </td>
+            <td v-else />
             <td>
               <!-- Icônes pour les actions -->
               <v-tooltip location="bottom" attach="body">
@@ -437,30 +437,81 @@
     </v-dialog>
 
     <!-- Modal de création de compte -->
-    <v-dialog v-model="compteCreationDialog" max-width="500px">
-      <v-card>
-        <v-card-title>Créer un compte pour {{ selectedEmploye?.nom }} {{ selectedEmploye?.prenom }}</v-card-title>
-        <v-card-text>
-          <v-form ref="compteForm">
+    <v-dialog v-model="compteCreationDialog" max-width="600px">
+      <v-card class="rounded-lg">
+        <!-- En-tête avec icône et titre -->
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4" class="mb-1">mdi-account-question</v-icon>
+          Création de compte
+        </v-card-title>
+
+        <!-- Section Informations employé -->
+        <v-card-text class="pt-4">
+          <div v-if="selectedEmploye" class="mb-6">
+            <div class="d-flex align-center mb-2">
+              <v-avatar color="primary lighten-2" size="40" class="mr-3">
+                <span class="white--text text-subtitle-1">{{ selectedEmploye.prenom[0] }}{{ selectedEmploye.nom[0] }}</span>
+              </v-avatar>
+              <div>
+                <h3 class="text-h6 primary--text">{{ selectedEmploye.prenom }} {{ selectedEmploye.nom }}</h3>
+                <div class="text-caption grey--text">
+                  <span v-if="selectedEmploye.direction" class="mr-2">• {{ selectedEmploye.direction.nom }}</span>
+                  <span v-if="selectedEmploye.service">• {{ selectedEmploye.service.nom }}</span>
+                </div>
+              </div>
+            </div>
+            <v-divider></v-divider>
+          </div>
+
+          <!-- Formulaire -->
+          <v-form ref="compteForm" class="px-2">
             <v-text-field
               v-model="newAccount.email"
-              label="Email"
-              placeholder="Entrez l'email"
+              label="Email professionnel"
+              outlined
+              prepend-inner-icon="mdi-email-outline"
+              class="mt-4"
+              placeholder="exemple@entreprise.com"
               type="email"
               required
             />
+
             <v-text-field
               v-model="newAccount.mot_de_passe"
-              label="Mot de passe"
-              placeholder="Entrez le mot de passe"
-              type="password"
+              label="Mot de passe temporaire"
+              outlined
+              prepend-inner-icon="mdi-lock-outline"
+              placeholder="●●●●●●●●●●"
+              :type="showPassword ? 'text' : 'password'"
+              :append-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append="showPassword = !showPassword"
               required
             />
           </v-form>
         </v-card-text>
-        <v-card-actions>
-          <v-btn color="primary" @click="createCompte">Créer</v-btn>
-          <v-btn color="secondary" @click="closeCompteModal">Annuler</v-btn>
+
+        <!-- Actions -->
+        <v-card-actions class="px-6 pb-4">
+          <v-spacer></v-spacer>
+          <v-btn
+            @click="closeCompteModal"
+            depressed
+            large
+            class="px-6"
+            color="grey lighten-3"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            @click="createCompte"
+            depressed
+            large
+            class="px-6 white--text"
+            color="primary"
+            :loading="loading"
+          >
+            Créer le compte
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -541,6 +592,8 @@ export default {
       isImportDialogOpen: false,
       importFile: null, // Fichier sélectionné
       search: null,
+
+      showPassword: false,
 
       snackbar: {
         show: false,

@@ -3,34 +3,31 @@
     <v-card>
       <v-card-title>Liste des visiteurs</v-card-title>
 
-      <div class="d-flex justify-center align-center mb-4 mt-4">
-        <v-text-field
-          v-model="search"
-          append-icon="search"
-          label="Recherche par nom/email/cin"
-          clearable
-          style="margin-left: 10px;"
-        />
-        <v-btn
-          height="55px"
-          color="primary"
-          style="margin-bottom: 20px; margin-right: 10px;"
-          type="submit"
-          @click="fetchData"
-        >
-          Rechercher
-        </v-btn>
+      <div class="d-flex justify-end align-center mb-4 mt-4">
+        <v-row justify="end">
+          <v-col cols="6">
+            <v-text-field
+              v-model="search"
+              prepend-inner-icon="mdi-magnify"
+              label="Recherche par nom/email/cin"
+              clearable
+            />
+          </v-col>
+          <v-col cols="2">
+            <v-btn
+              height="55px"
+              color="primary"
+              style="margin-bottom: 20px;"
+              type="submit" @click="fetchData"
+            >
+              Rechercher
+            </v-btn>
+          </v-col>
+        </v-row>
       </div>
 
-      <v-data-table
-        :items="items"
-        :headers="headers"
-        item-value="id"
-        class="elevation-1"
-        :no-data-text="'Aucun visiteur'"
-        :loading-text="'Chargement des visiteurs...'"
-        :hide-default-footer="true"
-      >
+      <v-data-table :items="items" :headers="headers" item-value="id" class="elevation-1"
+        :no-data-text="'Aucun visiteur'" :loading-text="'Chargement des visiteurs...'" :hide-default-footer="true">
         <!-- Colonnes personnalisées -->
         <template #item="{ item }">
           <tr>
@@ -41,13 +38,7 @@
               <div class="d-flex">
                 <v-tooltip location="bottom" attach="body">
                   <template #activator="{props}">
-                    <v-icon
-                      color="blue"
-                      rounded
-                      class="ml-10"
-                      v-bind="props"
-                      @click="showDetails(item)"
-                    >
+                    <v-icon color="blue" rounded class="ml-10" v-bind="props" @click="showDetails(item)">
                       mdi-eye
                     </v-icon>
                   </template>
@@ -56,13 +47,7 @@
 
                 <v-tooltip location="bottom" attach="body">
                   <template #activator="{props}">
-                    <v-icon
-                      color="#FF7043"
-                      rounded
-                      class="ml-10"
-                      v-bind="props"
-                      @click="editVisitor(item)"
-                    >
+                    <v-icon color="#FF7043" rounded class="ml-10" v-bind="props" @click="editVisitor(item)">
                       mdi-pencil
                     </v-icon>
                   </template>
@@ -71,13 +56,7 @@
 
                 <v-tooltip location="bottom" attach="body">
                   <template #activator="{props}">
-                    <v-icon
-                      color="#66BB6A"
-                      rounded
-                      class="ml-10"
-                      v-bind="props"
-                      @click="openDemandeDialog(item)"
-                    >
+                    <v-icon color="#66BB6A" rounded class="ml-10" v-bind="props" @click="openDemandeDialog(item)">
                       mdi-email
                     </v-icon>
                   </template>
@@ -92,13 +71,8 @@
       <v-row justify="center">
         <v-col cols="8">
           <v-container class="max-width">
-            <v-pagination
-              v-model="page"
-              :length="totalPages"
-              class="my-4"
-              rounded="circle"
-              @update:model-value="fetchData"
-            />
+            <v-pagination v-model="page" :length="totalPages" class="my-4" rounded="circle"
+              @update:model-value="fetchData" />
           </v-container>
         </v-col>
       </v-row>
@@ -130,7 +104,7 @@
             <v-col cols="12" md="6">
               <div class="d-flex align-center">
                 <v-icon color="blue" class="mr-2">mdi-email</v-icon>
-                <span>{{ visiteur.email }}</span>
+                <span>{{ visiteur.email ? visiteur.email : 'N/A' }}</span>
               </div>
             </v-col>
             <v-col cols="12" md="6">
@@ -156,7 +130,7 @@
             <v-col cols="12" md="6">
               <div class="d-flex align-center">
                 <v-icon color="orange" class="mr-2">mdi-domain</v-icon>
-                <span>{{ visiteur.entreprise }}</span>
+                <span>{{ visiteur.entreprise ? visiteur.entreprise : 'N/A' }}</span>
               </div>
             </v-col>
             <!-- Ajoutez d'autres détails si nécessaire -->
@@ -219,31 +193,13 @@
         <!-- Contenu de la modal -->
         <v-card-text class="pa-4">
           <v-form @submit.prevent="sendDemande">
-            <v-select
-              v-model="selectedDirection"
-              :items="directions"
-              item-title="nom"
-              item-value="id"
-              label="Sélectionner une direction"
-              dense
-              clearable
-              required
-              style="color: #fffff; border-color: #6EC1B4;"
-              @update:model-value="onChangeDirection"
-            />
+            <v-select v-model="selectedDirection" :items="directions" item-title="nom" item-value="id"
+              label="Sélectionner une direction" dense clearable required style="color: #fffff; border-color: #6EC1B4;"
+              @update:model-value="onChangeDirection" />
             <!-- Sélectionner un service -->
-            <v-select
-              v-model="selectedService"
-              :items="filteredServices"
-              item-title="nom"
-              item-value="id"
-              label="Sélectionner un service"
-              outlined
-              dense
-              clearable
-              style="color: #fffff; border-color: #6EC1B4;"
-              :disabled="filteredServices.length == 0"
-            />
+            <v-select v-model="selectedService" :items="filteredServices" item-title="nom" item-value="id"
+              label="Sélectionner un service" outlined dense clearable style="color: #fffff; border-color: #6EC1B4;"
+              :disabled="filteredServices.length == 0" />
             <!-- <v-select
               v-model="selectedFonction"
               :items="filteredFonctions"
@@ -255,35 +211,20 @@
               clearable
             /> -->
             <!-- Motif de la demande -->
-            <v-textarea
-              v-model="demandeMotif"
-              label="Motif de la demande"
-              dense
-              style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;"
-              outlined
-              rows="4"
-              required
-            />
+            <v-textarea v-model="demandeMotif" label="Motif de la demande" dense
+              style="color: #fffff; border-color: #6EC1B4; margin-top: 1.5rem;" outlined rows="4" required />
           </v-form>
         </v-card-text>
 
         <!-- Actions de la modal -->
-        <v-card-actions class="d-flex justify-end pa-3" style="background-color: #F4F4F4; border-top: 2px solid #E0E0E0;">
-          <v-btn
-            outlined
-            color="#6EC1B4"
-            class="mr-2 font-weight-bold"
-            style="border-color: #6EC1B4; color: #6EC1B4;"
-            @click="closeDemandeDialog"
-          >
+        <v-card-actions class="d-flex justify-end pa-3"
+          style="background-color: #F4F4F4; border-top: 2px solid #E0E0E0;">
+          <v-btn outlined color="#6EC1B4" class="mr-2 font-weight-bold" style="border-color: #6EC1B4; color: #6EC1B4;"
+            @click="closeDemandeDialog">
             <v-icon left>mdi-close</v-icon>
             Annuler
           </v-btn>
-          <v-btn
-            class="font-weight-bold"
-            style="background-color: #6EC1B4; color: white;"
-            @click="sendDemande"
-          >
+          <v-btn class="font-weight-bold" style="background-color: #6EC1B4; color: white;" @click="sendDemande">
             <v-icon left>mdi-send</v-icon>
             Envoyer
           </v-btn>
@@ -291,11 +232,7 @@
       </v-card>
     </v-dialog>
     <!-- Snackbar pour les messages -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
   </v-container>

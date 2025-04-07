@@ -16,7 +16,7 @@
       </v-toolbar-title>
     </template>
     <template v-else>
-      <template v-if="serviceName && serviceName != 'Administrateur'">
+      <template v-if="serviceName && serviceName !== 'Administrateur'">
         <!-- Nom du service connecté -->
         <v-toolbar-title class="service-title">
           {{ directionName }} / {{ serviceName }}
@@ -85,7 +85,8 @@ export default {
   data() {
     return {
       directionName: 'Chargement...',
-      serviceName: 'Chargement...' // Valeur par défaut pendant le chargement
+      serviceName: 'Chargement...', // Valeur par défaut pendant le chargement
+      hasFetchedService: false // Nouveau flag de contrôle
     };
   },
   mounted() {
@@ -97,12 +98,18 @@ export default {
   },
   methods: {
     async fetchServiceName() {
-      const idService = localStorage.getItem('idService'); // Récupère l'idService
+      // Empêche les appels multiples
+      console.log(this.hasFetchedService)
+      if (this.hasFetchedService) return;
+
       const role = localStorage.getItem("role");
       if(role === 'admin') {
-        this.serviceName = 'Administrateur'
-        return
+        this.serviceName = 'Administrateur';
+        this.hasFetchedService = true;
+        return;
       }
+
+      const idService = localStorage.getItem('idService');
       if (!idService) {
         this.serviceName = '';
         return;
@@ -110,22 +117,21 @@ export default {
 
       try {
         const token = localStorage.getItem('token');
-        const idService = localStorage.getItem('idService');
         const response = await fetch(`http://localhost:8000/api/service/${idService}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         if (response.ok) {
           const data = await response.json();
-          this.serviceName = data.nom || 'Service Inconnu'; // Assurez-vous que l'API retourne un champ `name`
+          this.serviceName = data.nom || 'Service Inconnu';
         } else {
           this.serviceName = 'Service Inaccessible';
         }
       } catch (error) {
-        console.error('Erreur lors de la récupération du nom du service:', error);
+        console.error('Erreur:', error);
         this.serviceName = 'Erreur de Chargement';
+      } finally {
+        this.hasFetchedService = true; // Marque comme appelé
       }
     },
     toggleSidebar() {

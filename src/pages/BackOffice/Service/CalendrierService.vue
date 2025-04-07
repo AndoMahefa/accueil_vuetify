@@ -81,7 +81,16 @@ export default {
     async fetchRdv() {
       this.loading = true
       try {
-        let url = `rendez-vous`
+        const idService = localStorage.getItem('idService')
+        const direction = JSON.parse(localStorage.getItem('direction'))
+        const idDirection = direction.id
+
+        let url;
+        if (idService) {
+          url = `service/${idService}/rendez-vous`;
+        } else {
+          url = `direction/${idDirection}/rendez-vous`;
+        }
         const response = await get(url)
         if (response.ok) {
           const data = await response.json()
@@ -100,7 +109,12 @@ export default {
     updateCalendarEvents() {
       const events = this.rdv.map(item => {
         const start = new Date(item.date_heure)
-        const end = new Date(item.heure_fin)
+        const [hours, minutes, seconds] = item.heure_fin.split(':').map(Number);
+        // Cloner la date de début et appliquer l'heure de fin
+        const end = new Date(start);
+        end.setHours(hours);
+        end.setMinutes(minutes);
+        end.setSeconds(seconds || 0);
         return {
           title: `${item.visiteur.nom} ${item.visiteur.prenom} - ${item.motif}`,
           start: start,

@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { post } from '@/service/ApiService';
+import { get } from '@/service/ApiService';
 import FormatDate from '@/service/FormatDate';
 
 export default {
@@ -49,8 +49,7 @@ export default {
         { title: 'Prénom', value: 'visiteur.prenom' },
         { title: 'Heure Prévue', value: 'heure_prevu' },
         { title: 'Heure Validation', value: 'heure_validation' },
-        { title: 'Temps Estimé', value: 'temps_estime' },
-        { title: 'Date', value: 'date' },
+        { title: 'Temps Estimé', value: 'temps_estime' }
       ],
       dateDuJour: null,
     };
@@ -61,22 +60,19 @@ export default {
   methods: {
     async fetchTickets() {
       this.loading = true;
+      const direction = JSON.parse(localStorage.getItem('direction'));
+      const idDirection = direction.id;
       const idService = localStorage.getItem('idService');
-      // const token = localStorage.getItem('token');
+      let url;
+
       try {
-        // const response = await fetch(`http://localhost:8000/api/service/file-d'attente`, {
-        //   method: 'POST',
-        //   headers: {
-        //     Authorization: `Bearer ${token}`,
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({
-        //     id_service: idService, // Filtrer par id_service
-        //   }),
-        // });
-        const response = await post(`service/file-d'attente`, {
-          'id_service': idService
-        })
+        if(idService) {
+          url = `service/${idService}/tickets`;
+        } else {
+          url = `tickets/${idDirection}`
+        }
+
+        const response = await get(url);
 
         if (response.ok) {
           const data = await response.json();
@@ -94,17 +90,17 @@ export default {
 </script>
 
 <style scoped>
-/* Style pour le titre */
-.title-card {
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-align: center;
-  text-transform: uppercase;
-  color: #3a31312a; /* Bleu */
-  margin-bottom: 0;
-}
+  /* Style pour le titre */
+  .title-card {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    color: #3a31312a; /* Bleu */
+    margin-bottom: 0;
+  }
 
-.highlight-date {
-    color: #6EC1B4; /* Vert */
-}
+  .highlight-date {
+      color: #6EC1B4; /* Vert */
+  }
 </style>

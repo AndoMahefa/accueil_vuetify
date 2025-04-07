@@ -37,7 +37,7 @@
       <v-text-field
         v-model="visiteur.email"
         label="Email"
-        :rules="[rules.required, rules.email]"
+        :rules="[rules.email]"
 
         required
       />
@@ -48,6 +48,7 @@
       />
 
       <v-text-field
+        v-model="visiteur.entreprise"
         label="Entreprise / Organisme"
       />
 
@@ -74,11 +75,12 @@ export default {
     return {
       valid: false,
       visiteur: {
-          nom: '',
-          prenom: '',
-          email: '',
-          cin: '',
-          telephone: ''
+        nom: '',
+        prenom: '',
+        email: '',
+        cin: '',
+        telephone: '',
+        entreprise: ''
       },
       genres: [
         { title: 'Homme', value: 'Homme' },
@@ -106,7 +108,8 @@ export default {
           'email' : this.visiteur.email,
           'cin' : this.visiteur.cin,
           'telephone' : this.visiteur.telephone,
-          'genre' : this.selectedGenre
+          'genre': this.selectedGenre,
+          'entreprise': this.entreprise
         })
 
         if(response.ok) {

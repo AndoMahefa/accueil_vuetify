@@ -2,20 +2,6 @@
   <v-container>
     <v-card>
       <v-card-title>Liste des demandes reçues du jour</v-card-title>
-      <!-- <v-row>
-        <v-col cols="12" md="4">
-          <v-select
-            v-model="selectedDirection"
-            :items="directions"
-            label="Sélectionner une direction"
-            item-title="nom"
-            item-value="id"
-            clearable
-            @update:model-value="fetchDemandes"
-          />
-        </v-col>
-      </v-row> -->
-
       <div class="d-flex justify-center align-center my-4 px-4">
         <v-select
           v-model="selectedDirection"

@@ -34,6 +34,7 @@ export default {
       drawer: false,
       toggleMini: false,
       serviceName: null,
+      fetchedService: false, // Garde trace si l'appel a déjà été fait
       userName: 'Rakshith Bellare',
       idService : null,
       role: null,
@@ -96,8 +97,6 @@ export default {
       if(this.role === 'admin') {
         return this.itemsAdmin;
       } else {
-        this.fetchServiceName()
-
         return this.transformRolesToMenu(this.itemsMenuUser);
       }
     }
@@ -105,10 +104,10 @@ export default {
   mounted() {
     this.idService = localStorage.getItem("idService");
     this.role = localStorage.getItem("role");
-    if(this.role == 'user') {
-      const roles =  localStorage.getItem("roles_utilisateur")
+
+    if (this.role === 'user') {
+      const roles = localStorage.getItem("roles_utilisateur");
       this.itemsMenuUser = JSON.parse(roles);
-      console.log(this.itemsMenuUser)
     }
   },
   methods: {
@@ -124,33 +123,6 @@ export default {
     },
     toggleSidebar() {
       this.drawer = !this.drawer;
-    },
-    async fetchServiceName() {
-      const idService = localStorage.getItem('idService'); // Récupère l'idService
-      if (!idService) {
-        this.serviceName = '';
-        return;
-      }
-
-      try {
-        const token = localStorage.getItem('token');
-        const idService = localStorage.getItem('idService');
-        const response = await fetch(`http://localhost:8000/api/service/${idService}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          this.serviceName = data.nom || 'Service Inconnu'; // Assurez-vous que l'API retourne un champ `name`
-        } else {
-          this.serviceName = '';
-        }
-      } catch (error) {
-        console.error('Erreur lors de la récupération du nom du service:', error);
-        this.serviceName = 'Erreur de Chargement';
-      }
     }
   }
 };

@@ -17,18 +17,50 @@
           <tr>
             <td> {{ item.nom }} </td>
             <td> {{ item.prenom }} </td>
+            <td> {{ item.motif_visite }} </td>
+            <td> {{ item.date_heure_arrivee }} </td>
             <td>
               <!-- Boutons avec des espacements -->
               <div class="d-flex">
-                <v-btn icon @click="showDetails(item)" color="#6EC1B4" rounded class="ml-10">
-                  <v-icon>mdi-eye</v-icon> <!-- Icône pour afficher les détails -->
-                </v-btn>
-                <v-btn icon @click="acceptDemande(item)" color="green" rounded class="ml-10">
-                  <v-icon>mdi-check</v-icon> <!-- Icône "Oui" en vert -->
-                </v-btn>
-                <v-btn icon @click="refuseDemande(item)" color="red" rounded class="ml-10">
-                  <v-icon>mdi-close</v-icon> <!-- Icône "Non" en rouge -->
-                </v-btn>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="#6EC1B4"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="showDetails(item)"
+                    >
+                      mdi-eye
+                    </v-icon>
+                  </template>
+                  <span>Détails du visiteur</span>
+                </v-tooltip>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="green"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="acceptDemande(item)"
+                    >
+                      mdi-check
+                    </v-icon> <!-- Icône "Oui" en vert -->
+                  </template>
+                  <span>Accepter la demande</span>
+                </v-tooltip>
+                <v-tooltip location="bottom" attach="body">
+                  <template #activator="{props}">
+                    <v-icon
+                      color="red"
+                      class="mx-6"
+                      v-bind="props"
+                      @click="refuseDemande(item)"
+                    >
+                      mdi-close
+                    </v-icon> <!-- Icône "Oui" en vert -->
+                  </template>
+                  <span>Refuser la demande</span>
+                </v-tooltip>
               </div>
             </td>
           </tr>
@@ -101,10 +133,22 @@
       </v-card>
     </v-dialog>
 
-    <!-- Modal pour accepter un demande et generer un ticket -->
-    <v-dialog v-model="genererTicket" max-width="500px">
-      <v-card class="ticket-card">
-        <v-card-title class="card-title">Générer un ticket</v-card-title>
+      <!-- Modal pour accepter un demande et generer un ticket -->
+      <v-dialog v-model="genererTicket" max-width="500px" width="100%">
+      <v-card elevation="3" class="rounded-lg" style="background-color: #F9FAFB;">
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4">mdi-printer</v-icon>
+          Générer un ticket
+        </v-card-title>
+        <v-card-text>
+          <span v-if="selectedRequest">
+            <div><b>Visiteur</b> : {{ selectedRequest.nom }} {{ selectedRequest.prenom }}</div>
+            <div><b>Motif</b> : {{ selectedRequest.motif_visite }}</div>
+          </span>
+          <span v-else>
+            <b>Aucun visiteur sélectionné.</b>
+          </span>
+        </v-card-text>
         <v-card-text class="card-text">
           <v-form @submit.prevent="generateTicket">
             <v-text-field
@@ -142,109 +186,119 @@
 import { get, post } from '@/service/ApiService';
 
 export default {
-    data() {
-        return {
-            demandes: [],
-            headers: [
-                { title: 'Nom', value: 'nom' },
-                { title: 'Prenom', value: 'prenom' },
-                { title: 'Actions', align: 'center', sortable: 'false' }
-            ],
-            visiteur: {
-                nom: '',
-                prenom: '',
-                pivot: {
-                    motif_visite: '',
-                    date_heure_arrivee: ''
-                },
-                cin: '',
-                telephone: '',
-                email: ''
-            },
-            dialog: false,
-            genererTicket: false,
-            selectedRequest: null,
-            ticket: {
-                temps_estime: '',
-            },
-            refuserDemande: false
-            // totalPages: 0, // Nombre total de pages
-            // loading: false, // Indicateur de chargement
-            // pagination: {
-            //     page: 1,
-            // },
+  data() {
+    return {
+      demandes: [],
+      headers: [
+          { title: 'Nom', value: 'nom' },
+          { title: 'Prenom', value: 'prenom' },
+          { title: 'Motif', value: 'motif_visite' },
+          { title: 'Date et heure arrivée', value: 'date_heure_arrivee' },
+          { title: 'Actions', width: '250px', align: 'center', sortable: 'false' }
+      ],
+      visiteur: {
+          nom: '',
+          prenom: '',
+          pivot: {
+              motif_visite: '',
+              date_heure_arrivee: ''
+          },
+          cin: '',
+          telephone: '',
+          email: ''
+      },
+      dialog: false,
+      genererTicket: false,
+      selectedRequest: null,
+      ticket: {
+        temps_estime: '',
+      },
+      refuserDemande: false
+    }
+  },
+  mounted() {
+    this.fetchDemandes()
+  },
+  methods: {
+    async fetchDemandes() {
+      const direction = JSON.parse(localStorage.getItem('direction'));
+      const idDirection = direction.id;
+      const idService = localStorage.getItem('idService');
+      let url;
+      try {
+        if(idService) {
+          url = `services/${idService}/demandes`;
+        } else {
+          url = `directions/${idDirection}/demandes`
+        }
+
+        const response = await get(url)
+
+        if (response && response.ok) {
+            const data = await response.json()
+            console.log(data.visiteurs)
+            this.demandes = data.visiteurs
+        }
+      } catch (error) {
+          console.log(error)
+      }
+    },
+    showDetails(item) {
+        this.visiteur = item;
+        this.dialog = true;
+    },
+    acceptDemande(item) {
+        this.selectedRequest = item;
+        this.genererTicket = true;
+    },
+    async generateTicket() {
+        const idService = localStorage.getItem("idService");
+        const direction = JSON.parse(localStorage.getItem('direction'));
+        const idDirection = direction.id;
+        const idVisiteur = this.selectedRequest.id;
+        console.log("idVisiteur: " + idVisiteur + " idService: " + idService + " temps estime: " + this.ticket.temps_estime);
+        try {
+            const response = await post(`service/generer-ticket`, {
+                'temps_estime' : this.ticket.temps_estime,
+                'id_direction' : idDirection,
+                'id_service' : idService,
+                'id_visiteur' : idVisiteur
+            });
+
+            if (response && response.ok) {
+                alert('Ticket generer avec succes');
+                this.selectedRequest = null
+                this.genererTicket = false;
+                this.ticket.temps_estime = '';
+                this.fetchDemandes()
+            }
+        } catch (error) {
+            console.log(error);
         }
     },
-    mounted() {
-        this.fetchDemandes()
+    refuseDemande(item) {
+        this.selectedRequest = item;
+        this.refuserDemande = true;
     },
-    methods: {
-        async fetchDemandes() {
-            const idService = localStorage.getItem('idService')
-            try {
-                const response = await get(`services/${idService}/demandes`)
-                if (response && response.ok) {
-                    const data = await response.json()
-                    console.log(data.visiteurs)
-                    this.demandes = data.visiteurs
-                }
-            } catch (error) {
-                console.log(error)
-            }
-        },
-        showDetails(item) {
-            this.visiteur = item;
-            this.dialog = true;
-        },
-        acceptDemande(item) {
-            this.selectedRequest = item;
-            this.genererTicket = true;
-        },
-        async generateTicket() {
-            const idService = localStorage.getItem("idService");
-            const idVisiteur = this.selectedRequest.id;
-            console.log("idVisiteur: " + idVisiteur + " idService: " + idService + " temps estime: " + this.ticket.temps_estime);
-            try {
-                const response = await post(`service/generer-ticket`, {
-                    'temps_estime' : this.ticket.temps_estime,
-                    'id_service' : idService,
-                    'id_visiteur' : idVisiteur
-                });
+    async refus() {
+        const idService = localStorage.getItem("idService");
+        const idVisiteur = this.selectedRequest.id;
+        try {
+            const response = await post('service/refuser-demande', {
+                'id_service' : idService,
+                'id_visiteur' : idVisiteur
+            });
 
-                if (response && response.ok) {
-                    alert('Ticket generer avec succes');
-                    this.selectedRequest = null
-                    this.genererTicket = false;
-                    this.ticket.temps_estime = '';
-                    this.fetchDemandes()
-                }
-            } catch (error) {
-                console.log(error);
+            if (response && response.ok) {
+                alert('Statut refuse avec succes');
+                this.refuserDemande = false;
+                this.fetchDemandes()
             }
-        },
-        refuseDemande(item) {
-            this.selectedRequest = item;
-            this.refuserDemande = true;
-        },
-        async refus() {
-            const idService = localStorage.getItem("idService");
-            const idVisiteur = this.selectedRequest.id;
-            try {
-                const response = await post('service/refuser-demande', {
-                    'id_service' : idService,
-                    'id_visiteur' : idVisiteur
-                });
-
-                if (response && response.ok) {
-                    alert('Statut refuse avec succes');
-                    this.refuserDemande = false;
-                    this.fetchDemandes()
-                }
-            } catch (error) {
-                console.log(error)
-            }
+        } catch (error) {
+            console.log(error)
         }
     }
+  }
 }
 </script>
 

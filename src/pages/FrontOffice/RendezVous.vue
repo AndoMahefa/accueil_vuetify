@@ -90,16 +90,15 @@
         </template>
         <template v-slot:item.3>
           <v-card title="Information sur vous"   flat>
-            <v-form ref="form" v-model="valid">
+            <v-form ref="form">
               <v-row>
                 <!-- Recherche de visiteur -->
                 <v-col cols="12">
                   <v-text-field
                     v-model="searchKey"
                     label="Rechercher par email ou cin"
-                    @blur="searchVisitor"
-                    :rules="[rules.required]"
                     clearable
+                    @blur="searchVisitor"
                   />
                 </v-col>
 
@@ -132,7 +131,7 @@
                   <v-text-field
                     v-model="visitor.email"
                     label="Email"
-                    :rules="[rules.required, rules.email]"
+                    :rules="[rules.email]"
                     :disabled="visitorExists"
                   />
                 </v-col>
@@ -140,7 +139,22 @@
                   <v-text-field
                     v-model="visitor.telephone"
                     label="Téléphone"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="selectedGenre"
+                    :items="genres"
+                    label="Sélectionner votre genre"
                     :rules="[rules.required]"
+                    :disabled="visitorExists"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="visitor.entreprise"
+                    label="Entreprise / Organisme"
                     :disabled="visitorExists"
                   />
                 </v-col>
@@ -149,7 +163,6 @@
               <v-btn
                 color="primary"
                 class="mt-4"
-                :disabled="!valid"
                 @click="confirmRdv"
               >
                 Confirmer
@@ -194,7 +207,13 @@ export default {
         cin: "",
         email: "",
         telephone: "",
+        entreprise: ""
       },
+      genres: [
+        { title: 'Homme', value: 'Homme' },
+        { title: 'Femme', value: 'Femme' },
+      ],
+      selectedGenre: null,
       visitorExists: false, // Flag pour désactiver les champs si un visiteur est trouvé
       idVisiteurExistant: null,
       searchKey: "", // Clé pour chercher dans la base (email ou téléphone)
@@ -469,6 +488,7 @@ export default {
       }
     },
     async createVisitor() {
+      this.visitor = {...this.visitor, genre: this.selectedGenre};
       try {
           const response = await fetch("http://localhost:8000/api/visiteur", {
               method: "POST",
@@ -508,9 +528,9 @@ export default {
         const data = await response.json();
         if(data.intervalle) {
           intervalle = data.intervalle.intervalle;
+        } else {
+          intervalle = 30;
         }
-
-        intervalle = 30;
       }
 
       return intervalle;
@@ -523,15 +543,15 @@ export default {
         const data = await response.json();
         if(data.intervalle) {
           intervalle = data.intervalle.intervalle;
+        } else {
+          intervalle = 30;
         }
-
-        intervalle = 30;
       }
 
       return intervalle;
     },
     async confirmRdv() {
-      if (!this.selectedDate || !this.selectedSlot || !this.selectedDirection || !this.visitor.nom || !this.visitor.prenom || !this.visitor.cin || !this.visitor.email || !this.visitor.telephone || !this.demandeMotif) {
+      if (!this.selectedDate || !this.selectedSlot || !this.selectedDirection || !this.visitor.nom || !this.visitor.prenom || !this.visitor.cin || !this.demandeMotif) {
           alert("Veuillez remplir tous les champs requis.");
           return;
       }
@@ -558,10 +578,6 @@ export default {
             intervalle = await this.fetchIntervalleDirection(this.selectedDirection);
           } else if(this.selectedService) {
             intervalle = await this.fetchIntervalleService(this.selectedService);
-          }
-
-          if(intervalle == null) {
-            intervalle = 30;
           }
 
           selectedDateTime.setMinutes(selectedDateTime.getMinutes() + intervalle);

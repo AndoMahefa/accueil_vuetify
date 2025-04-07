@@ -4,14 +4,7 @@
     <div class="action-buttons">
       <v-tooltip location="bottom" attach="body">
         <template #activator="{ props }">
-          <v-btn
-            color="primary"
-            fab
-            small
-            class="action-btn"
-            v-bind="props"
-            @click="addDirection"
-          >
+          <v-btn color="primary" fab small class="action-btn" v-bind="props" @click="addDirection">
             <v-icon>mdi-office-building-plus</v-icon>
           </v-btn>
         </template>
@@ -20,14 +13,7 @@
 
       <v-tooltip location="bottom" attach="body">
         <template v-slot:activator="{ props }">
-          <v-btn
-            color="success"
-            fab
-            small
-            class="action-btn"
-            v-bind="props"
-            @click="addService"
-          >
+          <v-btn color="success" fab small class="action-btn" v-bind="props" @click="addService">
             <v-icon>mdi-domain-plus</v-icon>
           </v-btn>
         </template>
@@ -36,14 +22,7 @@
 
       <v-tooltip location="bottom" attach="body">
         <template v-slot:activator="{ props }">
-          <v-btn
-            color="info"
-            fab
-            small
-            class="action-btn"
-            v-bind="props"
-            @click="addFonction"
-          >
+          <v-btn color="info" fab small class="action-btn" v-bind="props" @click="addFonction">
             <v-icon>mdi-account-plus</v-icon>
           </v-btn>
         </template>
@@ -56,31 +35,21 @@
     <!-- Modal pour l'ajout de direction -->
     <v-dialog v-model="directionDialog" max-width="500px">
       <v-card>
-        <v-card-title>
-          <span class="headline">Ajouter une direction</span>
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4" class="mb-1">mdi-account-plus</v-icon>
+          Ajouter une direction
         </v-card-title>
 
         <v-card-text>
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field
-                  v-model="newDirection.nom"
-                  label="Nom de la direction"
-                  required
-                  :rules="[v => !!v || 'Le nom est requis']"
-                />
+                <v-text-field v-model="newDirection.nom" label="Nom de la direction" required
+                  :rules="[v => !!v || 'Le nom est requis']" />
               </v-col>
               <v-col cols="12">
-                <v-select
-                  v-model="newDirection.id_parent_dir"
-                  :items="directionItems"
-                  item-title="nom"
-                  item-value="id"
-                  label="Direction parente"
-                  hint="Sélectionnez la direction parente"
-                  persistent-hint
-                />
+                <v-select v-model="newDirection.id_parent_dir" :items="directionItems" item-title="nom" item-value="id"
+                  label="Direction parente" hint="Sélectionnez la direction parente" persistent-hint />
               </v-col>
             </v-row>
           </v-container>
@@ -88,20 +57,10 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="closeDirDialog"
-          >
+          <v-btn color="error" text @click="closeDirDialog">
             Annuler
           </v-btn>
-          <v-btn
-            color="success"
-            text
-            @click="saveDirection"
-            :loading="loading"
-            :disabled="!newDirection.nom"
-          >
+          <v-btn color="success" text @click="saveDirection" :loading="loading" :disabled="!newDirection.nom">
             Enregistrer
           </v-btn>
         </v-card-actions>
@@ -111,33 +70,22 @@
     <!-- Modal pour l'ajout de service -->
     <v-dialog v-model="serviceDialog" max-width="500px">
       <v-card>
-        <v-card-title>
-          <span class="headline">Ajouter un service</span>
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-icon left color="#6EC1B4" class="mb-1">mdi-account-plus</v-icon>
+          Ajouter un service
         </v-card-title>
 
         <v-card-text>
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field
-                  v-model="newService.nom"
-                  label="Nom du service"
-                  required
-                  :rules="[v => !!v || 'Le nom est requis']"
-                />
+                <v-text-field v-model="newService.nom" label="Nom du service" required
+                  :rules="[v => !!v || 'Le nom est requis']" />
               </v-col>
               <v-col cols="12">
-                <v-select
-                  v-model="newService.id_direction"
-                  :items="directionItems"
-                  item-title="nom"
-                  item-value="id"
-                  label="Direction"
-                  hint="Sélectionnez la direction"
-                  persistent-hint
-                  required
-                  :rules="[v => !!v || 'La direction est requise']"
-                />
+                <v-select v-model="newService.id_direction" :items="directionItems" item-title="nom" item-value="id"
+                  label="Direction" hint="Sélectionnez la direction" persistent-hint required
+                  :rules="[v => !!v || 'La direction est requise']" />
               </v-col>
             </v-row>
           </v-container>
@@ -145,20 +93,11 @@
 
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            color="error"
-            text
-            @click="closeServiceDialog"
-          >
+          <v-btn color="error" text @click="closeServiceDialog">
             Annuler
           </v-btn>
-          <v-btn
-            color="success"
-            text
-            @click="saveService"
-            :loading="loading"
-            :disabled="!newService.nom || !newService.id_direction"
-          >
+          <v-btn color="success" text @click="saveService" :loading="loading"
+            :disabled="!newService.nom || !newService.id_direction">
             Enregistrer
           </v-btn>
         </v-card-actions>
@@ -166,7 +105,81 @@
     </v-dialog>
 
     <!-- Modal pour l'ajout de fonction -->
-    <v-dialog v-model="fonctionDialog" max-width="500px">
+    <v-dialog v-model="fonctionDialog" max-width="800px">
+      <v-card>
+        <v-card-title class="text-h5 font-weight-bold" style="color: #6EC1B4; border-bottom: 2px solid #E0E0E0;">
+          <v-row>
+            <v-col>
+              <v-icon left color="#6EC1B4" class="mb-1">mdi-view-list</v-icon>
+              <span>{{ showForm ? 'Nouvelle fonction' : 'Liste des fonctions' }}</span>
+            </v-col>
+            <v-col class="d-flex align-center justify-end">
+              <v-btn color="primary" variant="flat" size="small" @click="toggleForm">
+                <v-icon left>{{ showForm ? 'mdi-arrow-left' : 'mdi-plus' }}</v-icon>
+                {{ showForm ? 'Retour à la liste' : 'Ajouter une fonction' }}
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-title>
+
+        <v-card-text>
+          <v-container>
+            <!-- Affichage conditionnel -->
+            <v-row v-if="!showForm">
+              <v-col cols="12">
+                <!-- Tableau des fonctions existantes -->
+                <v-data-table :items="fonctions" :headers="headersFonctions" :items-per-page="perPage"
+                  class="elevation-1" dense :hide-default-footer="true" :no-data-text="'Aucun employé'"
+                  :loading-text="'Chargement des employés...'">
+                  <!-- Templates des colonnes -->
+                  <template v-slot:item.service.nom="{ item }">
+                    {{ item.service ? item.service.nom : 'N/A' }}
+                  </template>
+                  <template v-slot:item.direction.nom="{ item }">
+                    {{ item.direction ? item.direction.nom : 'N/A' }}
+                  </template>
+                </v-data-table>
+
+                <!-- Pagination -->
+                <v-row justify="center" class="mt-4">
+                  <v-col cols="8">
+                    <v-container class="max-width">
+                      <v-pagination v-model="currentPage" :length="totalPages" class="my-4" rounded="circle"
+                        @update:model-value="fetchFonctions" />
+                    </v-container>
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+
+            <!-- Formulaire (affiché uniquement quand showForm est true) -->
+            <v-row v-if="showForm">
+              <v-col cols="12">
+                <v-text-field v-model="newFonction.nom" label="Nom de la fonction" required
+                  :rules="[v => !!v || 'Le nom est requis']" />
+                <v-select v-model="newFonction.id_direction" :items="directionItems" item-title="nom" item-value="id"
+                  label="Direction" hint="Sélectionnez la direction" persistent-hint required
+                  :rules="[v => !!v || 'La direction est requise']" @change="onDirectionChange" />
+                <v-select v-model="newFonction.id_service" :items="filteredServiceItems" item-title="nom"
+                  item-value="id" label="Service" hint="Sélectionnez le service (optionnel)" persistent-hint
+                  :disabled="!newFonction.id_direction" clearable />
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-card-text>
+
+        <!-- Actions du formulaire -->
+        <v-card-actions v-if="showForm">
+          <v-spacer></v-spacer>
+          <v-btn color="error" text @click="closeFonctionDialog">Annuler</v-btn>
+          <v-btn color="success" text @click="saveFonction" :loading="loading"
+            :disabled="!newFonction.nom || !newFonction.id_direction">
+            Enregistrer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <!-- <v-dialog v-model="fonctionDialog" max-width="500px">
       <v-card>
         <v-card-title>
           <span class="headline">Ajouter une fonction</span>
@@ -234,7 +247,7 @@
           </v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
 
     <!-- Modal de modification -->
     <v-dialog v-model="editDialog" max-width="500px">
@@ -247,31 +260,16 @@
           <v-container>
             <v-row>
               <v-col cols="12">
-                <v-text-field
-                  v-model="editedItem.nom"
-                  label="Nom"
-                  required
-                  :rules="[v => !!v || 'Le nom est requis']"
-                />
+                <v-text-field v-model="editedItem.nom" label="Nom" required
+                  :rules="[v => !!v || 'Le nom est requis']" />
               </v-col>
               <v-col cols="12" v-if="editedItem.type === 'service'">
-                <v-select
-                  v-model="editedItem.id_direction"
-                  :items="directionItems"
-                  item-title="nom"
-                  item-value="id"
-                  label="Direction"
-                  required
-                />
+                <v-select v-model="editedItem.id_direction" :items="directionItems" item-title="nom" item-value="id"
+                  label="Direction" required />
               </v-col>
               <v-col cols="12" v-else>
-                <v-select
-                  v-model="editedItem.id_direction"
-                  :items="directionItems"
-                  item-title="nom"
-                  item-value="id"
-                  label="Direction parente"
-                />
+                <v-select v-model="editedItem.id_direction" :items="directionItems" item-title="nom" item-value="id"
+                  label="Direction parente" />
               </v-col>
             </v-row>
           </v-container>
@@ -280,13 +278,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="error" text @click="editDialog = false">Annuler</v-btn>
-          <v-btn
-            color="success"
-            text
-            @click="saveEdit"
-            :loading="loading"
-            :disabled="!editedItem.nom"
-          >
+          <v-btn color="success" text @click="saveEdit" :loading="loading" :disabled="!editedItem.nom">
             Modifier
           </v-btn>
         </v-card-actions>
@@ -303,12 +295,7 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="error" text @click="deleteDialog = false">Annuler</v-btn>
-          <v-btn
-            color="success"
-            text
-            @click="confirmDelete"
-            :loading="loading"
-          >
+          <v-btn color="success" text @click="confirmDelete" :loading="loading">
             Confirmer
           </v-btn>
         </v-card-actions>
@@ -316,18 +303,14 @@
     </v-dialog>
 
     <!-- Snackbar pour les notifications -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="3000"
-    >
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.text }}
     </v-snackbar>
   </v-container>
 </template>
 
 <script>
-import { del, post, put } from '@/service/ApiService';
+import { get, del, post, put } from '@/service/ApiService';
 import OrgChart from '@balkangraph/orgchart.js'
 
 export default {
@@ -373,7 +356,17 @@ export default {
         nom: '',
         id_direction: null,
         type: null
-      }
+      },
+      fonctions: [],
+      headersFonctions: [
+        { title: 'Nom', value: 'nom' },
+        { title: 'Direction', value: 'direction.nom' },
+        { title: 'Service', value: 'service.nom' }
+      ],
+      currentPage: null, // Page actuelle
+      totalPages: 1, // Nombre total de pages
+      perPage: 10, // Nombre d'éléments par page
+      showForm: false,
     }
   },
 
@@ -396,7 +389,7 @@ export default {
   },
 
   mounted() {
-    this.initializeChart()
+    this.initializeChart();
   },
 
   methods: {
@@ -650,17 +643,51 @@ export default {
       }
     },
 
+    toggleForm() {
+      this.showForm = !this.showForm
+      if (!this.showForm) {
+        this.newFonction = { // Réinitialiser le formulaire
+          nom: '',
+          id_direction: null,
+          id_service: null
+        }
+      }
+    },
+
+    async fetchFonctions() {
+      try {
+        let url = 'fonctions';
+        if(this.currentPage) {
+          url += `?page=${this.currentPage}`
+        }
+
+        console.log(url)
+        const response = await get(url);
+
+        if (response.ok) {
+          const data = await response.json();
+          this.fonctions = data.fonctions.data;
+          this.currentPage = data.fonctions.current_page;
+          this.totalPages = data.fonctions.last_page;
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des fonctions:', error);
+      }
+    },
+
     addFonction() {
       this.newFonction = {
         nom: '',
         id_direction: null,
         id_service: null
       };
+      this.fetchFonctions();
       this.fonctionDialog = true;
     },
 
     closeFonctionDialog() {
-      this.fonctionDialog = false;
+      this.fonctionDialog = false
+      this.showForm = false // Réinitialiser l'état à la fermeture
       this.newFonction = {
         nom: '',
         id_direction: null,
@@ -683,6 +710,7 @@ export default {
         const data = await response.json();
 
         if (response.ok) {
+          this.showForm = false
           this.showSnackbar('Fonction ajoutée avec succès', 'success');
           this.closeFonctionDialog();
           // Rafraîchir l'organigramme
