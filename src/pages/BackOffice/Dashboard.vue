@@ -1,14 +1,25 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
+    <v-app-bar
+      app
+      color="primary"
+      dark
+    >
       <v-toolbar-title>Tableau de bord</v-toolbar-title>
     </v-app-bar>
 
     <v-main>
       <v-container fluid>
         <v-row v-if="loading">
-          <v-col cols="12" class="text-center">
-            <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+          <v-col
+            cols="12"
+            class="text-center"
+          >
+            <v-progress-circular
+              indeterminate
+              color="primary"
+              size="64"
+            />
           </v-col>
         </v-row>
 
@@ -19,29 +30,48 @@
               <h2 class="text-h4 font-weight-bold mb-4">Vue d'ensemble</h2>
             </v-col>
 
-            <v-col cols="12" md="4" v-if="data.type_visiteurs && data.type_visiteurs.length > 0">
-              <v-card elevation="2" height="100%">
+            <v-col
+              v-if="data.type_visiteurs && data.type_visiteurs.length > 0"
+              cols="12"
+              md="4"
+            >
+              <v-card
+                elevation="2"
+                height="100%"
+              >
                 <v-card-title>Types de visiteurs</v-card-title>
                 <v-card-text class="d-flex flex-column align-center">
-                  <canvas ref="typeVisiteursChart"></canvas>
+                  <canvas
+                    ref="typeVisiteursChart"
+                    width="300"
+                    height="300"
+                  />
                 </v-card-text>
               </v-card>
             </v-col>
 
-            <v-col cols="12" md="4" v-if="data.frequentation_visiteurs && data.frequentation_visiteurs.length > 0">
+            <v-col
+              v-if="data.frequentation_visiteurs && data.frequentation_visiteurs.length > 0"
+              md="4"
+              cols="12"
+            >
               <v-card elevation="2" height="100%">
                 <v-card-title>Fréquentation des visiteurs</v-card-title>
                 <v-card-text class="d-flex flex-column align-center">
-                  <canvas ref="frequentationChart"></canvas>
+                  <canvas ref="frequentationChart" />
                 </v-card-text>
               </v-card>
             </v-col>
 
-            <v-col cols="12" md="4" v-if="data.visiteurs_par_direction && data.visiteurs_par_direction.length > 0">
+            <v-col
+              v-if="data.visiteurs_par_direction && data.visiteurs_par_direction.length > 0"
+              cols="12"
+              md="4"
+            >
               <v-card elevation="2" height="100%">
                 <v-card-title>Visiteurs par direction</v-card-title>
                 <v-card-text class="d-flex flex-column align-center">
-                  <canvas ref="visiteursDirectionChart"></canvas>
+                  <canvas ref="visiteursDirectionChart" />
                 </v-card-text>
               </v-card>
             </v-col>
@@ -49,11 +79,15 @@
 
           <!-- Rangée 2 -->
           <v-row class="mt-6">
-            <v-col cols="12" md="6" v-if="data.visiteurs_par_service && data.visiteurs_par_service.length > 0">
+            <v-col
+              v-if="data.visiteurs_par_service && data.visiteurs_par_service.length > 0"
+              cols="12"
+              md="6"
+            >
               <v-card elevation="2" height="100%">
                 <v-card-title>Visiteurs par service</v-card-title>
                 <v-card-text>
-                  <canvas ref="visiteursServiceChart"></canvas>
+                  <canvas ref="visiteursServiceChart" />
                 </v-card-text>
               </v-card>
             </v-col>
@@ -188,7 +222,7 @@
 <script>
 import { get } from '@/service/ApiService';
 import Chart from 'chart.js/auto';
-
+console.log('Chart.js disponible:', !!Chart);
 export default {
   name: 'DashboardApp',
   data() {
@@ -223,24 +257,49 @@ export default {
     };
   },
   mounted() {
-    this.fetchDashboardData();
-  },
-  updated() {
-    // Permet de s'assurer que les graphiques sont rendus après la mise à jour du DOM
-    this.$nextTick(() => {
-      this.renderCharts();
+    // Premièrement, initialiser les variables pour les graphiques vides
+    this.initEmptyCharts();
+
+    // Ensuite, récupérer les données
+    this.fetchDashboardData().then(() => {
+      console.log('Données récupérées, attente du DOM...');
+
+      // Attendre plus longtemps pour s'assurer que le DOM est rendu
+      setTimeout(() => {
+        console.log('Tentative de rendu des graphiques après 500ms');
+        console.log('Références canvas disponibles:', Object.keys(this.$refs));
+        this.renderCharts();
+      }, 500);
     });
   },
+  // updated() {
+  //   // Permet de s'assurer que les graphiques sont rendus après la mise à jour du DOM
+  //   this.$nextTick(() => {
+  //     console.log('Références disponibles:', Object.keys(this.$refs));
+  //     this.renderCharts();
+  //   });
+  // },
   methods: {
+    // Ajouter cette méthode pour initialiser des graphiques vides
+    initEmptyCharts() {
+      this.charts = {};
+    },
     async fetchDashboardData() {
       try {
         // Remplacez cette URL par votre endpoint réel
         const response = await get('dashboard');
         this.data = await response.json();
 
+        console.log('Données reçues:', this.data);
+
+        // Important: s'assurer que les tableaux vides sont initialisés
+        if (!this.data.type_visiteurs) this.data.type_visiteurs = [];
+        if (!this.data.frequentation_visiteurs) this.data.frequentation_visiteurs = [];
+        if (!this.data.visiteurs_par_direction) this.data.visiteurs_par_direction = [];
+        // ... initialiser tous les autres tableaux de données si nécessaire
+
         this.processVisiteursRecents();
         this.loading = false;
-
         // La méthode renderCharts sera appelée dans le hook updated
       } catch (error) {
         console.error('Erreur lors de la récupération des données:', error);
@@ -305,7 +364,9 @@ export default {
       }
     },
     renderTypeVisiteursChart() {
+      console.log('Tentative de rendu du graphique', this.data.type_visiteurs);
       if (!this.data.type_visiteurs || this.data.type_visiteurs.length === 0 || !this.$refs.typeVisiteursChart) {
+        console.log('Impossible de rendre le graphique: données manquantes ou référence canvas invalide');
         return;
       }
 
