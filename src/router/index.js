@@ -35,6 +35,7 @@ import Pointage from '@/pages/BackOffice/Admin/Employe/Pointage.vue';
 import ListePointage from '@/pages/BackOffice/Admin/Employe/ListePointage.vue';
 import Calendrier from '@/pages/BackOffice/Service/Calendrier.vue';
 import CalendrierService from '@/pages/BackOffice/Service/CalendrierService.vue';
+import Dashboard from '@/pages/BackOffice/Dashboard.vue';
 
 
 const routes = [
@@ -55,6 +56,11 @@ const routes = [
       }
     },
     children: [
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: Dashboard
+      },
       {
         path: 'organigramme',
         name: 'Organigramme',

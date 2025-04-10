@@ -41,7 +41,7 @@ export default {
       itemsMenuUser: [],
 
       itemsAdmin: [
-        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "#" },
+        { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "/home/dashboard" },
         // Organigramme
         { title: 'Organigramme', icon: 'mdi-sitemap', to: '/home/organigramme' },
         // Services
