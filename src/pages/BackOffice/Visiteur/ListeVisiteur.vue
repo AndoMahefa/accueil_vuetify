@@ -515,4 +515,11 @@ export default {
   .text-grey {
   color: #757575;
   }
+
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
+  }
 </style>

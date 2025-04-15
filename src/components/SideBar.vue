@@ -4,7 +4,7 @@
     :model-value="drawer"
     :mini-variant="toggleMini"
     permanent
-    color="#6EC1B4"
+    color="#0093f0"
     app
     @update:model-value="$emit('update:drawer', $event)"
   >

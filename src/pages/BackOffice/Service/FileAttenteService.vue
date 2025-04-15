@@ -103,4 +103,11 @@ export default {
   .highlight-date {
       color: #6EC1B4; /* Vert */
   }
+
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
+  }
 </style>

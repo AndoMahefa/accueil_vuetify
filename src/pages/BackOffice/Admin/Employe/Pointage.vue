@@ -1,8 +1,8 @@
 <template>
   <v-container fluid>
     <v-card class="main-card">
-      <v-card-title class="headline text-center primary-gradient white--text py-4">
-        <v-icon large color="white" class="mr-2">mdi-clipboard-account</v-icon>
+      <v-card-title class="headline text-center white--text py-4">
+        <v-icon large color="blue" class="mr-2">mdi-clipboard-account</v-icon>
         Pointage des Employés
       </v-card-title>
 
@@ -960,5 +960,12 @@ export default {
 
   .warning-gradient {
     background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+  }
+
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
   }
 </style>

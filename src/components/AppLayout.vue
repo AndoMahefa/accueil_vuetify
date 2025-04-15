@@ -44,14 +44,14 @@ export default {
         { title: "Tableau de bord", icon: "mdi-view-dashboard", to: "/home/dashboard" },
         // Organigramme
         { title: 'Organigramme', icon: 'mdi-sitemap', to: '/home/organigramme' },
-        // Services
-        { title: "Services",
-          icon: "mdi-domain",
-          items: [
-            { title: "Ajouter un service", to: "/home/ajouter-service" },
-            { title: "Liste des services", to: "/home/liste-services" }
-          ]
-        },
+        // // Services
+        // { title: "Services",
+        //   icon: "mdi-domain",
+        //   items: [
+        //     { title: "Ajouter un service", to: "/home/ajouter-service" },
+        //     { title: "Liste des services", to: "/home/liste-services" }
+        //   ]
+        // },
         // Employés
         {
           title: "Employés",

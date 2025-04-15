@@ -938,4 +938,11 @@ export default {
     justify-content: center;
     margin-top: 20px;
   }
+
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
+  }
 </style>

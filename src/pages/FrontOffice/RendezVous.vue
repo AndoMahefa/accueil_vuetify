@@ -322,6 +322,7 @@ export default {
       // console.log(this.holidays);
     },
     async findJourDispo() {
+      this.joursDispo = []; 
       const idService = this.selectedService;
       try {
         let url = 'http://localhost:8000/api/';

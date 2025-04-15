@@ -141,3 +141,12 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
+  }
+</style>

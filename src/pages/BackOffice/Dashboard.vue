@@ -1,12 +1,12 @@
 <template>
   <v-app>
-    <v-app-bar
+    <!-- <v-app-bar
       app
       color="primary"
       dark
     >
       <v-toolbar-title>Tableau de bord</v-toolbar-title>
-    </v-app-bar>
+    </v-app-bar> -->
 
     <v-main>
       <v-container fluid>
@@ -94,7 +94,49 @@
 
             <v-col cols="12" md="6" v-if="data.visiteurs_par_periodes && data.visiteurs_par_periodes.length > 0">
               <v-card elevation="2" height="100%">
-                <v-card-title>Évolution des visites</v-card-title>
+                <v-card-title class="d-flex align-center">
+                  <span>Évolution des visites</span>
+                  <v-spacer></v-spacer>
+
+                  <!-- Ajout du filtre année -->
+                  <v-select
+                    v-model="anneeSelectionnee"
+                    :items="optionsAnnees"
+                    label="Année"
+                    dense
+                    outlined
+                    hide-details
+                    class="filtre-select mr-2"
+                    style="max-width: 120px;"
+                    @update:model-value="rafraichirGraphiqueVisites"
+                  ></v-select>
+
+                  <!-- Filtre par type de vue (mois/semaine) -->
+                  <v-select
+                    v-model="typeVueSelectionnee"
+                    :items="optionsTypeVue"
+                    label="Vue"
+                    dense
+                    outlined
+                    hide-details
+                    class="filtre-select mr-2"
+                    style="max-width: 120px;"
+                    @update:model-value="changerTypeVue"
+                  ></v-select>
+
+                  <!-- Filtre de période (mois ou semaine selon la vue) -->
+                  <v-select
+                    v-model="periodeSelectionnee"
+                    :items="optionsPeriodes"
+                    :label="labelPeriode"
+                    dense
+                    outlined
+                    hide-details
+                    class="periode-select"
+                    style="max-width: 150px;"
+                    @update:model-value="rafraichirGraphiqueVisites"
+                  ></v-select>
+                </v-card-title>
                 <v-card-text>
                   <canvas ref="visiteursPeriodesChart"></canvas>
                 </v-card-text>
@@ -176,6 +218,7 @@
                   :items="visiteursRecents"
                   :search="search"
                   :items-per-page="5"
+                  :items-per-page-text="'Eléments par page'"
                   class="elevation-1"
                 >
                 </v-data-table>
@@ -207,6 +250,7 @@
                   :items="data.retardataires"
                   :search="searchRetard"
                   :items-per-page="5"
+                  :items-per-page-text="'Eléments par page'"
                   class="elevation-1"
                 >
                 </v-data-table>
@@ -249,12 +293,30 @@ export default {
         { title: 'Date de visite', value: 'date' }
       ],
       headersRetard: [
-        { title: 'Employé', value: 'nom_employe' },
+        { title: 'Employé', value: 'employe' },
         { title: 'Nombre de retards', value: 'nombre_retards' }
       ],
       visiteursRecents: [],
-      charts: {}
+      charts: {},
+
+      // Nouveaux filtres
+      anneeSelectionnee: new Date().getFullYear(),
+      typeVueSelectionnee: 'mois',
+      periodeSelectionnee: new Date().getMonth() + 1, // Par défaut mois actuel
+
+      // Options pour les filtres
+      optionsAnnees: [], // Sera rempli dynamiquement
+      optionsTypeVue: [
+        { title: 'Mois', value: 'mois' },
+        { title: 'Semaine', value: 'semaine' }
+      ],
+      optionsPeriodes: [], // Sera rempli dynamiquement
     };
+  },
+  computed: {
+    labelPeriode() {
+      return this.typeVueSelectionnee === 'mois' ? 'Mois' : 'Semaine';
+    }
   },
   mounted() {
     // Premièrement, initialiser les variables pour les graphiques vides
@@ -264,6 +326,9 @@ export default {
     this.fetchDashboardData().then(() => {
       console.log('Données récupérées, attente du DOM...');
 
+      // Initialiser les options des filtres après avoir récupéré les données
+      this.initialiserOptionsFiltres();
+
       // Attendre plus longtemps pour s'assurer que le DOM est rendu
       setTimeout(() => {
         console.log('Tentative de rendu des graphiques après 500ms');
@@ -272,14 +337,10 @@ export default {
       }, 500);
     });
   },
-  // updated() {
-  //   // Permet de s'assurer que les graphiques sont rendus après la mise à jour du DOM
-  //   this.$nextTick(() => {
-  //     console.log('Références disponibles:', Object.keys(this.$refs));
-  //     this.renderCharts();
-  //   });
-  // },
   methods: {
+    getEmp(row) {
+      return row.nom + ' ' + row.prenom;
+    },
     // Ajouter cette méthode pour initialiser des graphiques vides
     initEmptyCharts() {
       this.charts = {};
@@ -298,6 +359,11 @@ export default {
         if (!this.data.visiteurs_par_direction) this.data.visiteurs_par_direction = [];
         // ... initialiser tous les autres tableaux de données si nécessaire
 
+        this.data.retardataires = this.data.retardataires.map(item => ({
+          ...item,
+          employe: this.getEmp(item) // Combiner nom et prénom
+        }));
+
         this.processVisiteursRecents();
         this.loading = false;
         // La méthode renderCharts sera appelée dans le hook updated
@@ -308,38 +374,44 @@ export default {
       }
     },
     processVisiteursRecents() {
-      // Traiter les visiteurs récents pour le tableau
       this.visiteursRecents = [];
 
       if (!this.data.visiteurs_par_periodes || this.data.visiteurs_par_periodes.length === 0) {
         return;
       }
 
-      this.data.visiteurs_par_periodes.forEach(periode => {
-        const jour = new Date(periode.jour).toLocaleDateString('fr-FR');
-        let visiteurs = [];
+      const aujourdHui = new Date();
 
-        try {
-          if (typeof periode.visiteurs === 'string') {
-            visiteurs = JSON.parse(periode.visiteurs);
-          } else if (Array.isArray(periode.visiteurs)) {
-            visiteurs = periode.visiteurs;
+      this.data.visiteurs_par_periodes
+        .filter(periode => {
+          const datePeriode = new Date(periode.jour);
+          return datePeriode <= aujourdHui;
+        })
+        .forEach(periode => {
+          const jour = new Date(periode.jour).toLocaleDateString('fr-FR');
+          let visiteurs = [];
+
+          try {
+            if (typeof periode.visiteurs === 'string') {
+              visiteurs = JSON.parse(periode.visiteurs);
+            } else if (Array.isArray(periode.visiteurs)) {
+              visiteurs = periode.visiteurs;
+            }
+          } catch (e) {
+            console.error('Erreur de parsing JSON:', e);
           }
-        } catch (e) {
-          console.error('Erreur de parsing JSON:', e);
-        }
 
-        if (Array.isArray(visiteurs)) {
-          visiteurs.forEach(visiteur => {
-            this.visiteursRecents.push({
-              id: visiteur.id,
-              nom: visiteur.nom,
-              prenom: visiteur.prenom,
-              date: jour
+          if (Array.isArray(visiteurs)) {
+            visiteurs.forEach(visiteur => {
+              this.visiteursRecents.push({
+                id: visiteur.id,
+                nom: visiteur.nom,
+                prenom: visiteur.prenom,
+                date: jour
+              });
             });
-          });
-        }
-      });
+          }
+        });
     },
     renderCharts() {
       // Détruire les graphiques existants si on rafraîchit
@@ -526,48 +598,6 @@ export default {
         }
       });
     },
-    renderVisiteursPeriodesChart() {
-      if (!this.data.visiteurs_par_periodes || this.data.visiteurs_par_periodes.length === 0 || !this.$refs.visiteursPeriodesChart) {
-        return;
-      }
-
-      const ctx = this.$refs.visiteursPeriodesChart.getContext('2d');
-      if (!ctx) return;
-
-      // Trier les périodes par date
-      const periodesSorted = [...this.data.visiteurs_par_periodes].sort((a, b) => {
-        return new Date(a.jour) - new Date(b.jour);
-      });
-
-      const labels = periodesSorted.map(item => new Date(item.jour).toLocaleDateString('fr-FR'));
-      const values = periodesSorted.map(item => item.total_visites);
-
-      this.charts.visiteursPeriodesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Visites journalières',
-            data: values,
-            fill: false,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            tension: 0.1,
-            pointBackgroundColor: 'rgba(75, 192, 192, 1)'
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: {
-                precision: 0
-              }
-            }
-          }
-        }
-      });
-    },
     renderEffectifDirectionChart() {
       if (!this.data.effectif_par_direction || this.data.effectif_par_direction.length === 0 || !this.$refs.effectifDirectionChart) {
         return;
@@ -688,7 +718,9 @@ export default {
       if (!ctx) return;
 
       const labels = this.data.heures_moyennes_service.map(item => item.service);
-      const values = this.data.heures_moyennes_service.map(item => item.moyenne_heures);
+      const values = this.data.heures_moyennes_service.map(item => item.heure_arrivee_moyenne);
+
+      console.log(this.data.heures_moyennes_service)
 
       this.charts.heuresMoyennesService = new Chart(ctx, {
         type: 'bar',
@@ -722,7 +754,7 @@ export default {
       if (!ctx) return;
 
       const labels = this.data.heures_moyennes_direction.map(item => item.direction);
-      const values = this.data.heures_moyennes_direction.map(item => item.moyenne_heures);
+      const values = this.data.heures_moyennes_direction.map(item => item.heure_arrivee_moyenne);
 
       this.charts.heuresMoyennesDirection = new Chart(ctx, {
         type: 'bar',
@@ -746,6 +778,210 @@ export default {
           }
         }
       });
+    },
+    // Nouvelle méthode pour rafraîchir uniquement le graphique des visites
+    initialiserOptionsFiltres() {
+      // Extraire les années uniques des données
+      const annees = new Set();
+
+      if (this.data.visiteurs_par_periodes && this.data.visiteurs_par_periodes.length > 0) {
+        this.data.visiteurs_par_periodes.forEach(item => {
+          const date = new Date(item.jour);
+          annees.add(date.getFullYear());
+        });
+      }
+
+      // Si aucune année n'est trouvée, ajouter l'année actuelle
+      if (annees.size === 0) {
+        annees.add(new Date().getFullYear());
+      }
+
+      console.log(annees)
+
+      // Trier et formater pour le select
+      this.optionsAnnees = Array.from(annees).sort().map(annee => ({
+        title: annee.toString(),
+        value: annee
+      }));
+
+      // Définir l'année par défaut à l'année la plus récente
+      this.anneeSelectionnee = new Date().getFullYear();
+
+      // Initialiser les options de périodes selon le type de vue
+      this.mettreAJourOptionsPeriodes();
+    },
+
+    // Nouvelle méthode pour mettre à jour les options de périodes (mois ou semaines)
+    mettreAJourOptionsPeriodes() {
+      if (this.typeVueSelectionnee === 'mois') {
+        // Options pour les mois
+        this.optionsPeriodes = [
+          { title: 'Janvier', value: 1 },
+          { title: 'Février', value: 2 },
+          { title: 'Mars', value: 3 },
+          { title: 'Avril', value: 4 },
+          { title: 'Mai', value: 5 },
+          { title: 'Juin', value: 6 },
+          { title: 'Juillet', value: 7 },
+          { title: 'Août', value: 8 },
+          { title: 'Septembre', value: 9 },
+          { title: 'Octobre', value: 10 },
+          { title: 'Novembre', value: 11 },
+          { title: 'Décembre', value: 12 }
+        ];
+
+        // Par défaut, sélectionner le mois actuel ou le premier mois disponible
+        const moisActuel = new Date().getMonth() + 1;
+        this.periodeSelectionnee = moisActuel;
+      } else {
+        // Options pour les semaines
+        // Calculer les semaines disponibles pour l'année sélectionnée
+        const semaines = this.getSemainesPourAnnee(this.anneeSelectionnee);
+        this.optionsPeriodes = semaines.map(semaine => ({
+          title: `S${semaine}`,
+          value: semaine
+        }));
+
+        // Par défaut, sélectionner la semaine actuelle
+        const semaineActuelle = this.getNumeroSemaine(new Date());
+        this.periodeSelectionnee = semaineActuelle;
+      }
+    },
+
+    // Méthode pour changer le type de vue (mois/semaine)
+    changerTypeVue() {
+      this.mettreAJourOptionsPeriodes();
+      this.rafraichirGraphiqueVisites();
+    },
+
+    // Méthode pour obtenir le numéro de semaine d'une date
+    getNumeroSemaine(date) {
+      const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+      const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+      return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+    },
+
+    // Méthode pour obtenir toutes les semaines d'une année
+    getSemainesPourAnnee(annee) {
+      const nombreSemaines = 53; // Une année peut avoir 52 ou 53 semaines
+      return Array.from({ length: nombreSemaines }, (_, i) => i + 1);
+    },
+
+    // Mise à jour de la méthode de rendu du graphique des visites
+    renderVisiteursPeriodesChart() {
+      if (!this.data.visiteurs_par_periodes || this.data.visiteurs_par_periodes.length === 0 || !this.$refs.visiteursPeriodesChart) {
+        return;
+      }
+
+      const ctx = this.$refs.visiteursPeriodesChart.getContext('2d');
+      if (!ctx) return;
+
+      // Filtrer les données par année sélectionnée
+      const donneesFiltreesParAnnee = this.data.visiteurs_par_periodes.filter(item => {
+        const date = new Date(item.jour);
+        return date.getFullYear() === this.anneeSelectionnee;
+      });
+
+      let labels = [];
+      let values = [];
+
+      if (this.typeVueSelectionnee === 'mois') {
+        // Filtrer par mois sélectionné
+        const donneesDuMois = donneesFiltreesParAnnee.filter(item => {
+          const date = new Date(item.jour);
+          return date.getMonth() + 1 === this.periodeSelectionnee;
+        });
+
+        // Trier par jour
+        donneesDuMois.sort((a, b) => new Date(a.jour) - new Date(b.jour));
+
+        // Générer les labels pour chaque jour du mois (1-31)
+        labels = donneesDuMois.map(item => new Date(item.jour).getDate());
+        values = donneesDuMois.map(item => item.total_visites || 0);
+
+        // Si certains jours sont manquants, compléter avec des zéros
+        const joursDuMois = new Date(this.anneeSelectionnee, this.periodeSelectionnee, 0).getDate();
+        const tousLesJours = Array.from({ length: joursDuMois }, (_, i) => i + 1);
+
+        const donneesCompletes = tousLesJours.map(jour => {
+          const indice = labels.indexOf(jour);
+          return indice !== -1 ? values[indice] : 0;
+        });
+
+        labels = tousLesJours;
+        values = donneesCompletes;
+      } else {
+        // Vue par semaine
+        const semaineSelectionnee = this.periodeSelectionnee;
+
+        // Filtrer les données pour obtenir la semaine sélectionnée
+        const donneesDeLaSemaine = donneesFiltreesParAnnee.filter(item => {
+          const date = new Date(item.jour);
+          return this.getNumeroSemaine(date) === semaineSelectionnee;
+        });
+
+        // Trier par jour
+        donneesDeLaSemaine.sort((a, b) => new Date(a.jour) - new Date(b.jour));
+
+        // Créer un tableau avec les 7 jours de la semaine
+        const joursSemaine = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+        const donneesSemaine = [0, 0, 0, 0, 0, 0, 0]; // Valeurs par défaut
+
+        // Remplir avec les données disponibles
+        donneesDeLaSemaine.forEach(item => {
+          const jourSemaine = new Date(item.jour).getDay(); // 0 = Dimanche, 1 = Lundi, etc.
+          donneesSemaine[jourSemaine] = item.total_visites || 0;
+        });
+
+        labels = joursSemaine;
+        values = donneesSemaine;
+      }
+
+      // Créer ou mettre à jour le graphique
+      if (this.charts.visiteursPeriodesChart) {
+        this.charts.visiteursPeriodesChart.destroy();
+      }
+
+      this.charts.visiteursPeriodesChart = new Chart(ctx, {
+        type: 'bar', // Utiliser un graphique à barres pour mieux visualiser les données journalières
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `Visites - ${this.typeVueSelectionnee === 'mois' ?
+                    `${this.getMonthName(this.periodeSelectionnee)} ${this.anneeSelectionnee}` :
+                    `Semaine ${this.periodeSelectionnee}, ${this.anneeSelectionnee}`}`,
+            data: values,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          }
+        }
+      });
+    },
+
+    // Méthode utilitaire pour obtenir le nom du mois à partir de son numéro
+    getMonthName(monthNumber) {
+      const moisNoms = [
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+      ];
+      return moisNoms[monthNumber - 1];
+    },
+
+    // Mettre à jour la méthode pour rafraîchir le graphique
+    rafraichirGraphiqueVisites() {
+      this.renderVisiteursPeriodesChart();
     }
   }
 };
@@ -758,5 +994,11 @@ export default {
   .v-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2) !important;
+  }
+  ::v-deep(.v-data-table .v-data-table__th),
+  ::v-deep(.v-data-table-header__content) {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
   }
 </style>
