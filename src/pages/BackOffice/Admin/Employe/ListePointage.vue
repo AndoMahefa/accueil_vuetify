@@ -1,6 +1,6 @@
 <template>
   <div class="pointage-dashboard">
-    <h2 class="dashboard-title">Tableau de Pointages</h2>
+    <h2 class="dashboard-title"><v-icon large color="blue" class="mr-2">mdi-office-building</v-icon>Tableau de Pointages</h2>
 
     <!-- Filtre par date -->
     <div class="filter-container">
@@ -360,6 +360,12 @@ export default {
   font-style: italic;
 }
 
+.pointage-table thead tr th {
+  background-color: #000 !important;
+  color: white !important;
+  font-weight: bold;
+}
+
 @media (max-width: 900px) {
   .pointage-dashboard {
     padding: 1rem;
@@ -387,6 +393,12 @@ export default {
 
   .employee-cell {
     width: auto;
+  }
+
+  .pointage-table thead tr th {
+    background-color: #000 !important;
+    color: white !important;
+    font-weight: bold;
   }
 }
 </style>

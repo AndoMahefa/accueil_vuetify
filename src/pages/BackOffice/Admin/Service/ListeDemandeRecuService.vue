@@ -1,7 +1,9 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>Liste des demandes reçues du jour</v-card-title>
+      <v-card-title class="headline text-center white--text py-4">
+        📥 Liste des demandes reçues du jour
+      </v-card-title>
       <div class="d-flex justify-center align-center my-4 px-4">
         <v-select
           v-model="selectedDirection"
@@ -402,7 +404,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
     .digital-id-card {
     border-radius: 16px;
     background: linear-gradient(to right, #e3f2fd, #bbdefb);

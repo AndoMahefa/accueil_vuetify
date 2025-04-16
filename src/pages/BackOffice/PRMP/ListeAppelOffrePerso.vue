@@ -3,84 +3,90 @@
 <!-- eslint-disable vue/valid-v-slot -->
 <!-- eslint-disable vue/v-slot-style -->
 <template>
-  <v-container>
-    <h1>Liste des Appels d'Offres</h1>
-    <br>
-    <v-row>
-      <v-col cols="12" md="4">
-        <v-select
-          v-model="selectedRef"
-          :items="references"
-          clearable
-          label="Choisir un reference"
-          item-title="reference"
-          item-value="reference"
-          @update:model-value="fetchAppelsOffres"
-        />
-      </v-col>
-    </v-row>
-    <br>
-    <!-- Tableau des appels d'offres -->
-    <v-data-table
-      :headers="headers"
-      :items="appelsOffres"
-      item-value="id"
-      class="elevation-1"
-      outlined
-      :hide-default-footer="true"
-      :no-data-text="'Aucune donnée'"
-      :loading-text="'Chargement des données...'"
-    >
-      <template v-slot:item.actions="{ item }">
-        <v-icon
-          color="#6EC1B4"
-          class="icon-spacing"
-          @click="viewDetails(item)"
-        >
-          mdi-eye
-        </v-icon>
-        <v-icon
-          class="icon-spacing"
-          color="#FF7043"
-          @click="editAppelOffre(item)"
-        >
-          mdi-pencil
-        </v-icon>
-        <v-icon
-          class="icon-spacing"
-          color="red"
-          @click="confirmDelete(item)"
-        >
-          mdi-delete
-        </v-icon>
+  <v-container fluid>
+    <v-card class="main-card">
+      <v-card-title class="headline text-center white--text py-4">
+        <v-icon large color="blue" class="mr-2">mdi-clipboard-account</v-icon>
+        Liste des appels d'offres
+      </v-card-title>
 
-        <!-- Modification pour l'icône de création de compte -->
-        <template v-if="item.date_publication != null">
-          <v-tooltip bottom>
-            <template #activator="{ on, attrs }">
-              <v-icon
-                color="green"
-                class="mx-2"
-                v-bind="attrs"
-                v-on="on"
-              >
-                mdi-check
-              </v-icon>
-            </template>
-            <span> Cet Appel d'offre a déjà été publié </span>
-          </v-tooltip>
-        </template>
-        <template v-else>
+      <v-row justify="end">
+        <v-col cols="12" md="4" class="d-flex align-center">
+          <v-select
+            prepend-inner-icon="mdi-checkbox-marked-circle-outline"
+            v-model="selectedRef"
+            :items="references"
+            clearable
+            label="Choisir un reference"
+            item-title="reference"
+            item-value="reference"
+            @update:model-value="fetchAppelsOffres"
+          />
+        </v-col>
+      </v-row>
+      <br>
+      <!-- Tableau des appels d'offres -->
+      <v-data-table
+        :headers="headers"
+        :items="appelsOffres"
+        item-value="id"
+        class="elevation-1"
+        outlined
+        :hide-default-footer="true"
+        :no-data-text="'Aucune donnée'"
+        :loading-text="'Chargement des données...'"
+      >
+        <template v-slot:item.actions="{ item }">
           <v-icon
-            color="blue"
-            class="mx-2"
-            @click="confirmPublish(item)"
+            color="#6EC1B4"
+            class="icon-spacing"
+            @click="viewDetails(item)"
           >
-            mdi-publish
+            mdi-eye
           </v-icon>
+          <v-icon
+            class="icon-spacing"
+            color="#FF7043"
+            @click="editAppelOffre(item)"
+          >
+            mdi-pencil
+          </v-icon>
+          <v-icon
+            class="icon-spacing"
+            color="red"
+            @click="confirmDelete(item)"
+          >
+            mdi-delete
+          </v-icon>
+
+          <!-- Modification pour l'icône de création de compte -->
+          <template v-if="item.date_publication != null">
+            <v-tooltip bottom>
+              <template #activator="{ on, attrs }">
+                <v-icon
+                  color="green"
+                  class="mx-2"
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                  mdi-check
+                </v-icon>
+              </template>
+              <span> Cet Appel d'offre a déjà été publié </span>
+            </v-tooltip>
+          </template>
+          <template v-else>
+            <v-icon
+              color="blue"
+              class="mx-2"
+              @click="confirmPublish(item)"
+            >
+              mdi-publish
+            </v-icon>
+          </template>
         </template>
-      </template>
-    </v-data-table>
+      </v-data-table>
+    </v-card>
 
     <v-btn
       fab
@@ -484,7 +490,8 @@ export default {
   },
 };
 </script>
-<style>
+
+<style scoped>
   .icon-spacing{
     margin: 0 8px;
   }

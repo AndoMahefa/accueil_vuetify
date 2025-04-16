@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="page-title">
-      <span class="title-text">Gestion des Disponibilités des jours et créneaux horaires</span>
+      <span class="title-text"><v-icon large color="indigo" class="mr-2">mdi-calendar-clock</v-icon> Gestion des Disponibilités des jours et créneaux horaires</span>
     </div>
 
     <v-row>
@@ -13,6 +13,7 @@
           item-title="nom"
           item-value="id"
           clearable
+          prepend-inner-icon="mdi-office-building"
           @update:model-value="onDirectionChange"
         />
       </v-col>
@@ -23,6 +24,7 @@
           label="Sélectionner un service"
           item-title="nom"
           item-value="id"
+          prepend-inner-icon="mdi-domain"
           :disabled="!selectedDirection"
           clearable
         />
@@ -38,7 +40,7 @@
         </v-btn>
       </v-col>
       <v-col cols="12" md="3">
-        <v-btn color="blue" height="55px" @click="openIntervalModal">Paramétrer l'intervalle</v-btn>
+        <v-btn color="blue" height="55px" @click="openIntervalModal">⏰ Paramétrer l'intervalle</v-btn>
       </v-col>
     </v-row>
     <v-row>

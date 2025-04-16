@@ -1,7 +1,10 @@
 <template>
   <v-container>
     <v-card>
-      <v-card-title>Liste des visiteurs</v-card-title>
+      <v-card-title class="headline text-center white--text py-4">
+        <v-icon large color="blue" class="mr-2">mdi-badge-account-horizontal</v-icon>
+        Liste des visiteurs
+      </v-card-title>
 
       <div class="d-flex justify-end align-center mb-4 mt-4">
         <v-row justify="end">
@@ -172,6 +175,12 @@
               <v-col cols="12" md="6">
                 <v-text-field label="CIN" v-model="editVisiteur.cin" :rules="[rules.required]"></v-text-field>
               </v-col>
+              <v-col cols="12" md="6">
+                <v-select label="Genre" :items="genres" v-model="editVisiteur.genre" :rules="[rules.required]"></v-select>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field label="Entreprise/Organisme" v-model="editVisiteur.entreprise" :rules="[rules.required]"></v-text-field>
+              </v-col>
             </v-row>
           </v-form>
         </v-card-text>
@@ -260,8 +269,14 @@ export default {
         cin: '',
         email: '',
         telephone: '',
-        genre: ''
+        genre: '',
+        entreprise: ''
       },
+      genres: [
+        { title: 'Homme', value: 'Homme' },
+        { title: 'Femme', value: 'Femme' },
+      ],
+      selectedGenre: null,
       editDialog: false, // Indicateur pour la modal d'édition
       editVisiteur: {
         nom: '',
@@ -269,6 +284,7 @@ export default {
         email: '',
         telephone: '',
         cin: '',
+        entreprise: ''
       },
       formValid: false, // Validation du formulaire
       rules: {
@@ -353,6 +369,8 @@ export default {
     async saveChanges() {
       if (this.$refs.editForm.validate()) { // Validation du formulaire
         try {
+          this.editVisiteur = {...this.editVisiteur, genre: this.editVisiteur.genre}
+
           const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
           if (response && response.ok) {
             console.log(this.editVisiteur)

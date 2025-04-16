@@ -1,68 +1,73 @@
 <template>
-  <v-container>
-    <h1>Liste des soumissionaires</h1>
-    <br />
-    <v-row>
-      <v-col cols="12" md="4">
-        <v-select
-          v-model="selectedAppel"
-          :items="appelsPub"
-          label="Choisir un appel d'offre"
-          item-title="appel_offre"
-          item-value="id"
-          clearable
-          @update:model-value="fetchAppels"
-        />
-      </v-col>
-    </v-row>
-    <br>
-    <v-data-table
-      :headers="headers"
-      :items="appels"
-      item-value="id"
-      class="elevation-1"
-      outlined
-      :hide-default-footer="true"
-      :no-data-text="'Aucune donnée'"
-      :loading-text="'Chargement des données...'"
-    >
-      <template v-slot:item.actions="{ item }">
-        <v-icon
-          color="#6EC1B4"
-          class="icon-spacing"
-          @click="viewDetails(item)"
-        >
-          mdi-eye
-        </v-icon>
-        <v-icon
-          class="icon-spacing"
-          color="blue"
-          @click="editAppelOffre(item)"
-        >
-          mdi-pencil
-        </v-icon>
-        <v-icon
-          class="icon-spacing"
-          color="red"
-          @click="confirmDelete(item)"
-        >
-          mdi-delete
-        </v-icon>
-      </template>
-    </v-data-table>
-    <v-row justify="center">
-      <v-col cols="8">
-        <v-container class="max-width">
-          <v-pagination
-            v-model="page"
-            :length="totalPages"
-            class="my-4"
-            rounded="circle"
+  <v-container fluid>
+    <v-card class="main-card">
+      <v-card-title class="headline text-center white--text py-4">
+        <v-icon large color="blue" class="mr-2">mdi-account-tie</v-icon>
+        Liste des soumissionaires
+      </v-card-title>
+      <v-row justify="end">
+        <v-col cols="12" md="4">
+          <v-select
+            v-model="selectedAppel"
+            prepend-inner-icon="mdi-checkbox-marked-circle-outline"
+            :items="appelsPub"
+            label="Choisir un appel d'offre"
+            item-title="appel_offre"
+            item-value="id"
+            clearable
             @update:model-value="fetchAppels"
           />
-        </v-container>
-      </v-col>
-    </v-row>
+        </v-col>
+      </v-row>
+      <br>
+      <v-data-table
+        :headers="headers"
+        :items="appels"
+        item-value="id"
+        class="elevation-1"
+        outlined
+        :hide-default-footer="true"
+        :no-data-text="'Aucune donnée'"
+        :loading-text="'Chargement des données...'"
+      >
+        <template v-slot:item.actions="{ item }">
+          <v-icon
+            color="#6EC1B4"
+            class="icon-spacing"
+            @click="viewDetails(item)"
+          >
+            mdi-eye
+          </v-icon>
+          <v-icon
+            class="icon-spacing"
+            color="blue"
+            @click="editAppelOffre(item)"
+          >
+            mdi-pencil
+          </v-icon>
+          <v-icon
+            class="icon-spacing"
+            color="red"
+            @click="confirmDelete(item)"
+          >
+            mdi-delete
+          </v-icon>
+        </template>
+      </v-data-table>
+      <v-row justify="center">
+        <v-col cols="8">
+          <v-container class="max-width">
+            <v-pagination
+              v-model="page"
+              :length="totalPages"
+              class="my-4"
+              rounded="circle"
+              @update:model-value="fetchAppels"
+            />
+          </v-container>
+        </v-col>
+      </v-row>
+      </v-card>
   </v-container>
 </template>
 

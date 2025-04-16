@@ -1,67 +1,112 @@
 <template>
-  <v-sheet class="mx-auto mt-10" max-width="500 px" width="100%">
-    <div class="form-title">
-      <span class="bold-text">Visiteur</span> / Enregistrer
+  <v-sheet class="mx-auto mt-10 pa-8 rounded-lg elevation-5" max-width="700px" width="100%">
+    <div class="form-title mb-6">
+      <v-icon icon="mdi-account-circle" color="primary" class="mr-2"></v-icon>
+      <span class="text-h5 font-weight-bold text-primary">Enregistrement Visiteur</span>
     </div>
-    <v-form
-      ref="form"
-      v-model="valid"
-    >
-      <v-text-field
-        v-model="visiteur.nom"
-        label="Nom"
-        :rules="[rules.required]"
 
-        required
-      />
-      <v-text-field
-        v-model="visiteur.prenom"
-        label="Prenom"
-        :rules="[rules.required]"
+    <v-form ref="form" v-model="valid" class="d-flex flex-column gap-4">
+      <div class="d-flex gap-4">
+        <v-text-field
+          v-model="visiteur.nom"
+          label="Nom"
+          :rules="[rules.required]"
+          variant="outlined"
+          density="comfortable"
+          color="primary"
+          rounded="lg"
+          class="mr-2"
+        />
+        <v-text-field
+          v-model="visiteur.prenom"
+          label="Prénom"
+          :rules="[rules.required]"
+          variant="outlined"
+          density="comfortable"
+          color="primary"
+          rounded="lg"
+          class="ml-2"
+        />
+      </div>
 
-        required
-      />
       <v-select
         v-model="selectedGenre"
         :items="genres"
         item-value="value"
-        label="Sélectionner votre genre"
+        label="Genre"
+        variant="outlined"
+        density="comfortable"
+        color="primary"
+        rounded="lg"
+        menu-icon="mdi-chevron-down"
+        :menu-props="{ rounded: 'lg' }"
       />
+
       <v-text-field
         v-model="visiteur.cin"
         label="CIN"
         :rules="[rules.required]"
-
-        required
+        variant="outlined"
+        density="comfortable"
+        color="primary"
+        rounded="lg"
       />
+
       <v-text-field
         v-model="visiteur.email"
         label="Email"
         :rules="[rules.email]"
-
-        required
+        variant="outlined"
+        density="comfortable"
+        color="primary"
+        rounded="lg"
+        type="email"
       />
 
       <v-text-field
         v-model="visiteur.telephone"
         label="Numéro de téléphone"
+        variant="outlined"
+        density="comfortable"
+        color="primary"
+        rounded="lg"
+        type="tel"
       />
 
       <v-text-field
         v-model="visiteur.entreprise"
         label="Entreprise / Organisme"
+        variant="outlined"
+        density="comfortable"
+        color="primary"
+        rounded="lg"
       />
 
-      <v-btn class="mt-2" type="submit" block @click="submitForm" color="success">Enregistrer</v-btn>
+      <v-btn
+        class="mt-4"
+        type="submit"
+        block
+        @click="submitForm"
+        color="primary"
+        size="large"
+        rounded="lg"
+        :disabled="!valid"
+        variant="flat"
+      >
+        <v-icon icon="mdi-content-save-check" class="mr-2"></v-icon>
+        Enregistrer
+      </v-btn>
     </v-form>
 
-    <!-- Snackbar -->
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
       :timeout="3000"
       location="top"
+      elevation="24"
+      rounded="pill"
     >
+      <v-icon :icon="snackbar.icon" class="mr-2"></v-icon>
       {{ snackbar.text }}
     </v-snackbar>
   </v-sheet>
@@ -137,24 +182,32 @@ export default {
 </script>
 
 <style scoped>
-  .form-title {
-      display: flex;
-      align-items: center;
-      margin-bottom: 15px;
-      font-size: 1.25rem; /* Taille de texte */
-      font-weight: 400; /* Poids de texte par défaut */
-      color: #333; /* Couleur de texte */
+  .v-sheet {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  .bold-text {
-      font-weight: 700; /* Texte en gras */
-      margin-right: 4px; /* Espacement entre Visiteur et / */
-  }
-  .v-sheet {
-      max-width: 600px;  /* Maximum width */
+  .form-title {
+    display: flex;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgb(var(--v-theme-primary));
   }
 
   .v-btn {
-      margin-top: 15px;
+    transition: all 0.3s ease;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .v-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2);
+  }
+
+  .v-text-field :deep(.v-field) {
+    background-color: rgba(245, 245, 245, 0.8);
   }
 </style>

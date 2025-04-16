@@ -2,20 +2,9 @@
   <v-container>
     <!-- Filtre par service (sélection immédiate) -->
     <v-card>
-      <v-card-title>File d'attente du {{dateDuJour}}</v-card-title>
-      <!-- <v-row>
-        <v-col cols="12" md="4">
-          <v-select
-            v-model="selectedDirection"
-            :items="directions"
-            label="Sélectionner une direction"
-            item-title="nom"
-            item-value="id"
-            clearable
-            @update:model-value="fetchTickets"
-          />
-        </v-col>
-      </v-row> -->
+      <v-card-title class="headline text-center white--text py-4">
+        📅 File d'attente du {{dateDuJour}}
+      </v-card-title>
 
       <div class="d-flex justify-center align-center my-4 px-4">
         <v-select

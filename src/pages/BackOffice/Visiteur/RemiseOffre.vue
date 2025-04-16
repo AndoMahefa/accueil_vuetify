@@ -1,93 +1,95 @@
 <template>
   <v-app>
     <v-container>
-      <h1 class="text-center mt-15">
-        Remise d'offre
-      </h1>
-      <br>
-      <br>
-      <v-stepper
-        :items="['Soumissionaire', 'Entreprise', 'Appel d\'offre']"
-        prev-text="Précédent"
-        next-text="Suivant"
-      >
-        <template v-slot:item.1>
-          <v-card
-            title="Information du soumissionnaire"
-            flat
-            class="pa-4"
-          >
-            <v-text-field
-              v-model="nom"
-              label="Nom"
-            />
-            <v-text-field
-              v-model="prenom"
-              label="Prenom"
-            />
-          </v-card>
-        </template>
+      <v-card class="main-card">
+        <v-card-title class="headline text-center white--text py-4">
+          <v-icon large color="blue" class="mr-2">mdi-briefcase-check</v-icon>
+          Remise d'offre
+        </v-card-title>
+        <v-stepper
+          :items="['Soumissionaire', 'Entreprise', 'Appel d\'offre']"
+          prev-text="Précédent"
+          next-text="Suivant"
+        >
+          <template v-slot:item.1>
+            <v-card
+              title="Information du soumissionnaire"
+              flat
+              class="pa-4"
+            >
+              <v-text-field
+                v-model="nom"
+                label="Nom"
+              />
+              <v-text-field
+                v-model="prenom"
+                label="Prenom"
+              />
+            </v-card>
+          </template>
 
-        <template v-slot:item.2>
-          <v-card
-            title="Informations sur l'entreprise"
-            flat
-            class="pa-4"
-          >
-            <v-text-field
-              v-model="entreprise"
-              label="Nom de l'entreprise"
-            />
-            <v-text-field
-              v-model="nif_stat"
-              label="NIF/STAT"
-            />
-            <v-text-field
-              v-model="adresse_siege"
-              label="Adresse siege"
-            />
-            <v-text-field
-              v-model="fiscale"
-              label="Numero fiscale"
-            />
-            <v-text-field
-              v-model="rcs"
-              label="Numero RCS ou CIN"
-            />
-            <v-text-field
-              v-model="contact"
-              label="Contact"
-            />
-          </v-card>
-        </template>
-        <template v-slot:item.3>
-          <v-card
-            title="Appel d'offre"
-            flat
-            class="pa-4"
-          >
-            <v-select
-              v-model="selectedAppelOffre"
-              :items="appelOffres"
-              item-title="appel_offre"
-              item-value="id"
-              label="Sélectionner un appel d'offre"
-              class="mt-4"
-            />
-            <v-card-action>
-              <v-btn
-                color="primary"
-                block
+          <template v-slot:item.2>
+            <v-card
+              title="Informations sur l'entreprise"
+              flat
+              class="pa-4"
+            >
+              <v-text-field
+                v-model="entreprise"
+                label="Nom de l'entreprise"
+              />
+              <v-text-field
+                v-model="nif_stat"
+                label="NIF/STAT"
+              />
+              <v-text-field
+                v-model="adresse_siege"
+                label="Adresse siege"
+              />
+              <v-text-field
+                v-model="fiscale"
+                label="Numero fiscale"
+              />
+              <v-text-field
+                v-model="rcs"
+                label="Numero RCS ou CIN"
+              />
+              <v-text-field
+                v-model="contact"
+                label="Contact"
+              />
+            </v-card>
+          </template>
+          <template v-slot:item.3>
+            <v-card
+              title="Appel d'offre"
+              flat
+              class="pa-4"
+            >
+              <v-select
+                v-model="selectedAppelOffre"
+                :items="appelOffres"
+                item-title="appel_offre"
+                item-value="id"
+                label="Sélectionner un appel d'offre"
                 class="mt-4"
-                @click="remise_offre"
-                :loading="loading"
-              >
-                Enregistrer
-              </v-btn>
-            </v-card-action>
-          </v-card>
-        </template>
-      </v-stepper>
+              />
+              <v-card-action>
+                <v-btn
+                  color="primary"
+                  block
+                  class="mt-4"
+                  @click="remise_offre"
+                  :loading="loading"
+                >
+                  Enregistrer
+                </v-btn>
+              </v-card-action>
+            </v-card>
+          </template>
+        </v-stepper>
+      </v-card>
+
     </v-container>
 
     <!-- Snackbar pour les messages -->

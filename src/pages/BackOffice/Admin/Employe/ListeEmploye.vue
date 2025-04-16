@@ -2,7 +2,7 @@
   <v-container fluid>
     <v-card>
       <v-card-title class="headline text-center">
-        Liste des Employés
+        <v-icon large color="blue" class="mr-2">mdi-account-multiple</v-icon>Liste des Employés
         <v-tooltip>
           <template #activator="{props}">
             <v-icon
