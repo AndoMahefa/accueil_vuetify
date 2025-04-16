@@ -73,6 +73,7 @@
           label="Sélectionnez une direction"
           clearable
           class="mx-2"
+          prepend-inner-icon="mdi-office-building"
           @update:model-value="onFilterDirectionChange"
         />
         <v-select
@@ -82,6 +83,7 @@
           item-value="id"
           label="Sélectionnez un service"
           clearable
+          prepend-inner-icon="mdi-domain"
           :disabled="!selectedDirection"
           class="mx-2"
         />

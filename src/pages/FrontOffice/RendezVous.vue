@@ -23,6 +23,7 @@
                 clearable
                 required
                 style="color: #fffff; border-color: #6EC1B4;"
+                prepend-inner-icon="mdi-office-building"
                 @update:model-value="onChangeDirection"
               />
               <!-- Sélectionner un service -->
@@ -37,6 +38,7 @@
                 clearable
                 style="color: #fffff; border-color: #6EC1B4;"
                 :disabled="!selectedDirection"
+                prepend-inner-icon="mdi-domain"
                 @update:model-value="findJourDispo"
               />
 
@@ -63,7 +65,9 @@
                 :allowed-dates="isAllowedDate"
                 color="primary"
                 header-color="primary"
-                locale="fr"
+                title="Séléctionner une date"
+                header="Entrer une date"
+                :local="fr"
                 style="max-width: 400px; width: 100%"
                 @update:model-value="fetchAvailableSlots"
               />
@@ -94,12 +98,30 @@
               <v-row>
                 <!-- Recherche de visiteur -->
                 <v-col cols="12">
-                  <v-text-field
-                    v-model="searchKey"
-                    label="Rechercher par email ou cin"
-                    clearable
-                    @blur="searchVisitor"
-                  />
+                  <v-row align="center" dense>
+                    <v-col cols="8">
+                      <v-text-field
+                        v-model="searchKey"
+                        label="Rechercher par email ou CIN"
+                        clearable
+                        @keyup.enter="searchVisitor"
+                      />
+                    </v-col>
+
+                    <v-col cols="4">
+                      <v-btn
+                        color="primary"
+                        @click="searchVisitor"
+                        block
+                        :disabled="!searchKey"
+                        class="ml-2 mb-5"
+                        height="56px"
+                      >
+                        <v-icon left>mdi-magnify</v-icon>
+                        Rechercher
+                      </v-btn>
+                    </v-col>
+                  </v-row>
                 </v-col>
 
                 <!-- Informations sur le visiteur -->
@@ -207,6 +229,7 @@ export default {
         cin: "",
         email: "",
         telephone: "",
+        genre: "",
         entreprise: ""
       },
       genres: [
@@ -322,7 +345,7 @@ export default {
       // console.log(this.holidays);
     },
     async findJourDispo() {
-      this.joursDispo = []; 
+      this.joursDispo = [];
       const idService = this.selectedService;
       try {
         let url = 'http://localhost:8000/api/';
@@ -458,7 +481,6 @@ export default {
 
       try {
         const search = encodeURIComponent(this.searchKey)
-        console.log(search)
         const response = await fetch(
           `http://localhost:8000/api/visiteur/search?search=${search}`
         );
@@ -473,19 +495,22 @@ export default {
             cin: data.cin,
             email: data.email,
             telephone: data.telephone,
+            genre: data.genre,
+            entreprise: data.entreprise
           };
+          this.selectedGenre = data.genre
           this.idVisiteurExistant = data.id;
-          console.log("idVisiteur: " + this.idVisiteurExistant)
           this.visitorExists = true;
-          alert("Visiteur existant trouvé et informations chargées.");
+          this.showSuccess("Visiteur existant trouvé et informations chargées.");
         } else {
+          console.log("ato")
           // Aucun visiteur trouvé
           this.visitorExists = false;
-          alert("Aucun visiteur trouvé, vous pouvez remplir les informations.");
+          this.showError("Aucun visiteur trouvé, vous pouvez remplir les informations.");
         }
       } catch (error) {
         console.error(error);
-        alert("Une erreur s'est produite lors de la recherche.");
+        this.showError("Erreur lors de la recherche du visiteur.");
       }
     },
     async createVisitor() {
@@ -505,7 +530,7 @@ export default {
           return data.id; // Retourne l'ID du visiteur créé
       } catch (error) {
           console.error(error);
-          alert("Une erreur s'est produite lors de la création du visiteur.");
+          this.showError("Erreur lors de la création du visiteur : ", error);
           return null;
       }
     },
@@ -613,7 +638,6 @@ export default {
 
           const data = await response.json();
           this.showSuccess("Rendez-vous enregistré avec succès !");
-          // console.log("Rendez-vous :", data.rdv);
 
           // // Réinitialisez le formulaire si nécessaire
           this.resetForm();
