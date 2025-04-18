@@ -67,20 +67,11 @@ export default {
     },
     async submitForm() {
       try {
-        // const token = localStorage.getItem("token");
         let referenceToUse = null;
 
         // Si une nouvelle référence est saisie, l'enregistrer
         if (this.newReference) {
           console.log("nouvelle reference : " + this.newReference)
-          // const response = await fetch("http://localhost:8000/api/prmp/reference", {
-          //   method: "POST",
-          //   headers: {
-          //     "Content-Type": "application/json",
-          //     Authorization: `Bearer ${token}`,
-          //   },
-          //   body: JSON.stringify({ reference: this.newReference }),
-          // });
           const response = await post('prmp/reference', {
             'reference': this.newReference
           })

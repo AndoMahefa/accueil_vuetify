@@ -40,6 +40,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.nom ? erreurs.nom : null"
+              @input="() => delete erreurs.nom"
             />
             <v-text-field
               v-model="employe.prenom"
@@ -48,6 +50,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.prenom ? erreurs.prenom : null"
+              @input="() => delete erreurs.prenom"
             />
             <v-text-field
               v-model="employe.date_de_naissance"
@@ -57,6 +61,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.date_de_naissance ? erreurs.date_de_naissance : null"
+              @input="() => delete erreurs.date_de_naissance"
             />
             <v-text-field
               v-model="employe.adresse"
@@ -65,6 +71,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.adresse ? erreurs.adresse : null"
+              @input="() => delete erreurs.adresse"
             />
             <v-text-field
               v-model="employe.cin"
@@ -73,6 +81,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.cin ? erreurs.cin : null"
+              @input="() => delete erreurs.cin"
             />
             <v-text-field
               v-model="employe.telephone"
@@ -81,6 +91,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.telephone ? erreurs.telephone : null"
+              @input="() => delete erreurs.telephone"
             />
             <v-select
               v-model="selectedGenre"
@@ -92,6 +104,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.genre ? erreurs.genre : null"
+              @input="() => delete erreurs.genre"
             />
 
             <div class="d-flex justify-end mt-4">
@@ -120,8 +134,10 @@
               variant="outlined"
               density="comfortable"
               required
-              @update:model-value="onDirectionChange"
               class="form-field"
+              :error-messages="erreurs.id_direction ? erreurs.id_direction : null"
+              @input="() => delete erreurs.id_direction"
+              @update:model-value="onDirectionChange"
             />
             <v-select
               v-model="selectedService"
@@ -132,8 +148,10 @@
               variant="outlined"
               density="comfortable"
               clearable
-              @update:model-value="onServiceChange"
               class="form-field"
+              :error-messages="erreurs.id_service ? erreurs.id_service : null"
+              @input="() => delete erreurs.id_service"
+              @update:model-value="onServiceChange"
             />
             <v-select
               v-model="selectedFonction"
@@ -145,6 +163,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.id_fonction ? erreurs.id_fonction : null"
+              @input="() => delete erreurs.id_fonction"
             />
             <v-select
               v-model="selectedObservation"
@@ -156,6 +176,8 @@
               density="comfortable"
               required
               class="form-field"
+              :error-messages="erreurs.id_observation ? erreurs.id_observation : null"
+              @input="() => delete erreurs.id_observation"
             />
 
             <div class="d-flex justify-space-between mt-4">
@@ -235,6 +257,19 @@ export default {
         color: 'success'
       },
       loading: false,
+      erreurs: {
+        nom: null,
+        prenom: null,
+        date_de_naissance: null,
+        adresse: null,
+        cin: null,
+        telephone: null,
+        genre: null,
+        id_direction: null,
+        id_service: null,
+        id_fonction: null,
+        id_observation: null
+      }
     };
   },
   computed: {
@@ -278,8 +313,11 @@ export default {
 
       try {
         const response = await post('employe', payload);
-        if(response.ok) {
-          this.showSuccess('Employé enregistré avec succès');
+
+        let data;
+        if (response.status === 201) {
+          data = await response.json();
+          this.showSuccess(data.message);
           this.employe = {
             nom: '',
             prenom: '',
@@ -295,6 +333,10 @@ export default {
           this.selectedFonction = null;
           this.selectedObservation = null;
           this.currentStep = '1';
+        } else {
+          data = await response.json();
+          this.erreurs = data.errors;
+          this.showError(data.message);
         }
       } catch (error) {
         console.error('Erreur:', error);

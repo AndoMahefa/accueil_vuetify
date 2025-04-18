@@ -159,27 +159,59 @@
           <v-form ref="editForm" v-model="formValid">
             <v-row>
               <v-col cols="12" md="6">
-                <v-text-field label="Nom" v-model="editVisiteur.nom" :rules="[rules.required]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.nom"
+                  label="Nom"
+                  :error-messages="erreurs.nom ? erreurs.nom : null"
+                  @input="() => delete erreurs.nom"
+                />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field label="Prénom" v-model="editVisiteur.prenom" :rules="[rules.required]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.prenom"
+                  label="Prénom"
+                  :error-messages="erreurs.prenom ? erreurs.prenom : null"
+                  @input="() => delete erreurs.prenom"
+                />
               </v-col>
               <v-col cols="12">
-                <v-text-field label="Email" v-model="editVisiteur.email"
-                  :rules="[rules.required, rules.email]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.email"
+                  label="Email"
+                />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field label="Téléphone" v-model="editVisiteur.telephone"
-                  :rules="[rules.required]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.telephone"
+                  label="Téléphone"
+                  :error-messages="erreurs.telephone ? erreurs.telephone : null"
+                  @input="() => delete erreurs.telephone"
+                />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field label="CIN" v-model="editVisiteur.cin" :rules="[rules.required]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.cin"
+                  label="CIN"
+                  :error-messages="erreurs.cin ? erreurs.cin : null"
+                  @input="() => delete erreurs.cin"
+                />
               </v-col>
               <v-col cols="12" md="6">
-                <v-select label="Genre" :items="genres" v-model="editVisiteur.genre" :rules="[rules.required]"></v-select>
+                <v-select
+                  v-model="editVisiteur.genre"
+                  label="Genre"
+                  :items="genres"
+                  :error-messages="erreurs.genre ? erreurs.genre : null"
+                  @input="() => delete erreurs.genre"
+                />
               </v-col>
               <v-col cols="12" md="6">
-                <v-text-field label="Entreprise/Organisme" v-model="editVisiteur.entreprise" :rules="[rules.required]"></v-text-field>
+                <v-text-field
+                  v-model="editVisiteur.entreprise"
+                  label="Entreprise/Organisme"
+                  :error-messages="erreurs.entreprise ? erreurs.entreprise : null"
+                  @input="() => delete erreurs.entreprise"
+                />
               </v-col>
             </v-row>
           </v-form>
@@ -287,11 +319,6 @@ export default {
         entreprise: ''
       },
       formValid: false, // Validation du formulaire
-      rules: {
-        required: (value) => !!value || 'Ce champ est requis',
-        email: (value) =>
-          /.+@.+\..+/.test(value) || 'Veuillez entrer une adresse email valide',
-      },
       showDemandeDialog: false,
 
       services: [], // À remplir avec les services disponibles
@@ -305,6 +332,15 @@ export default {
         show: false,
         text: '',
         color: 'success'
+      },
+      erreurs: {
+        nom: null,
+        prenom: null,
+        cin: null,
+        email: null,
+        telephone: null,
+        genre: null,
+        entreprise: null
       },
       // selectedFonction: null,
       // filteredFonctions: [],
@@ -367,19 +403,24 @@ export default {
       this.editDialog = true;
     },
     async saveChanges() {
-      if (this.$refs.editForm.validate()) { // Validation du formulaire
-        try {
-          this.editVisiteur = {...this.editVisiteur, genre: this.editVisiteur.genre}
+      try {
+        this.editVisiteur = { ...this.editVisiteur, genre: this.editVisiteur.genre }
 
-          const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
-          if (response && response.ok) {
-            console.log(this.editVisiteur)
-            this.editDialog = false;
-            this.fetchData()
-          }
-        } catch (error) {
-          console.error("erreur lors de la maj du visiteur : ", error);
+        console.log(this.editVisiteur)
+
+        const response = await put(`accueil/visiteur/${this.editVisiteur.id}`, this.editVisiteur);
+        console.log(response.status)
+        if (response.status === 204) {
+          this.showSuccess("Visiteur modifié avec succès");
+          this.editDialog = false;
+          this.fetchData()
+        } else {
+          const data = await response.json();
+          this.erreurs = data.errors;
+          this.showError(data.message);
         }
+      } catch (error) {
+        this.showError("erreur lors de la maj du visiteur : ", error);
       }
     } ,   // Ouvrir la modal
     openDemandeDialog(item) {

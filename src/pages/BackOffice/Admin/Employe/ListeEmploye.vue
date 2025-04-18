@@ -276,6 +276,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.nom ? erreurs.nom : null"
+                    @input="()=> delete erreurs.nom"
                   />
                   <v-text-field
                     v-model="editedEmployee.prenom"
@@ -284,6 +286,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.prenom ? erreurs.prenom : null"
+                    @input="() => delete erreurs.prenom"
                   />
                   <v-text-field
                     v-model="editedEmployee.date_de_naissance"
@@ -293,6 +297,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.date_de_naissance ? erreurs.date_de_naissance : null"
+                    @input="() => delete erreurs.date_de_naissance"
                   />
                   <v-text-field
                     v-model="editedEmployee.adresse"
@@ -301,6 +307,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.adresse ? erreurs.adresse : null"
+                    @input="() => delete erreurs.adresse"
                   />
                   <v-text-field
                     v-model="editedEmployee.cin"
@@ -309,6 +317,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.cin ? erreurs.cin : null"
+                    @input="() => delete erreurs.cin"
                   />
                   <v-text-field
                     v-model="editedEmployee.telephone"
@@ -317,6 +327,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.telephone ? erreurs.telephone : null"
+                    @input="() => delete erreurs.telephone"
                   />
                   <v-select
                     v-model="editedEmployee.genre"
@@ -328,6 +340,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.genre ? erreurs.genre : null"
+                    @input="() => delete erreurs.genre"
                   />
                 </v-form>
                 <div class="d-flex justify-end mt-4">
@@ -355,8 +369,10 @@
                     variant="outlined"
                     density="comfortable"
                     required
-                    @update:model-value="onEditDirectionChange"
                     class="form-field"
+                    :error-messages="erreurs.id_direction ? erreurs.id_direction : null"
+                    @input="() => delete erreurs.id_direction"
+                    @update:model-value="onEditDirectionChange"
                   />
                   <v-select
                     v-model="editedEmployee.id_service"
@@ -367,9 +383,11 @@
                     variant="outlined"
                     density="comfortable"
                     clearable
-                    @update:model-value="onEditServiceChange"
                     class="form-field"
                     :disabled="!editedEmployee.id_direction"
+                    :error-messages="erreurs.id_service ? erreurs.id_service : null"
+                    @input="() => delete erreurs.id_service"
+                    @update:model-value="onEditServiceChange"
                   />
                   <v-select
                     v-model="editedEmployee.id_fonction"
@@ -382,6 +400,8 @@
                     required
                     clearable
                     class="form-field"
+                    :error-messages="erreurs.id_fonction ? erreurs.id_fonction : null"
+                    @input="() => delete erreurs.id_fonction"
                   />
                   <v-select
                     v-model="editedEmployee.id_observation"
@@ -393,6 +413,8 @@
                     density="comfortable"
                     required
                     class="form-field"
+                    :error-messages="erreurs.id_observation ? erreurs.id_observation : null"
+                    @input="() => delete erreurs.id_observation"
                   />
                 </v-form>
                 <div class="d-flex justify-space-between mt-4">
@@ -408,9 +430,9 @@
                   <v-btn
                     color="success"
                     size="large"
-                    @click="updateEmployee"
                     :loading="loading"
                     :disabled="!isEditStep2Valid"
+                    @click="updateEmployee"
                   >
                     <v-icon icon="mdi-check" class="mr-2"></v-icon>
                     Enregistrer
@@ -564,7 +586,11 @@ export default {
         genre: '',
         adresse: '',
         cin: '',
-        telephone: ''
+        telephone: '',
+        id_direction: '',
+        id_service: '',
+        id_fonction: '',
+        id_observation: ''
       },
 
       selectedEmploye: null,
@@ -602,6 +628,19 @@ export default {
         text: '',
         color: 'success'
       },
+      erreurs: {
+        nom: null,
+        prenom: null,
+        date_de_naissance: null,
+        adresse: null,
+        cin: null,
+        telephone: null,
+        genre: null,
+        id_direction: null,
+        id_service: null,
+        id_fonction: null,
+        id_observation: null
+      }
     }
   },
   computed: {
@@ -741,14 +780,22 @@ export default {
     },
     // Envoie la requête pour mettre à jour les informations de l'employé
     async updateEmployee() {
-      const response = await put(`employe/${this.editedEmployee.id}/update`, {
-        ...this.editedEmployee
-      });
+      try {
+        const response = await put(`employe/${this.editedEmployee.id}/update`, {
+          ...this.editedEmployee
+        });
 
-      if (response.ok) {
-        // Actualise la liste des employés
-        this.fetchEmployes();
-        this.closeEditEmployeeModal();
+        if (response.status === 204) {
+          this.showSuccess("Employé mis à jour");
+          this.closeEditEmployeeModal();
+          this.fetchEmployes();
+        } else {
+          const errors = await response.json();
+          this.erreurs = errors.errors;
+          this.showError(errors.message);
+        }
+      } catch (error) {
+        this.showError('Une erreur est survenue lors de la mis à jour');
       }
     },
     deleteModal(item) {

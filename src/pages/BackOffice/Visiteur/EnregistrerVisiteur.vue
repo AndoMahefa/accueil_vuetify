@@ -16,6 +16,8 @@
           color="primary"
           rounded="lg"
           class="mr-2"
+          :error-messages="erreurs.nom? erreurs.nom : null"
+          @input="() => delete erreurs.nom"
         />
         <v-text-field
           v-model="visiteur.prenom"
@@ -26,6 +28,8 @@
           color="primary"
           rounded="lg"
           class="ml-2"
+          :error-messages="erreurs.prenom? erreurs.prenom : null"
+          @input="() => delete erreurs.prenom"
         />
       </div>
 
@@ -40,27 +44,32 @@
         rounded="lg"
         menu-icon="mdi-chevron-down"
         :menu-props="{ rounded: 'lg' }"
+        :error-messages="erreurs.genre? erreurs.genre : null"
+        @input="() => delete erreurs.genre"
       />
 
       <v-text-field
         v-model="visiteur.cin"
         label="CIN"
         :rules="[rules.required]"
+        :error-messages="erreurs.cin? erreurs.cin : null"
         variant="outlined"
         density="comfortable"
         color="primary"
         rounded="lg"
+        @input="() => delete erreurs.cin"
       />
 
       <v-text-field
         v-model="visiteur.email"
         label="Email"
-        :rules="[rules.email]"
         variant="outlined"
         density="comfortable"
         color="primary"
         rounded="lg"
         type="email"
+        :error-messages="erreurs.email? erreurs.email : null"
+        @input="() => delete erreurs.email"
       />
 
       <v-text-field
@@ -71,6 +80,8 @@
         color="primary"
         rounded="lg"
         type="tel"
+        :error-messages="erreurs.telephone? erreurs.telephone : null"
+        @input="() => delete erreurs.telephone"
       />
 
       <v-text-field
@@ -80,6 +91,8 @@
         density="comfortable"
         color="primary"
         rounded="lg"
+        :error-messages="erreurs.entreprise? erreurs.entreprise : null"
+        @input="() => delete erreurs.entreprise"
       />
 
       <v-btn
@@ -141,6 +154,15 @@ export default {
         text: '',
         color: 'success'
       },
+      erreurs: {
+        nom: null,
+        prenom: null,
+        email: null,
+        cin: null,
+        telephone: null,
+        genre: null,
+        entreprise: null
+      }
     };
   },
   methods: {
@@ -157,13 +179,17 @@ export default {
           'entreprise': this.entreprise
         })
 
-        if(response.ok) {
+        if(response.status === 201) {
           this.showSuccess("Visiteur ajouté avec succès");// console.log(this.selectedGenre)
           this.visiteur = {};
           this.selectedGenre = null;
+        } else  {
+          const data = await response.json();
+          this.erreurs = data.errors;
+          this.showError(data.message);
         }
       } catch (error) {
-        console.log(error)
+        // console.log(error.response)
         this.showError("Une erreur est survenue lors de l'ajout");
       }
     },
@@ -174,6 +200,7 @@ export default {
     },
     showError(message) {
       this.snackbar.color = 'error';
+      this.snackbar.icon = 'mdi-alert-circle';
       this.snackbar.text = message;
       this.snackbar.show = true;
     },
